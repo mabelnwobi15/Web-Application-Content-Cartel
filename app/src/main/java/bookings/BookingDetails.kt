@@ -1,0 +1,4 @@
+package bookings
+
+class BookingDetails {
+}
