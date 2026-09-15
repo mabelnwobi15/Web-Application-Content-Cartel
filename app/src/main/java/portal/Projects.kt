@@ -1,4 +1,0 @@
-package portal
-
-class Projects {
-}

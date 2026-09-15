@@ -1,4 +1,0 @@
-package profile
-
-class Profile {
-}

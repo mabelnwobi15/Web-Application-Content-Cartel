@@ -1,4 +1,0 @@
-package bookings
-
-class CreateBookings {
-}
