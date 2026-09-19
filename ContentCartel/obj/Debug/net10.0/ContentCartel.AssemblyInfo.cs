@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ContentCartel")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+505959328858ab70d92250d6dbf065a8f2b5e32c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0efa275d3738375a557af70e64fcf7d566abd04b")]
 [assembly: System.Reflection.AssemblyProductAttribute("ContentCartel")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ContentCartel")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
