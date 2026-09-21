@@ -1,5 +1,79 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model ContentCartel.Models.Booking
 @{
+    ViewData["Title"] = "Book Appointment";
 }
+
+<section class="py-5 bg-cream border-bottom border-secondary border-opacity-10 text-center">
+    <div class="container">
+        <span class="badge bg-gold text-dark text-uppercase px-3 py-2 fw-bold mb-3">Online Booking</span>
+        <h1 class="display-4 fw-bold text-uppercase">Schedule Your Shoot</h1>
+        <p class="lead text-secondary mx-auto" style="max-width: 600px;">
+            Select your service package, choose a slot, and secure your booking with a 30% deposit payment.
+        </p>
+    </div>
+</section>
+
+<section class="py-5 bg-cream">
+    <div class="container" style="max-width: 750px;">
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-3">
+            <form asp-action="ConfirmBooking" method="post" id="bookingForm">
+                
+                <h4 class="fw-bold text-uppercase text-gold mb-3">1. Client Details</h4>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Full Name</label>
+                        <input type="text" class="form-control" required placeholder="Jane Doe" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Phone / WhatsApp Number</label>
+                        <input type="tel" class="form-control" required placeholder="+27 82 000 0000" />
+                    </div>
+                </div>
+
+                <h4 class="fw-bold text-uppercase text-gold mb-3">2. Service & Scheduling</h4>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Select Service</label>
+                        <select class="form-select" id="packageSelect" required onchange="calculateDeposit()">
+                            <option value="3500">Short-Form Reels Package (R3,500)</option>
+                            <option value="7800">Podcast Studio Production (R7,800)</option>
+                            <option value="12000">Influencer Creator Collab (R12,000)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Preferred Date</label>
+                        <input type="date" class="form-control" required />
+                    </div>
+                </div>
+
+                <!-- 30% DEPOSIT CALCULATION DISPLAY -->
+                <div class="p-3 bg-light border rounded mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold">Total Service Fee:</span>
+                        <span class="fw-bold" id="totalPrice">R 3,500.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center text-success fs-5 fw-bold">
+                        <span>Required 30% Deposit:</span>
+                        <span id="depositPrice">R 1,050.00</span>
+                    </div>
+                    <small class="text-muted d-block mt-1">The remaining 70% balance is payable upon project completion.</small>
+                </div>
+
+                <button type="submit" class="btn btn-gold btn-lg w-100 fw-bold text-uppercase">
+                    Proceed to Pay 30% Deposit
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+    function calculateDeposit() {
+        const select = document.getElementById("packageSelect");
+        const total = parseFloat(select.value);
+        const deposit = total * 0.30;
+
+        document.getElementById("totalPrice").innerText = "R " + total.toLocaleString('en-ZA', {minimumFractionDigits: 2});
+        document.getElementById("depositPrice").innerText = "R " + deposit.toLocaleString('en-ZA', {minimumFractionDigits: 2});
+    }
+</script>

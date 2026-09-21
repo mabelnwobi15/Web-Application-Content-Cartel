@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Business Intelligence Reports";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-2">
+    <div class="card border-0 shadow-sm p-3 bg-white mb-4">
+        <h5 class="fw-bold mb-3">Monthly Business Reports</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Report Month</th>
+                        <th>Generated Date</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold">September 2026</td>
+                        <td>2026-09-01</td>
+                        <td><span class="badge bg-success">Complete</span></td>
+                        <td class="text-end"><button class="btn btn-sm btn-outline-primary">Download PDF</button></td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">August 2026</td>
+                        <td>2026-08-01</td>
+                        <td><span class="badge bg-success">Complete</span></td>
+                        <td class="text-end"><button class="btn btn-sm btn-outline-primary">Download PDF</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

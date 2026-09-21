@@ -1,0 +1,74 @@
+﻿@{
+    ViewData["Title"] = "Services & Pricing";
+}
+
+<section class="py-5 bg-cream border-bottom border-secondary border-opacity-10 text-center">
+    <div class="container">
+        <span class="badge bg-gold text-dark text-uppercase px-3 py-2 fw-bold mb-3">Service Catalog</span>
+        <h1 class="display-4 fw-bold text-uppercase">Services & Packages</h1>
+        <p class="lead text-secondary mx-auto" style="max-width: 650px;">
+            Transparent pricing for high-impact content creation, influencer partnerships, and production services.
+        </p>
+    </div>
+</section>
+
+<section class="py-5 bg-cream">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Package 1 -->
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4 bg-white rounded-3 d-flex flex-column">
+                    <div class="text-center mb-4">
+                        <span class="badge bg-dark text-gold text-uppercase mb-2">Starter Package</span>
+                        <h3 class="fw-bold text-uppercase">Reels & TikTok</h3>
+                        <h2 class="display-6 fw-bold text-gold my-3">R 3,500 <span class="fs-6 text-muted">/ campaign</span></h2>
+                    </div>
+                    <ul class="list-unstyled flex-grow-1 mb-4">
+                        <li class="py-2 border-bottom"><i class="bi bi-check-circle-fill text-gold me-2"></i> 4 High-Quality Short Reels</li>
+                        <li class="py-2 border-bottom"><i class="bi bi-check-circle-fill text-gold me-2"></i> Scripting & Concept Design</li>
+                        <li class="py-2 border-bottom"><i class="bi bi-check-circle-fill text-gold me-2"></i> Professional Color Grading</li>
+                        <li class="py-2"><i class="bi bi-check-circle-fill text-gold me-2"></i> Optimized Audio & Captions</li>
+                    </ul>
+                    <a asp-controller="Booking" asp-action="Index" class="btn btn-gold fw-bold text-uppercase w-100">Book This Package</a>
+                </div>
+            </div>
+
+            <!-- Package 2 -->
+            <div class="col-md-4">
+                <div class="card h-100 border border-2 border-gold shadow p-4 bg-white rounded-3 d-flex flex-column position-relative">
+                    <span class="position-absolute top-0 start-50 translate-middle badge bg-gold text-dark text-uppercase px-3 py-2">Most Popular</span>
+                    <div class="text-center mb-4 mt-2">
+                        <span class="badge bg-dark text-gold text-uppercase mb-2">Full Production</span>
+                        <h3 class="fw-bold text-uppercase">Podcast Production</h3>
+                        <h2 class="display-6 fw-bold text-gold my-3">R 7,800 <span class="fs-6 text-muted">/ episode set</span></h2>
+                    </div>
+                    <ul class="list-unstyled flex-grow-1 mb-4">
+                        <li class="py-2 border-bottom"><i class="bi bi-check-circle-fill text-gold me-2"></i> Studio Space & Multi-Cam Setup</li>
+                        <li class="py-2 border-bottom"><i class="bi bi-check-circle-fill text-gold me-2"></i> Full Audio Mastering & Editing</li>
+                        <li class="py-2 border-bottom"><i class="bi bi-check-circle-fill text-gold me-2"></i> 5 Viral Micro-Clips Cut for Socials</li>
+                        <li class="py-2"><i class="bi bi-check-circle-fill text-gold me-2"></i> Full YouTube & Spotify Master Files</li>
+                    </ul>
+                    <a asp-controller="Booking" asp-action="Index" class="btn btn-gold fw-bold text-uppercase w-100">Book Studio Time</a>
+                </div>
+            </div>
+
+            <!-- Package 3 -->
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4 bg-white rounded-3 d-flex flex-column">
+                    <div class="text-center mb-4">
+                        <span class="badge bg-dark text-gold text-uppercase mb-2">Influencer Suite</span>
+                        <h3 class="fw-bold text-uppercase">Creator Collab</h3>
+                        <h2 class="display-6 fw-bold text-gold my-3">R 12,000 <span class="fs-6 text-muted">/ campaign</span></h2>
+                    </div>
+                    <ul class="list-unstyled flex-grow-1 mb-4">
+                        <li class="py-2 border-bottom"><i class="bi bi-check-circle-fill text-gold me-2"></i> Matchmaking with Top Creators</li>
+                        <li class="py-2 border-bottom"><i class="bi bi-check-circle-fill text-gold me-2"></i> Contract Management & Rights</li>
+                        <li class="py-2 border-bottom"><i class="bi bi-check-circle-fill text-gold me-2"></i> Guaranteed Reach Analytics</li>
+                        <li class="py-2"><i class="bi bi-check-circle-fill text-gold me-2"></i> Dedicated Campaign Strategist</li>
+                    </ul>
+                    <a asp-controller="Quote" asp-action="Index" class="btn btn-outline-dark fw-bold text-uppercase w-100">Request Custom Quote</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

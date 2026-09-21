@@ -1,5 +1,96 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model ContentCartel.Models.QuoteRequest
 @{
+    ViewData["Title"] = "Request a Quote";
 }
+
+<section class="py-5 bg-cream text-center border-bottom border-secondary border-opacity-10">
+    <div class="container py-2">
+        <span class="badge bg-gold text-dark text-uppercase px-3 py-2 fw-bold mb-3">INSTANT ESTIMATION</span>
+        <h1 class="display-4 fw-bold text-uppercase">Request a Quote</h1>
+        <p class="lead text-secondary mx-auto mb-0" style="max-width: 650px;">
+            Get a custom cost breakdown tailored to your brand's specific video, photography, and influencer requirements.
+        </p>
+    </div>
+</section>
+
+<section class="py-5 bg-cream">
+    <div class="container" style="max-width: 800px;">
+        <div class="card border-0 shadow-sm p-4 p-md-5 bg-white rounded-3">
+            <form asp-action="SubmitQuote" method="post" id="quoteForm">
+
+                <h4 class="fw-bold text-uppercase text-gold mb-3 border-bottom pb-2">1. Brand & Contact Information</h4>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Company / Brand Name</label>
+                        <input type="text" class="form-control" required placeholder="e.g. Acme Apparel" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Instagram / TikTok Handle</label>
+                        <input type="text" class="form-control" placeholder="AcmeApparel12" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Contact Person Name</label>
+                        <input type="text" class="form-control" required placeholder="Eliza Smith" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">WhatsApp / Phone Number</label>
+                        <input type="tel" class="form-control" required placeholder="+27 82 000 0000" />
+                    </div>
+                </div>
+
+                <h4 class="fw-bold text-uppercase text-gold mb-3 border-bottom pb-2">2. Campaign Scope & Budget</h4>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Primary Media Focus</label>
+                        <select class="form-select" id="mediaType" onchange="updateEstimatedQuote()">
+                            <option value="3500">Short-Form Video Reels (TikTok/Instagram)</option>
+                            <option value="7800">Studio Podcast Production</option>
+                            <option value="5000">Editorial Brand Photography</option>
+                            <option value="12000">Influencer Matchmaking & Management</option>
+                            <option value="20000">Full 360 Campaign (All Media)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Estimated Monthly Budget</label>
+                        <select class="form-select">
+                            <option>R5,000 - R10,000</option>
+                            <option>R10,000 - R20,000</option>
+                            <option>R20,000 - R50,000</option>
+                            <option>R50,000+</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold small">Campaign Goals & Creative Vision</label>
+                        <textarea class="form-control" rows="4" placeholder="Briefly describe your deliverables, key dates, target audience, or specific influencer preferences..."></textarea>
+                    </div>
+                </div>
+
+                <!-- INSTANT AUTOMATED ESTIMATE BANNER -->
+                <div class="p-3 bg-light border border-gold rounded mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-gold text-dark text-uppercase mb-1">Automated Estimate</span>
+                            <h6 class="fw-bold mb-0 text-dark">Estimated Package Starting Cost:</h6>
+                        </div>
+                        <span class="display-6 fw-bold text-gold" id="estimatedQuotePrice">R 3,500.00</span>
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        *This is an automated base estimate. Our team will review your submission and send a detailed itemized breakdown via WhatsApp.
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-gold btn-lg w-100 fw-bold text-uppercase shadow-sm">
+                    Submit Quote Request
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+    function updateEstimatedQuote() {
+        const select = document.getElementById("mediaType");
+        const price = parseFloat(select.value);
+        document.getElementById("estimatedQuotePrice").innerText = "R " + price.toLocaleString('en-ZA', {minimumFractionDigits: 2});
+    }
+</script>

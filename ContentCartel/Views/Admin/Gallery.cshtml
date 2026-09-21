@@ -1,0 +1,67 @@
+﻿@model IEnumerable<ContentCartel.Models.GalleryItem>
+@{
+    ViewData["Title"] = "Gallery Management";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-2">
+    <div class="card border-0 shadow-sm p-3 bg-white mb-4">
+        <h5 class="fw-bold mb-3">Upload Assets</h5>
+        <form action="#" method="post" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <input type="text" class="form-control" placeholder="Asset Title / Gallery Name" required />
+                </div>
+                <div class="col-md-5">
+                    <input type="file" class="form-control" multiple required />
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-primary w-100">Upload</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="card border-0 shadow-sm p-3 bg-white">
+        <h5 class="fw-bold mb-3">Gallery Approval Queue</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Uploaded By</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">@item.Title</td>
+                            <td><span class="badge bg-secondary">@item.MediaType</span></td>
+                            <td>@item.UploadedByStaffId</td>
+                            <td>
+                                @if (item.IsApprovedByAdmin)
+                                {
+                                    <span class="badge bg-success">Approved</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Pending Review</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <form asp-controller="Admin" asp-action="ApproveGalleryItem" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@item.GalleryItemId" />
+                                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

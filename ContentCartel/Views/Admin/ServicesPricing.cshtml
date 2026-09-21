@@ -1,0 +1,52 @@
+﻿@model IEnumerable<ContentCartel.Models.Service>
+@{
+    ViewData["Title"] = "Services & Pricing";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-2">
+    <div class="card border-0 shadow-sm p-3 bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Service Offerings Catalog</h5>
+            <button class="btn btn-primary btn-sm">Add New Service</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Service Name</th>
+                        <th>Category</th>
+                        <th>Base Price</th>
+                        <th>Status</th>
+                        <th class="text-end">Manage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var service in Model)
+                    {
+                        <tr>
+                            <td>@service.ServiceId</td>
+                            <td class="fw-bold">@service.Name</td>
+                            <td><span class="badge bg-info-subtle text-info">@service.Category</span></td>
+                            <td>R @service.BasePrice.ToString("N2")</td>
+                            <td>
+                                @if (service.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inactive</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-outline-secondary">Edit</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

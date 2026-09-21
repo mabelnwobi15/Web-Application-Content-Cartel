@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\emeris\\source\\repos\\ContentCartel\\ContentCartel\\ContentCartel.csproj": {}
+    "C:\\Users\\emeris\\source\\repos\\insy7315-g3-2026-insy7315-2026-project-\\ContentCartel\\ContentCartel.csproj": {}
   },
   "projects": {
-    "C:\\Users\\emeris\\source\\repos\\ContentCartel\\ContentCartel\\ContentCartel.csproj": {
+    "C:\\Users\\emeris\\source\\repos\\insy7315-g3-2026-insy7315-2026-project-\\ContentCartel\\ContentCartel.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\emeris\\source\\repos\\ContentCartel\\ContentCartel\\ContentCartel.csproj",
+        "projectUniqueName": "C:\\Users\\emeris\\source\\repos\\insy7315-g3-2026-insy7315-2026-project-\\ContentCartel\\ContentCartel.csproj",
         "projectName": "ContentCartel",
-        "projectPath": "C:\\Users\\emeris\\source\\repos\\ContentCartel\\ContentCartel\\ContentCartel.csproj",
+        "projectPath": "C:\\Users\\emeris\\source\\repos\\insy7315-g3-2026-insy7315-2026-project-\\ContentCartel\\ContentCartel.csproj",
         "packagesPath": "C:\\Users\\emeris\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\emeris\\source\\repos\\ContentCartel\\ContentCartel\\obj\\",
+        "outputPath": "C:\\Users\\emeris\\source\\repos\\insy7315-g3-2026-insy7315-2026-project-\\ContentCartel\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -70,7 +70,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.400/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

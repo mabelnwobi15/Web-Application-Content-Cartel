@@ -1,0 +1,120 @@
+﻿@model ContentCartel.Models.ContactMessage
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<section class="py-5 bg-cream text-center border-bottom border-secondary border-opacity-10">
+    <div class="container py-2">
+        <span class="badge bg-gold text-dark text-uppercase px-3 py-2 fw-bold mb-3">GET IN TOUCH</span>
+        <h1 class="display-4 fw-bold text-uppercase">Contact Us</h1>
+        <p class="lead text-secondary mx-auto mb-0" style="max-width: 600px;">
+            Have questions or want to discuss a campaign? Fill out the form below or chat with us directly on WhatsApp or Instagram.
+        </p>
+    </div>
+</section>
+
+<section class="py-5 bg-cream">
+    <div class="container" style="max-width: 900px;">
+
+        <!-- ALERTS FOR SUCCESS OR ERROR -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row g-4">
+            
+            <!-- LEFT COLUMN: EMAIL CONTACT FORM -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm p-4 bg-white rounded-3">
+                    <h4 class="fw-bold text-uppercase text-gold mb-3 border-bottom pb-2">Send Us a Message</h4>
+                    
+                    <form asp-controller="Contact" asp-action="SendEmail" method="post">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-bold small text-dark"></label>
+                            <input asp-for="Name" class="form-control" placeholder="e.g. Jane Doe" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label fw-bold small text-dark"></label>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="name@company.com" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label fw-bold small text-dark"></label>
+                                <input asp-for="Phone" type="tel" class="form-control" placeholder="+27 82 000 0000" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ServiceInterest" class="form-label fw-bold small text-dark"></label>
+                            <select asp-for="ServiceInterest" class="form-select">
+                                <option value="">-- Select a Service --</option>
+                                <option value="Short-Form Reels">Short-Form Video Reels</option>
+                                <option value="Podcast Production">Podcast Studio Production</option>
+                                <option value="Editorial Photography">Editorial Photography</option>
+                                <option value="Influencer Campaign">Influencer Matchmaking</option>
+                                <option value="General Inquiry">General Business Inquiry</option>
+                            </select>
+                            <span asp-validation-for="ServiceInterest" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Message" class="form-label fw-bold small text-dark"></label>
+                            <textarea asp-for="Message" class="form-control" rows="4" placeholder="Tell us about your campaign goals..."></textarea>
+                            <span asp-validation-for="Message" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-gold btn-lg w-100 fw-bold text-uppercase shadow-sm">
+                            <i class="bi bi-send me-2"></i> Send Email Inquiry
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: DIRECT CHANNELS (WhatsApp & Instagram) -->
+            <div class="col-lg-5 d-flex flex-column gap-3">
+                
+                <div class="card border-0 shadow-sm p-4 bg-white rounded-3">
+                    <i class="bi bi-whatsapp text-success display-5 mb-2"></i>
+                    <h5 class="fw-bold text-uppercase mb-1">WhatsApp Direct</h5>
+                    <p class="text-secondary small mb-3">Instant responses for urgent booking inquiries and quick questions.</p>
+                    <a href="https://wa.me/27000000000" target="_blank" rel="noopener noreferrer" class="btn btn-success fw-bold text-uppercase w-100">
+                        Chat on WhatsApp
+                    </a>
+                </div>
+
+                <div class="card border-0 shadow-sm p-4 bg-white rounded-3">
+                    <i class="bi bi-instagram text-danger display-5 mb-2"></i>
+                    <h5 class="fw-bold text-uppercase mb-1">Instagram Channel</h5>
+                    <p class="text-secondary small mb-3">Follow contentcartel24 for reels and updates.</p>
+                    <a href="https://www.instagram.com/contentcartel24?stkn=NWxvemx6ZGh4OGlk" target="_blank" rel="noopener noreferrer" class="btn btn-outline-danger fw-bold text-uppercase w-100">
+                        Visit contentcartel24
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

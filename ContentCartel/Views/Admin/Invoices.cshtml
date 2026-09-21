@@ -1,0 +1,47 @@
+﻿@model IEnumerable<ContentCartel.Models.Invoice>
+@{
+    ViewData["Title"] = "Invoice Management";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Invoices & Payments</h3>
+    </div>
+
+    <div class="card border-0 shadow-sm bg-white p-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Invoice ID</th>
+                        <th>Client / Booking</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="fw-bold">INV-109</td>
+                        <td>Nova Skincare Studio</td>
+                        <td>R 18,500.00</td>
+                        <td><span class="badge bg-success">CONFIRMED</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-danger">Process Refund</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">INV-108</td>
+                        <td>Loop Records</td>
+                        <td>R 6,200.00</td>
+                        <td><span class="badge bg-warning text-dark">PENDING</span></td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary">Send Reminder</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,8 +1,116 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home - Digital Media Hub";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- HERO SECTION -->
+<section class="py-5 text-center bg-cream position-relative border-bottom border-secondary border-opacity-10">
+    <div class="container py-4">
+        <div class="mb-3">
+            <span class="badge bg-gold text-dark text-uppercase px-3 py-2 fw-bold rounded-1">CREATIVE & INFLUENCER AGENCY</span>
+        </div>
+        
+        <h1 class="display-3 fw-black text-uppercase mb-3 tracking-tight">
+            ENGINEERED FOR <span class="text-gold">VIRAL IMPACT</span>
+        </h1>
+        
+        <p class="lead text-secondary mx-auto mb-4" style="max-width: 650px; font-size: 1.1rem;">
+            We craft high-performing video reels, editorial photography, and podcast productions partnered with top tier influencers to scale your brand.
+        </p>
+        
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-controller="Booking" asp-action="Index" class="btn btn-gold btn-lg px-4 py-2 fw-bold text-uppercase shadow-sm">
+                Book Appointment
+            </a>
+            <a asp-controller="Portfolio" asp-action="Index" class="btn btn-outline-light text-dark border-secondary border-opacity-20 bg-white btn-lg px-4 py-2 text-uppercase fw-bold">
+                View Portfolio
+            </a>
+            
+        </div>
+    </div>
+</section>
+
+<!-- WHAT WE PRODUCE -->
+<section class="py-5 bg-cream">
+    <div class="container py-2">
+        <div class="text-center mb-5">
+            <h2 class="text-uppercase fw-bold text-gold display-6 mb-2">WHAT WE PRODUCE</h2>
+            <p class="text-secondary small">High-converting digital assets designed for modern social platforms.</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Short Form Reels Card -->
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4 text-center rounded-3 bg-white">
+                    <div class="mb-3">
+                        <i class="bi bi-camera-reels text-gold display-5"></i>
+                    </div>
+                    <h4 class="fw-bold text-uppercase fs-5 mb-2">SHORT-FORM REELS</h4>
+                    <p class="text-secondary small mb-0">TikTok and Instagram reels optimized for algorithm push and organic audience retention.</p>
+                </div>
+            </div>
+
+            <!-- Podcast Production Card -->
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4 text-center rounded-3 bg-white">
+                    <div class="mb-3">
+                        <i class="bi bi-mic text-gold display-5"></i>
+                    </div>
+                    <h4 class="fw-bold text-uppercase fs-5 mb-2">PODCAST PRODUCTION</h4>
+                    <p class="text-secondary small mb-0">Full-service audio and visual podcast recording with celebrity creators and industry leaders.</p>
+                </div>
+            </div>
+
+            <!-- Influencer Collabs Card -->
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm p-4 text-center rounded-3 bg-white">
+                    <div class="mb-3">
+                        <i class="bi bi-people text-gold display-5"></i>
+                    </div>
+                    <h4 class="fw-bold text-uppercase fs-5 mb-2">INFLUENCER COLLABS</h4>
+                    <p class="text-secondary small mb-0">End-to-end matchmaking, campaign execution, and content distribution with top influencers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- QUOTE / TESTIMONIAL SECTION -->
+<section class="py-5 text-white border-top border-bottom border-gold border-opacity-25" style="background-color: #000000 !important;">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center position-relative">
+                <i class="bi bi-quote display-1 text-gold opacity-25 position-absolute top-0 start-0 translate-middle-y d-none d-md-block"></i>
+                
+                <figure class="mb-0 px-md-4">
+                    <blockquote class="blockquote mb-4">
+                        <p class="fs-3 fw-light lh-base text-white italic">
+                            "Content Cartel transformed our brand's online presence. Their short-form video campaigns delivered over 1M organic views in our first month."
+                        </p>
+                    </blockquote>
+                    <figcaption class="blockquote-footer text-white opacity-75 fs-6 mb-0">
+                        <strong class="text-gold">Sarah Jenkins</strong> — Creative Director, <cite title="Source Title" class="text-white">Urban Style Co.</cite>
+                    </figcaption>
+                </figure>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- BOOKING DEPOSIT INFORMATIONAL BANNER -->
+<section class="py-5 bg-white border-bottom border-secondary border-opacity-10">
+    <div class="container text-center">
+        <div class="row align-items-center justify-content-center">
+            <div class="col-md-8">
+                <span class="badge bg-dark text-gold text-uppercase px-2 py-1 mb-2">Seamless Booking</span>
+                <h4 class="fw-bold text-uppercase mb-1">Ready to book an appointment?</h4>
+                <p class="text-muted small mb-0">Secure your slot instantly with our mandatory 30% deposit payment system.</p>
+            </div>
+            <div class="col-md-3 mt-3 mt-md-0">
+                <a asp-controller="Booking" asp-action="Index" class="btn btn-gold fw-bold text-uppercase px-4 shadow-sm">Book & Pay Deposit</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+</section>

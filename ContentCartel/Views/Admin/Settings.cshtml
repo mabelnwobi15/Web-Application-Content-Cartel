@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Platform Settings";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-2">
+    <div class="card border-0 shadow-sm p-4 bg-white" style="max-width: 700px;">
+        <h5 class="fw-bold mb-3">Global Platform Configuration</h5>
+        <form action="#" method="post">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Business Name</label>
+                <input type="text" class="form-control" value="Content Cartel" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Support Email</label>
+                <input type="email" class="form-control" value="info@contentcartel.co.za" />
+            </div>
+            <div class="mb-3 form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="biometricSwitch" checked />
+                <label class="form-check-label fw-semibold" for="biometricSwitch">Enable Biometric Quick Login for Staff</label>
+            </div>
+            <button type="button" class="btn btn-primary fw-bold">Save Platform Settings</button>
+        </form>
+    </div>
+</div>
