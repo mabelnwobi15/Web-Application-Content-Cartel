@@ -1,0 +1,387 @@
+﻿@model ContentCartel.Models.ViewModels.AddStaffViewModel
+
+@{
+    ViewData["Title"] = "Add Staff Member";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .admin-page {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 28px 30px 45px;
+    }
+
+    .page-header {
+        margin-bottom: 28px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        color: #111;
+    }
+
+    .page-header p {
+        margin: 8px 0 0;
+        color: #666;
+        font-size: 15px;
+    }
+
+    .form-card {
+        width: 100%;
+        max-width: 900px;
+        background: #fff;
+        border-radius: 14px;
+        padding: 30px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+    }
+
+    .form-section h2 {
+        margin: 0 0 5px;
+        font-size: 19px;
+        font-weight: 700;
+        color: #111;
+    }
+
+    .form-section p {
+        margin: 0 0 20px;
+        color: #777;
+        font-size: 14px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-size: 14px;
+        font-weight: 700;
+        color: #222;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 13px 14px;
+        border: 1px solid #d0d0d0;
+        border-radius: 8px;
+        background: #fff;
+        color: #222;
+        font-size: 14px;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus {
+        border-color: #1473ea;
+        box-shadow: 0 0 0 3px rgba(20, 115, 234, 0.1);
+    }
+
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 5px;
+    }
+
+    .checkbox-wrapper input {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .checkbox-wrapper label {
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 25px;
+        border-top: 1px solid #e5e5e5;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: 0.2s ease;
+    }
+
+    .btn-primary {
+        border: none;
+        background: #1473ea;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #0d5fc5;
+        color: white;
+    }
+
+    .btn-secondary {
+        border: 1px solid #bfc4c9;
+        background: white;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background: #f5f5f5;
+    }
+
+    .validation-summary {
+        margin-bottom: 20px;
+        padding: 14px;
+        border-radius: 8px;
+        background: #fff0f0;
+        color: #b42318;
+        font-size: 14px;
+    }
+
+    .field-validation-error {
+        color: #b42318;
+        font-size: 12px;
+    }
+
+    @@media (max-width: 700px) {
+        .admin-page {
+            padding: 22px 16px 35px;
+        }
+
+        .form-card {
+            padding: 22px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full {
+            grid-column: auto;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="admin-page">
+
+    <div class="page-header">
+        <h1>Add Staff Member</h1>
+        <p>Create a staff account and assign their platform role.</p>
+    </div>
+
+    <div class="form-card">
+
+        <form asp-controller="Admin"
+              asp-action="AddStaff"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="validation-summary">
+                    @Html.ValidationSummary(false)
+                </div>
+            }
+
+            <!-- STAFF DETAILS -->
+            <div class="form-section">
+
+                <h2>Staff Details</h2>
+
+                <p>
+                    Enter the staff member's personal and account information.
+                </p>
+
+                <div class="form-grid">
+
+                    <!-- FULL NAME -->
+                    <div class="form-group">
+
+                        <label asp-for="FullName">
+                            Full Name
+                        </label>
+
+                        <input asp-for="FullName"
+                               class="form-control"
+                               placeholder="Enter full name" />
+
+                        <span asp-validation-for="FullName"></span>
+
+                    </div>
+
+                    <!-- EMAIL -->
+                    <div class="form-group">
+
+                        <label asp-for="Email">
+                            Email Address
+                        </label>
+
+                        <input asp-for="Email"
+                               type="email"
+                               class="form-control"
+                               placeholder="staff@example.com" />
+
+                        <span asp-validation-for="Email"></span>
+
+                    </div>
+
+                    <!-- PHONE -->
+                    <div class="form-group">
+
+                        <label asp-for="Phone">
+                            Phone Number
+                        </label>
+
+                        <input asp-for="Phone"
+                               type="tel"
+                               class="form-control"
+                               placeholder="+27 00 000 0000" />
+
+                        <span asp-validation-for="Phone"></span>
+
+                    </div>
+
+                    <!-- ROLE -->
+                    <div class="form-group">
+
+                        <label asp-for="Role">
+                            Staff Role
+                        </label>
+
+                        <select asp-for="Role"
+                                class="form-control">
+
+                            <option value="Staff">
+                                Staff
+                            </option>
+
+                            <option value="Manager">
+                                Manager
+                            </option>
+
+                            <option value="Admin">
+                                Administrator
+                            </option>
+
+                        </select>
+
+                        <span asp-validation-for="Role"></span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- ACCOUNT SECURITY -->
+            <div class="form-section">
+
+                <h2>Account Security</h2>
+
+                <p>
+                    Set the initial password for the staff member.
+                </p>
+
+                <div class="form-grid">
+
+                    <!-- PASSWORD -->
+                    <div class="form-group">
+
+                        <label asp-for="Password">
+                            Temporary Password
+                        </label>
+
+                        <input asp-for="Password"
+                               type="password"
+                               class="form-control"
+                               placeholder="Enter temporary password" />
+
+                        <span asp-validation-for="Password"></span>
+
+                    </div>
+
+                </div>
+
+                <!-- BIOMETRIC -->
+                <div class="checkbox-wrapper">
+
+                    <input asp-for="BiometricEnabled" />
+
+                    <label asp-for="BiometricEnabled">
+                        Enable biometric authentication
+                    </label>
+
+                </div>
+
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="form-actions">
+
+                <a asp-controller="Admin"
+                   asp-action="Staff"
+                   class="btn btn-secondary">
+
+                    <i class="bi bi-arrow-left"></i>
+                    Cancel
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="bi bi-person-plus"></i>
+                    Add Staff Member
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

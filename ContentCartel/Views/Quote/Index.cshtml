@@ -1,0 +1,357 @@
+﻿@model ContentCartel.Models.QuoteRequest
+
+@{
+    ViewData["Title"] = "Request a Quote";
+}
+
+<section class="py-5 bg-cream text-center border-bottom border-secondary border-opacity-10">
+    <div class="container py-2">
+        <span class="badge bg-gold text-dark text-uppercase px-3 py-2 fw-bold mb-3">
+            INSTANT ESTIMATION
+        </span>
+
+        <h1 class="display-4 fw-bold text-uppercase">
+            Request a Quote
+        </h1>
+
+        <p class="lead text-secondary mx-auto mb-0" style="max-width: 650px;">
+            Get a custom cost breakdown tailored to your brand's specific
+            video, photography, and influencer requirements.
+        </p>
+    </div>
+</section>
+
+
+<section class="py-5 bg-cream">
+    <div class="container" style="max-width: 800px;">
+
+        <div class="card border-0 shadow-sm p-4 p-md-5 bg-white rounded-3">
+
+            <form asp-controller="Quote"
+                  asp-action="SubmitQuote"
+                  method="post"
+                  id="quoteForm">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-4">
+                </div>
+
+
+                <!-- =============================== -->
+                <!-- 1. BRAND & CONTACT INFORMATION -->
+                <!-- =============================== -->
+
+                <h4 class="fw-bold text-uppercase text-gold mb-3 border-bottom pb-2">
+                    1. Brand & Contact Information
+                </h4>
+
+                <div class="row g-3 mb-4">
+
+                    <!-- Brand Name -->
+                    <div class="col-md-6">
+
+                        <label asp-for="BrandName"
+                               class="form-label fw-bold small">
+                            Company / Brand Name
+                        </label>
+
+                        <input asp-for="BrandName"
+                               type="text"
+                               class="form-control"
+                               required
+                               placeholder="e.g. Acme Apparel" />
+
+                        <span asp-validation-for="BrandName"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Social Media -->
+                    <div class="col-md-6">
+
+                        <label asp-for="SocialMediaHandle"
+                               class="form-label fw-bold small">
+                            Instagram / TikTok Handle
+                        </label>
+
+                        <input asp-for="SocialMediaHandle"
+                               type="text"
+                               class="form-control"
+                               placeholder="AcmeApparel12" />
+
+                        <span asp-validation-for="SocialMediaHandle"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Contact Person -->
+                    <div class="col-md-6">
+
+                        <label asp-for="ContactPersonName"
+                               class="form-label fw-bold small">
+                            Contact Person Name
+                        </label>
+
+                        <input asp-for="ContactPersonName"
+                               type="text"
+                               class="form-control"
+                               required
+                               placeholder="Eliza Smith" />
+
+                        <span asp-validation-for="ContactPersonName"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Phone -->
+                    <div class="col-md-6">
+
+                        <label asp-for="Phone"
+                               class="form-label fw-bold small">
+                            WhatsApp / Phone Number
+                        </label>
+
+                        <input asp-for="Phone"
+                               type="tel"
+                               class="form-control"
+                               required
+                               placeholder="+27 82 000 0000" />
+
+                        <span asp-validation-for="Phone"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================== -->
+                <!-- 2. CAMPAIGN SCOPE & BUDGET -->
+                <!-- =============================== -->
+
+                <h4 class="fw-bold text-uppercase text-gold mb-3 border-bottom pb-2">
+                    2. Campaign Scope & Budget
+                </h4>
+
+                <div class="row g-3 mb-4">
+
+
+                    <!-- Media Type -->
+                    <div class="col-md-6">
+
+                        <label asp-for="MediaType"
+                               class="form-label fw-bold small">
+                            Primary Media Focus
+                        </label>
+
+                        <select asp-for="MediaType"
+                                class="form-select"
+                                id="mediaType"
+                                onchange="updateEstimatedQuote()">
+
+                            <option value="Short-Form Video Reels"
+                                    data-price="3500">
+                                Short-Form Video Reels (TikTok/Instagram)
+                            </option>
+
+                            <option value="Studio Podcast Production"
+                                    data-price="7800">
+                                Studio Podcast Production
+                            </option>
+
+                            <option value="Editorial Brand Photography"
+                                    data-price="5000">
+                                Editorial Brand Photography
+                            </option>
+
+                            <option value="Influencer Matchmaking & Management"
+                                    data-price="12000">
+                                Influencer Matchmaking & Management
+                            </option>
+
+                            <option value="Full 360 Campaign"
+                                    data-price="20000">
+                                Full 360 Campaign (All Media)
+                            </option>
+
+                        </select>
+
+                        <span asp-validation-for="MediaType"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Budget -->
+                    <div class="col-md-6">
+
+                        <label asp-for="Budget"
+                               class="form-label fw-bold small">
+                            Estimated Monthly Budget
+                        </label>
+
+                        <select asp-for="Budget"
+                                class="form-select">
+
+                            <option value="R5,000 - R10,000">
+                                R5,000 - R10,000
+                            </option>
+
+                            <option value="R10,000 - R20,000">
+                                R10,000 - R20,000
+                            </option>
+
+                            <option value="R20,000 - R50,000">
+                                R20,000 - R50,000
+                            </option>
+
+                            <option value="R50,000+">
+                                R50,000+
+                            </option>
+
+                        </select>
+
+                        <span asp-validation-for="Budget"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Campaign Goals -->
+                    <div class="col-12">
+
+                        <label asp-for="CampaignGoals"
+                               class="form-label fw-bold small">
+                            Campaign Goals & Creative Vision
+                        </label>
+
+                        <textarea asp-for="CampaignGoals"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Briefly describe your deliverables, key dates, target audience, or specific influencer preferences...">
+                        </textarea>
+
+                        <span asp-validation-for="CampaignGoals"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================== -->
+                <!-- AUTOMATED ESTIMATE -->
+                <!-- =============================== -->
+
+                <div class="p-3 bg-light border border-gold rounded mb-4">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <div>
+
+                            <span class="badge bg-gold text-dark text-uppercase mb-1">
+                                Automated Estimate
+                            </span>
+
+                            <h6 class="fw-bold mb-0 text-dark">
+                                Estimated Package Starting Cost:
+                            </h6>
+
+                        </div>
+
+                        <span class="display-6 fw-bold text-gold"
+                              id="estimatedQuotePrice">
+                            R 3,500.00
+                        </span>
+
+                    </div>
+
+                    <small class="text-muted d-block mt-2">
+                        *This is an automated base estimate. Our team will
+                        review your submission and send a detailed itemized
+                        breakdown via WhatsApp.
+                    </small>
+
+                </div>
+
+
+                <!-- Hidden price sent to controller -->
+                <input asp-for="EstimatedPrice"
+                       type="hidden"
+                       id="estimatedPrice"
+                       value="3500" />
+
+
+                <!-- =============================== -->
+                <!-- SUBMIT -->
+                <!-- =============================== -->
+
+                <button type="submit"
+                        class="btn btn-gold btn-lg w-100 fw-bold text-uppercase shadow-sm">
+
+                    Submit Quote Request
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+</section>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        function updateEstimatedQuote() {
+
+            const select =
+                document.getElementById("mediaType");
+
+            const selectedOption =
+                select.options[select.selectedIndex];
+
+            const price =
+                parseFloat(selectedOption.dataset.price);
+
+            // Update visible price
+            document.getElementById("estimatedQuotePrice").innerText =
+                "R " +
+                price.toLocaleString("en-ZA", {
+                    minimumFractionDigits: 2
+                });
+
+            // Update hidden price
+            document.getElementById("estimatedPrice").value =
+                price;
+        }
+
+
+        // Set initial price when page loads
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                updateEstimatedQuote();
+
+            }
+        );
+
+    </script>
+}

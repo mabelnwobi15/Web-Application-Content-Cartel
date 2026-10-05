@@ -1,0 +1,278 @@
+﻿@model ContentCartel.Models.Booking
+
+@{
+    ViewData["Title"] = "Edit Booking";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .admin-page {
+        width: 100%;
+        max-width: 100%;
+        padding: 28px 30px 45px;
+    }
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+    }
+
+    .page-header p {
+        margin: 8px 0 0;
+        color: #666;
+    }
+
+    .form-card {
+        width: 100%;
+        max-width: 900px;
+        background: white;
+        border-radius: 14px;
+        padding: 30px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.08);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    label {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 13px;
+        border: 1px solid #d0d0d0;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #1473ea;
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid #eee;
+    }
+
+    .btn {
+        padding: 12px 19px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #1473ea;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #333;
+        border: 1px solid #aaa;
+    }
+
+    .validation {
+        margin-bottom: 20px;
+        color: #b42318;
+    }
+
+    @@media(max-width:700px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full {
+            grid-column: auto;
+        }
+
+        .actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="admin-page">
+
+    <div class="page-header">
+        <h1>Edit Booking</h1>
+        <p>Update the client's booking information.</p>
+    </div>
+
+    <div class="form-card">
+
+        <form asp-action="EditBooking"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   asp-for="Id" />
+
+            <input type="hidden"
+                   asp-for="UserId" />
+
+            <input type="hidden"
+                   asp-for="CreatedAt" />
+
+            <div class="validation">
+                @Html.ValidationSummary(false)
+            </div>
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label asp-for="CustomerName">
+                        Customer Name
+                    </label>
+
+                    <input asp-for="CustomerName"
+                           class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Email">
+                        Email
+                    </label>
+
+                    <input asp-for="Email"
+                           type="email"
+                           class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Phone">
+                        Phone
+                    </label>
+
+                    <input asp-for="Phone"
+                           class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ServiceId">
+                        Service
+                    </label>
+
+                    <select asp-for="ServiceId"
+                            class="form-control">
+
+                        <option value="reels">
+                            Short-Form Reels Package
+                        </option>
+
+                        <option value="podcast">
+                            Podcast Studio Production
+                        </option>
+
+                        <option value="creator">
+                            Influencer Creator Collab
+                        </option>
+
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="BookingDate">
+                        Booking Date
+                    </label>
+
+                    <input asp-for="BookingDate"
+                           type="date"
+                           class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="BookingTime">
+                        Booking Time
+                    </label>
+
+                    <input asp-for="BookingTime"
+                           type="time"
+                           class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Status">
+                        Booking Status
+                    </label>
+
+                    <select asp-for="Status"
+                            class="form-control">
+
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="PaymentStatus">
+                        Payment Status
+                    </label>
+
+                    <select asp-for="PaymentStatus"
+                            class="form-control">
+
+                        <option value="Pending">Pending</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Partial">Partial</option>
+                        <option value="Refunded">Refunded</option>
+
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="actions">
+
+                <a asp-action="Dashboard"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Save Changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

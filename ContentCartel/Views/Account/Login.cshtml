@@ -1,0 +1,269 @@
+﻿@{
+    ViewData["Title"] = "Login";
+
+    var recaptchaSiteKey =
+        Context.RequestServices
+            .GetRequiredService<IConfiguration>()[
+                "Recaptcha:SiteKey"
+            ];
+}
+
+<div class="container-fluid p-0 my-0 min-vh-100 d-flex flex-column justify-content-center">
+
+    <div class="row g-0 flex-grow-1 align-items-stretch"
+         style="min-height: calc(100vh - 120px);">
+
+
+        <!-- BRANDING -->
+
+        <div class="col-md-6 bg-cream d-flex flex-column align-items-center justify-content-center p-5 text-center border-end border-secondary border-opacity-10">
+
+            <div class="mb-4">
+
+                <img src="~/images/logo.jpeg"
+                     alt="The Content Cartel"
+                     style="max-width: 240px; width: 100%; height: auto;" />
+
+            </div>
+
+            <h2 class="display-6 fw-black text-uppercase tracking-wide text-dark mb-0"
+                style="font-family: impact, sans-serif;">
+
+                Client Portal
+
+            </h2>
+
+        </div>
+
+
+        <!-- LOGIN -->
+
+        <div class="col-md-6 bg-white d-flex flex-column align-items-center justify-content-center p-4 p-md-5">
+
+            <div style="max-width: 380px; width: 100%;">
+
+                <h2 class="fw-black text-dark text-uppercase mb-4 tracking-tight"
+                    style="font-family: impact, sans-serif; font-size: 2.2rem;">
+
+                    Welcome Back
+
+                </h2>
+
+
+                <!-- SUCCESS MESSAGE -->
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success small">
+
+                        @TempData["SuccessMessage"]
+
+                    </div>
+                }
+
+
+                <!-- LOGIN FORM -->
+
+                <form asp-action="Login"
+                      method="post"
+                      id="loginForm">
+
+                    @Html.AntiForgeryToken()
+
+
+                    <!-- EMAIL -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label text-muted small fw-bold text-uppercase mb-1"
+                               style="letter-spacing: 0.5px; font-size: 0.75rem;">
+
+                            EMAIL
+
+                        </label>
+
+                        <input type="email"
+                               class="form-control form-control-lg bg-white border-dark text-dark rounded-3 px-3 py-2 fs-6"
+                               placeholder="JORDAN@CLIENT.COM"
+                               name="Email"
+                               autocomplete="email"
+                               required />
+
+                    </div>
+
+
+                    <!-- PASSWORD -->
+
+                    <div class="mb-4">
+
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+
+                            <label class="form-label text-muted small fw-bold text-uppercase mb-0"
+                                   style="letter-spacing: 0.5px; font-size: 0.75rem;">
+
+                                PASSWORD
+
+                            </label>
+
+                            <a asp-action="ForgotPassword"
+                               class="text-muted text-uppercase text-decoration-none fw-bold"
+                               style="font-size: 0.7rem; letter-spacing: 0.5px;">
+
+                                FORGOT PASSWORD?
+
+                            </a>
+
+                        </div>
+
+                        <input type="password"
+                               class="form-control form-control-lg bg-white border-dark text-dark rounded-3 px-3 py-2 fs-6"
+                               placeholder="ENTER PASSWORD"
+                               name="Password"
+                               autocomplete="current-password"
+                               required />
+
+                    </div>
+
+
+                    <!-- RECAPTCHA TOKEN -->
+
+                    <input type="hidden"
+                           name="RecaptchaToken"
+                           id="loginRecaptchaToken" />
+
+
+                    <!-- ERRORS -->
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger small">
+
+                            @foreach (var error in ViewData.ModelState.Values
+                                .SelectMany(v => v.Errors))
+                            {
+                                <div>
+                                    @error.ErrorMessage
+                                </div>
+                            }
+
+                        </div>
+                    }
+
+
+                    <!-- LOGIN BUTTON -->
+
+                    <button type="submit"
+                            id="loginButton"
+                            class="btn btn-dark w-100 py-3 fw-bold text-uppercase rounded-3 mb-3 shadow-sm"
+                            style="letter-spacing: 1px;">
+
+                        LOGIN
+
+                    </button>
+
+                </form>
+
+
+                <!-- REGISTER -->
+
+                <div class="text-center mt-3">
+
+                    <a asp-action="Register"
+                       class="text-muted text-uppercase text-decoration-none small fw-bold"
+                       style="font-size: 0.75rem; letter-spacing: 0.5px;">
+
+                        DON'T HAVE AN ACCOUNT? REGISTER
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- RECAPTCHA -->
+
+<script src="https://www.google.com/recaptcha/api.js?render=@recaptchaSiteKey"></script>
+
+<script>
+
+    document
+        .getElementById("loginForm")
+        .addEventListener("submit", function (event) {
+
+            event.preventDefault();
+
+            const button =
+                document.getElementById("loginButton");
+
+            button.disabled = true;
+
+            button.innerText =
+                "VERIFYING...";
+
+
+            // Check that reCAPTCHA loaded
+
+            if (typeof grecaptcha === "undefined") {
+
+                button.disabled = false;
+
+                button.innerText =
+                    "LOGIN";
+
+                alert(
+                    "Security verification could not load. Please refresh the page and try again."
+                );
+
+                return;
+            }
+
+
+            grecaptcha.ready(function () {
+
+                grecaptcha
+                    .execute(
+                        '@recaptchaSiteKey',
+                        {
+                            action: 'login'
+                        }
+                    )
+                    .then(function (token) {
+
+                        document
+                            .getElementById("loginRecaptchaToken")
+                            .value = token;
+
+
+                        document
+                            .getElementById("loginForm")
+                            .submit();
+
+                    })
+                    .catch(function (error) {
+
+                        console.error(
+                            "reCAPTCHA error:",
+                            error
+                        );
+
+                        button.disabled = false;
+
+                        button.innerText =
+                            "LOGIN";
+
+                        alert(
+                            "Security verification failed. Please try again."
+                        );
+
+                    });
+
+            });
+
+        });
+
+</script>

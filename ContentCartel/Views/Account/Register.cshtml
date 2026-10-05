@@ -1,0 +1,243 @@
+﻿@{
+    ViewData["Title"] = "Register";
+
+    var recaptchaSiteKey =
+        Context.RequestServices
+            .GetRequiredService<IConfiguration>()[
+                "Recaptcha:SiteKey"
+            ];
+}
+
+<div class="container-fluid p-0 my-0 min-vh-100 d-flex flex-column justify-content-center">
+
+    <div class="row g-0 flex-grow-1 align-items-stretch"
+         style="min-height: calc(100vh - 120px);">
+
+        <!-- BRANDING -->
+        <div class="col-md-6 bg-cream d-flex flex-column align-items-center justify-content-center p-5 text-center border-end border-secondary border-opacity-10">
+
+            <div class="mb-4">
+
+                <img src="~/images/logo.jpeg"
+                     alt="The Content Cartel"
+                     style="max-width: 240px; width: 100%; height: auto;" />
+
+            </div>
+
+            <h2 class="display-6 fw-black text-uppercase tracking-wide text-dark mb-0"
+                style="font-family: impact, sans-serif;">
+
+                Client Portal
+
+            </h2>
+
+        </div>
+
+
+        <!-- REGISTER FORM -->
+        <div class="col-md-6 bg-white d-flex flex-column align-items-center justify-content-center p-4 p-md-5">
+
+            <div style="max-width: 380px; width: 100%;">
+
+                <h2 class="fw-black text-dark text-uppercase mb-4 tracking-tight"
+                    style="font-family: impact, sans-serif; font-size: 2.2rem;">
+
+                    Create Account
+
+                </h2>
+
+
+                <form asp-action="Register"
+                      method="post"
+                      id="registerForm">
+
+                    @Html.AntiForgeryToken()
+
+
+                    <!-- FULL NAME -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label text-muted small fw-bold text-uppercase mb-1"
+                               style="letter-spacing: 0.5px; font-size: 0.75rem;">
+
+                            FULL NAME
+
+                        </label>
+
+                        <input type="text"
+                               class="form-control form-control-lg bg-white border-dark text-dark rounded-3 px-3 py-2 fs-6"
+                               placeholder="JORDAN ELLIS"
+                               name="fullName"
+                               required />
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label text-muted small fw-bold text-uppercase mb-1"
+                               style="letter-spacing: 0.5px; font-size: 0.75rem;">
+
+                            EMAIL ADDRESS
+
+                        </label>
+
+                        <input type="email"
+                               class="form-control form-control-lg bg-white border-dark text-dark rounded-3 px-3 py-2 fs-6"
+                               placeholder="JORDAN@CLIENT.COM"
+                               name="email"
+                               required />
+
+                    </div>
+
+
+                    <!-- PASSWORD -->
+
+                    <div class="mb-4">
+
+                        <label class="form-label text-muted small fw-bold text-uppercase mb-1"
+                               style="letter-spacing: 0.5px; font-size: 0.75rem;">
+
+                            PASSWORD
+
+                        </label>
+
+                        <input type="password"
+                               class="form-control form-control-lg bg-white border-dark text-dark rounded-3 px-3 py-2 fs-6"
+                               placeholder="CREATE PASSWORD"
+                               name="password"
+                               minlength="6"
+                               required />
+
+                    </div>
+
+                    <!-- CONFIRM PASSWORD -->
+
+                    <div class="mb-4">
+
+                        <label class="form-label text-muted small fw-bold text-uppercase mb-1"
+                               style="letter-spacing: 0.5px; font-size: 0.75rem;">
+
+                            CONFIRM PASSWORD
+
+                        </label>
+
+                        <input type="password"
+                               class="form-control form-control-lg bg-white border-dark text-dark rounded-3 px-3 py-2 fs-6"
+                               placeholder="CONFIRM PASSWORD"
+                               name="confirmPassword"
+                               minlength="6"
+                               required />
+
+                    </div>
+                    <!-- RECAPTCHA TOKEN -->
+
+                    <input type="hidden"
+                           name="recaptchaToken"
+                           id="recaptchaToken" />
+
+
+                    <!-- ERROR -->
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger small">
+
+                            @foreach (var error in ViewData.ModelState.Values
+                                .SelectMany(v => v.Errors))
+                            {
+                                <div>
+                                    @error.ErrorMessage
+                                </div>
+                            }
+
+                        </div>
+                    }
+
+
+                    <!-- BUTTON -->
+
+                    <button type="submit"
+                            id="registerButton"
+                            class="btn btn-dark w-100 py-3 fw-bold text-uppercase rounded-3 mb-3 shadow-sm"
+                            style="letter-spacing: 1px;">
+
+                        CREATE ACCOUNT
+
+                    </button>
+
+                </form>
+
+
+                <!-- LOGIN -->
+
+                <div class="text-center mt-3">
+
+                    <a asp-action="Login"
+                       class="text-muted text-uppercase text-decoration-none small fw-bold"
+                       style="font-size: 0.75rem; letter-spacing: 0.5px;">
+
+                        ALREADY HAVE AN ACCOUNT? LOGIN
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- RECAPTCHA -->
+
+<script src="https://www.google.com/recaptcha/api.js?render=@recaptchaSiteKey"></script>
+
+<script>
+
+    document
+        .getElementById("registerForm")
+        .addEventListener("submit", function (event) {
+
+            event.preventDefault();
+
+            const button =
+                document.getElementById("registerButton");
+
+            button.disabled = true;
+
+            button.innerText =
+                "VERIFYING...";
+
+
+            grecaptcha.ready(function () {
+
+                grecaptcha
+                    .execute(
+                        '@recaptchaSiteKey',
+                        {
+                            action: 'register'
+                        }
+                    )
+                    .then(function (token) {
+
+                        document
+                            .getElementById("recaptchaToken")
+                            .value = token;
+
+                        document
+                            .getElementById("registerForm")
+                            .submit();
+
+                    });
+
+            });
+
+        });
+
+</script>
