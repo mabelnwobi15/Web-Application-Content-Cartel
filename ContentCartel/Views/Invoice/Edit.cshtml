@@ -1,0 +1,352 @@
+@model ContentCartel.Models.Invoice
+
+@{
+    ViewData["Title"] = "Edit Invoice";
+}
+
+<div class="admin-page">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h1 class="fw-bold mb-1">
+                Edit Invoice
+            </h1>
+
+            <p class="text-muted mb-0">
+                @Model.InvoiceNumber
+            </p>
+        </div>
+
+        <a asp-action="Details"
+           asp-route-id="@Model.InvoiceId"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>
+            Back
+        </a>
+
+    </div>
+
+
+    <div class="admin-card">
+
+        <form asp-action="Edit"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   asp-for="InvoiceId" />
+
+            <input type="hidden"
+                   asp-for="InvoiceNumber" />
+
+            <input type="hidden"
+                   asp-for="CreatedAt" />
+
+            <input type="hidden"
+                   asp-for="IssueDate" />
+
+
+            <div asp-validation-summary="ModelOnly"
+                 class="alert alert-danger">
+            </div>
+
+
+            <!-- CLIENT -->
+            <h5 class="fw-bold mb-3">
+                Client Information
+            </h5>
+
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-6">
+
+                    <label asp-for="ClientName"
+                           class="form-label">
+                        Client Name
+                    </label>
+
+                    <input asp-for="ClientName"
+                           class="form-control" />
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <label asp-for="ClientEmail"
+                           class="form-label">
+                        Client Email
+                    </label>
+
+                    <input asp-for="ClientEmail"
+                           type="email"
+                           class="form-control" />
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <label asp-for="ClientPhone"
+                           class="form-label">
+                        Client Phone
+                    </label>
+
+                    <input asp-for="ClientPhone"
+                           class="form-control" />
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <label asp-for="ClientId"
+                           class="form-label">
+                        Client ID
+                    </label>
+
+                    <input asp-for="ClientId"
+                           class="form-control" />
+
+                </div>
+
+            </div>
+
+
+            <!-- BOOKING -->
+            <h5 class="fw-bold mb-3">
+                Booking & Service
+            </h5>
+
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-6">
+
+                    <label asp-for="BookingId"
+                           class="form-label">
+                        Booking ID
+                    </label>
+
+                    <input asp-for="BookingId"
+                           class="form-control" />
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <label asp-for="ServiceId"
+                           class="form-label">
+                        Service ID
+                    </label>
+
+                    <input asp-for="ServiceId"
+                           class="form-control" />
+
+                </div>
+
+
+                <div class="col-12">
+
+                    <label asp-for="ServiceName"
+                           class="form-label">
+                        Service Name
+                    </label>
+
+                    <input asp-for="ServiceName"
+                           class="form-control" />
+
+                </div>
+
+            </div>
+
+
+            <!-- FINANCIAL -->
+            <h5 class="fw-bold mb-3">
+                Financial Information
+            </h5>
+
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-4">
+
+                    <label asp-for="TotalAmount"
+                           class="form-label">
+                        Total Amount
+                    </label>
+
+                    <div class="input-group">
+                        <span class="input-group-text">R</span>
+
+                        <input asp-for="TotalAmount"
+                               type="number"
+                               step="0.01"
+                               min="0"
+                               class="form-control" />
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <label asp-for="DepositAmount"
+                           class="form-label">
+                        Deposit Amount
+                    </label>
+
+                    <div class="input-group">
+                        <span class="input-group-text">R</span>
+
+                        <input asp-for="DepositAmount"
+                               type="number"
+                               step="0.01"
+                               min="0"
+                               class="form-control" />
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <label asp-for="AmountPaid"
+                           class="form-label">
+                        Amount Paid
+                    </label>
+
+                    <div class="input-group">
+                        <span class="input-group-text">R</span>
+
+                        <input asp-for="AmountPaid"
+                               type="number"
+                               step="0.01"
+                               min="0"
+                               class="form-control" />
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <label asp-for="BalanceDue"
+                           class="form-label">
+                        Balance Due
+                    </label>
+
+                    <div class="input-group">
+                        <span class="input-group-text">R</span>
+
+                        <input asp-for="BalanceDue"
+                               type="number"
+                               step="0.01"
+                               min="0"
+                               class="form-control" />
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <label asp-for="PaymentStatus"
+                           class="form-label">
+                        Payment Status
+                    </label>
+
+                    <select asp-for="PaymentStatus"
+                            class="form-select">
+
+                        <option value="Pending">
+                            Pending
+                        </option>
+
+                        <option value="Partial">
+                            Partial
+                        </option>
+
+                        <option value="Paid">
+                            Paid
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <label asp-for="Status"
+                           class="form-label">
+                        Status
+                    </label>
+
+                    <select asp-for="Status"
+                            class="form-select">
+
+                        <option value="Issued">
+                            Issued
+                        </option>
+
+                        <option value="Draft">
+                            Draft
+                        </option>
+
+                        <option value="Cancelled">
+                            Cancelled
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- DUE DATE -->
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-6">
+
+                    <label asp-for="DueDate"
+                           class="form-label">
+                        Due Date
+                    </label>
+
+                    <input asp-for="DueDate"
+                           type="datetime-local"
+                           class="form-control" />
+
+                </div>
+
+            </div>
+
+
+            <div class="d-flex justify-content-end gap-2">
+
+                <a asp-action="Details"
+                   asp-route-id="@Model.InvoiceId"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    <i class="bi bi-save me-2"></i>
+                    Save Changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

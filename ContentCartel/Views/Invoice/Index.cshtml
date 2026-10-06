@@ -1,0 +1,1096 @@
+@model IEnumerable<ContentCartel.Models.Invoice>
+
+@{
+    ViewData["Title"] = "Invoices";
+
+    var invoices = Model?.ToList() ?? new List<ContentCartel.Models.Invoice>();
+
+    var totalInvoiced = invoices.Sum(x => x.TotalAmount);
+    var totalPaid = invoices.Sum(x => x.AmountPaid);
+    var totalOutstanding = invoices.Sum(x => x.BalanceDue);
+
+    var pendingCount = invoices.Count(x =>
+        string.Equals(x.PaymentStatus, "Pending", StringComparison.OrdinalIgnoreCase));
+
+    var partialCount = invoices.Count(x =>
+        string.Equals(x.PaymentStatus, "Partial", StringComparison.OrdinalIgnoreCase));
+
+    var paidCount = invoices.Count(x =>
+        string.Equals(x.PaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase));
+}
+
+<div class="invoice-page">
+
+    <!-- ============================================================
+         HEADER
+         ============================================================ -->
+    <div class="invoice-header">
+
+        <div>
+            <span class="invoice-eyebrow">
+                FINANCIAL MANAGEMENT
+            </span>
+
+            <h1 class="invoice-title">
+                Invoices
+            </h1>
+
+            <p class="invoice-subtitle">
+                Create, manage and track client invoices and payments.
+            </p>
+        </div>
+
+        <div class="invoice-header-actions">
+
+            <a asp-controller="Invoice"
+               asp-action="Create"
+               class="invoice-primary-btn">
+
+                <i class="bi bi-plus-lg"></i>
+
+                <span>
+                    Create Invoice
+                </span>
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         SUMMARY CARDS
+         ============================================================ -->
+    <div class="invoice-summary-grid">
+
+        <!-- Total Invoiced -->
+        <div class="invoice-summary-card">
+
+            <div class="invoice-summary-icon">
+                <i class="bi bi-receipt"></i>
+            </div>
+
+            <div class="invoice-summary-content">
+
+                <span class="invoice-summary-label">
+                    Total Invoiced
+                </span>
+
+                <h3 class="invoice-summary-value">
+                    R @totalInvoiced.ToString("N2")
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <!-- Amount Paid -->
+        <div class="invoice-summary-card">
+
+            <div class="invoice-summary-icon">
+                <i class="bi bi-check-circle"></i>
+            </div>
+
+            <div class="invoice-summary-content">
+
+                <span class="invoice-summary-label">
+                    Amount Paid
+                </span>
+
+                <h3 class="invoice-summary-value">
+                    R @totalPaid.ToString("N2")
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <!-- Outstanding -->
+        <div class="invoice-summary-card">
+
+            <div class="invoice-summary-icon">
+                <i class="bi bi-exclamation-circle"></i>
+            </div>
+
+            <div class="invoice-summary-content">
+
+                <span class="invoice-summary-label">
+                    Outstanding
+                </span>
+
+                <h3 class="invoice-summary-value">
+                    R @totalOutstanding.ToString("N2")
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <!-- Total Invoices -->
+        <div class="invoice-summary-card">
+
+            <div class="invoice-summary-icon">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+
+            <div class="invoice-summary-content">
+
+                <span class="invoice-summary-label">
+                    Total Invoices
+                </span>
+
+                <h3 class="invoice-summary-value">
+                    @invoices.Count
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         PAYMENT STATUS
+         ============================================================ -->
+    <div class="invoice-status-row">
+
+        <div class="invoice-status-item">
+
+            <span class="invoice-status-dot pending"></span>
+
+            <span>
+                Pending
+            </span>
+
+            <strong>
+                @pendingCount
+            </strong>
+
+        </div>
+
+
+        <div class="invoice-status-item">
+
+            <span class="invoice-status-dot partial"></span>
+
+            <span>
+                Partial
+            </span>
+
+            <strong>
+                @partialCount
+            </strong>
+
+        </div>
+
+
+        <div class="invoice-status-item">
+
+            <span class="invoice-status-dot paid"></span>
+
+            <span>
+                Paid
+            </span>
+
+            <strong>
+                @paidCount
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================================
+         INVOICE TABLE
+         ============================================================ -->
+    <div class="invoice-card">
+
+        <div class="invoice-card-header">
+
+            <div>
+
+                <h2>
+                    All Invoices
+                </h2>
+
+                <p>
+                    View and manage invoices generated for your clients.
+                </p>
+
+            </div>
+
+            <div class="invoice-count">
+
+                @invoices.Count
+                @(invoices.Count == 1 ? "Invoice" : "Invoices")
+
+            </div>
+
+        </div>
+
+
+        @if (invoices.Any())
+        {
+            <div class="invoice-table-wrapper">
+
+                <table class="invoice-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Invoice
+                            </th>
+
+                            <th>
+                                Client
+                            </th>
+
+                            <th>
+                                Service
+                            </th>
+
+                            <th>
+                                Issue Date
+                            </th>
+
+                            <th>
+                                Due Date
+                            </th>
+
+                            <th>
+                                Total
+                            </th>
+
+                            <th>
+                                Paid
+                            </th>
+
+                            <th>
+                                Balance
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th class="text-end">
+                                Actions
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var invoice in invoices.OrderByDescending(x => x.CreatedAt))
+                        {
+                            var paymentStatus =
+                                string.IsNullOrWhiteSpace(invoice.PaymentStatus)
+                                    ? "Pending"
+                                    : invoice.PaymentStatus;
+
+                            var statusClass =
+                                paymentStatus.Equals("Paid", StringComparison.OrdinalIgnoreCase)
+                                    ? "paid"
+                                    : paymentStatus.Equals("Partial", StringComparison.OrdinalIgnoreCase)
+                                        ? "partial"
+                                        : "pending";
+
+                            <tr>
+
+                                <!-- Invoice -->
+                                <td>
+
+                                    <div class="invoice-number">
+
+                                        @(string.IsNullOrWhiteSpace(invoice.InvoiceNumber)
+                                            ? invoice.InvoiceId
+                                            : invoice.InvoiceNumber)
+
+                                    </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(invoice.BookingId))
+                                    {
+                                        <div class="invoice-booking">
+                                            Booking: @invoice.BookingId
+                                        </div>
+                                    }
+
+                                </td>
+
+
+                                <!-- Client -->
+                                <td>
+
+                                    <div class="invoice-client-name">
+                                        @invoice.ClientName
+                                    </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(invoice.ClientEmail))
+                                    {
+                                        <div class="invoice-client-email">
+                                            @invoice.ClientEmail
+                                        </div>
+                                    }
+
+                                </td>
+
+
+                                <!-- Service -->
+                                <td>
+
+                                    <div class="invoice-service">
+
+                                        @if (!string.IsNullOrWhiteSpace(invoice.ServiceName))
+                                        {
+                                            @invoice.ServiceName
+                                        }
+                                        else
+                                        {
+                                            <span class="invoice-muted">
+                                                No service
+                                            </span>
+                                        }
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- Issue Date -->
+                                <td>
+
+                                    @invoice.IssueDate.ToLocalTime().ToString("dd MMM yyyy")
+
+                                </td>
+
+
+                                <!-- Due Date -->
+                                <td>
+
+                                    @if (invoice.DueDate.HasValue)
+                                    {
+                                        @invoice.DueDate.Value.ToLocalTime().ToString("dd MMM yyyy")
+                                    }
+                                    else
+                                    {
+                                        <span class="invoice-muted">
+                                            —
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- Total -->
+                                <td>
+
+                                    <span class="invoice-money">
+                                        R @invoice.TotalAmount.ToString("N2")
+                                    </span>
+
+                                </td>
+
+
+                                <!-- Paid -->
+                                <td>
+
+                                    <span class="invoice-money paid-money">
+                                        R @invoice.AmountPaid.ToString("N2")
+                                    </span>
+
+                                </td>
+
+
+                                <!-- Balance -->
+                                <td>
+
+                                    <span class="invoice-money balance-money">
+                                        R @invoice.BalanceDue.ToString("N2")
+                                    </span>
+
+                                </td>
+
+
+                                <!-- Payment Status -->
+                                <td>
+
+                                    <span class="invoice-status-badge @statusClass">
+
+                                        @if (statusClass == "paid")
+                                        {
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        }
+                                        else if (statusClass == "partial")
+                                        {
+                                            <i class="bi bi-clock-fill"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-hourglass-split"></i>
+                                        }
+
+                                        @paymentStatus
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- Actions -->
+                                <td>
+
+                                    <div class="invoice-actions">
+
+                                        <a asp-controller="Invoice"
+                                           asp-action="Details"
+                                           asp-route-id="@invoice.InvoiceId"
+                                           class="invoice-action-btn view"
+                                           title="View Invoice">
+
+                                            <i class="bi bi-eye"></i>
+
+                                        </a>
+
+
+                                        <a asp-controller="Invoice"
+                                           asp-action="Edit"
+                                           asp-route-id="@invoice.InvoiceId"
+                                           class="invoice-action-btn edit"
+                                           title="Edit Invoice">
+
+                                            <i class="bi bi-pencil"></i>
+
+                                        </a>
+
+
+                                        @if (!paymentStatus.Equals("Paid", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <a asp-controller="Invoice"
+                                               asp-action="Payment"
+                                               asp-route-id="@invoice.InvoiceId"
+                                               class="invoice-action-btn payment"
+                                               title="Record Payment">
+
+                                                <i class="bi bi-credit-card"></i>
+
+                                            </a>
+                                        }
+
+
+                                        <a asp-controller="Invoice"
+                                           asp-action="Delete"
+                                           asp-route-id="@invoice.InvoiceId"
+                                           class="invoice-action-btn delete"
+                                           title="Delete Invoice">
+
+                                            <i class="bi bi-trash"></i>
+
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <!-- ====================================================
+                 EMPTY STATE
+                 ==================================================== -->
+            <div class="invoice-empty-state">
+
+                <div class="invoice-empty-icon">
+
+                    <i class="bi bi-receipt"></i>
+
+                </div>
+
+                <h3>
+                    No invoices yet
+                </h3>
+
+                <p>
+                    You haven't created any invoices yet.
+                    Create your first invoice to start tracking client payments.
+                </p>
+
+                <a asp-controller="Invoice"
+                   asp-action="Create"
+                   class="invoice-primary-btn">
+
+                    <i class="bi bi-plus-lg"></i>
+
+                    Create Invoice
+
+                </a>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* ============================================================
+       PAGE
+       ============================================================ */
+
+    .invoice-page {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0 !important;
+        box-sizing: border-box;
+    }
+
+
+    /* ============================================================
+       HEADER
+       ============================================================ */
+
+    .invoice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 25px;
+        margin-bottom: 28px;
+    }
+
+    .invoice-eyebrow {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.6px;
+        color: #777;
+        margin-bottom: 7px;
+    }
+
+    .invoice-title {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 800;
+        color: #111;
+        line-height: 1.15;
+    }
+
+    .invoice-subtitle {
+        margin: 8px 0 0;
+        color: #777;
+        font-size: 14px;
+    }
+
+    .invoice-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+
+    /* ============================================================
+       BUTTON
+       ============================================================ */
+
+    .invoice-primary-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 11px 17px;
+        background: #111;
+        color: #fff !important;
+        text-decoration: none !important;
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid #111;
+        transition: all .2s ease;
+    }
+
+    .invoice-primary-btn:hover {
+        background: #2a2a2a;
+        border-color: #2a2a2a;
+        transform: translateY(-1px);
+    }
+
+
+    /* ============================================================
+       SUMMARY GRID
+       ============================================================ */
+
+    .invoice-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 15px;
+        margin-bottom: 18px;
+    }
+
+    .invoice-summary-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-height: 105px;
+        padding: 18px;
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 12px;
+        box-shadow: 0 3px 14px rgba(0, 0, 0, .035);
+    }
+
+    .invoice-summary-icon {
+        width: 43px;
+        height: 43px;
+        min-width: 43px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #f4f4f4;
+        color: #111;
+        font-size: 18px;
+    }
+
+    .invoice-summary-content {
+        min-width: 0;
+    }
+
+    .invoice-summary-label {
+        display: block;
+        color: #777;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .invoice-summary-value {
+        margin: 0;
+        color: #111;
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1.2;
+        word-break: break-word;
+    }
+
+
+    /* ============================================================
+       PAYMENT STATUS SUMMARY
+       ============================================================ */
+
+    .invoice-status-row {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        flex-wrap: wrap;
+        padding: 13px 16px;
+        margin-bottom: 18px;
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+    }
+
+    .invoice-status-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #555;
+        font-size: 12px;
+    }
+
+    .invoice-status-item strong {
+        color: #111;
+        margin-left: 2px;
+    }
+
+    .invoice-status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .invoice-status-dot.pending {
+        background: #d39e00;
+    }
+
+    .invoice-status-dot.partial {
+        background: #0d6efd;
+    }
+
+    .invoice-status-dot.paid {
+        background: #198754;
+    }
+
+
+    /* ============================================================
+       MAIN CARD
+       ============================================================ */
+
+    .invoice-card {
+        width: 100%;
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 3px 14px rgba(0, 0, 0, .035);
+    }
+
+    .invoice-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 20px 22px;
+        border-bottom: 1px solid #ededed;
+    }
+
+    .invoice-card-header h2 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+        color: #111;
+    }
+
+    .invoice-card-header p {
+        margin: 5px 0 0;
+        color: #888;
+        font-size: 12px;
+    }
+
+    .invoice-count {
+        white-space: nowrap;
+        padding: 6px 10px;
+        background: #f5f5f5;
+        border-radius: 7px;
+        color: #555;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+
+    /* ============================================================
+       TABLE
+       ============================================================ */
+
+    .invoice-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .invoice-table {
+        width: 100%;
+        min-width: 1050px;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .invoice-table thead th {
+        padding: 13px 14px;
+        background: #fafafa;
+        border-bottom: 1px solid #e8e8e8;
+        color: #777;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .invoice-table tbody td {
+        padding: 15px 14px;
+        border-bottom: 1px solid #f0f0f0;
+        color: #444;
+        font-size: 12px;
+        vertical-align: middle;
+    }
+
+    .invoice-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .invoice-table tbody tr:hover {
+        background: #fcfcfc;
+    }
+
+
+    /* ============================================================
+       TABLE CONTENT
+       ============================================================ */
+
+    .invoice-number {
+        color: #111;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .invoice-booking {
+        margin-top: 4px;
+        color: #999;
+        font-size: 10px;
+    }
+
+    .invoice-client-name {
+        color: #111;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .invoice-client-email {
+        max-width: 180px;
+        margin-top: 3px;
+        color: #999;
+        font-size: 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .invoice-service {
+        max-width: 190px;
+        color: #444;
+    }
+
+    .invoice-muted {
+        color: #aaa;
+    }
+
+    .invoice-money {
+        color: #111;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .paid-money {
+        color: #198754;
+    }
+
+    .balance-money {
+        color: #b45309;
+    }
+
+
+    /* ============================================================
+       STATUS BADGES
+       ============================================================ */
+
+    .invoice-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 8px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .invoice-status-badge.pending {
+        color: #856404;
+        background: #fff3cd;
+    }
+
+    .invoice-status-badge.partial {
+        color: #084298;
+        background: #cfe2ff;
+    }
+
+    .invoice-status-badge.paid {
+        color: #0f5132;
+        background: #d1e7dd;
+    }
+
+
+    /* ============================================================
+       ACTIONS
+       ============================================================ */
+
+    .invoice-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+    }
+
+    .invoice-action-btn {
+        width: 31px;
+        height: 31px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 7px;
+        text-decoration: none !important;
+        border: 1px solid #e5e5e5;
+        background: #fff;
+        color: #555;
+        font-size: 12px;
+        transition: all .2s ease;
+    }
+
+    .invoice-action-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .invoice-action-btn.view:hover {
+        background: #f1f1f1;
+        color: #111;
+    }
+
+    .invoice-action-btn.edit:hover {
+        background: #e8f0fe;
+        color: #0d6efd;
+        border-color: #cbdafc;
+    }
+
+    .invoice-action-btn.payment:hover {
+        background: #e7f6ee;
+        color: #198754;
+        border-color: #c9e8d6;
+    }
+
+    .invoice-action-btn.delete:hover {
+        background: #fce8e8;
+        color: #dc3545;
+        border-color: #f3cccc;
+    }
+
+
+    /* ============================================================
+       EMPTY STATE
+       ============================================================ */
+
+    .invoice-empty-state {
+        padding: 65px 25px;
+        text-align: center;
+    }
+
+    .invoice-empty-icon {
+        width: 62px;
+        height: 62px;
+        margin: 0 auto 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #f4f4f4;
+        color: #777;
+        font-size: 25px;
+    }
+
+    .invoice-empty-state h3 {
+        margin: 0;
+        color: #111;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .invoice-empty-state p {
+        max-width: 450px;
+        margin: 8px auto 20px;
+        color: #888;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+
+    @@media (max-width: 1200px) {
+
+        .invoice-summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+    }
+
+
+    @@media (max-width: 768px) {
+
+        .invoice-header {
+            align-items: flex-start;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .invoice-title {
+            font-size: 28px;
+        }
+
+        .invoice-header-actions {
+            width: 100%;
+        }
+
+        .invoice-primary-btn {
+            width: 100%;
+        }
+
+        .invoice-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .invoice-status-row {
+            gap: 14px;
+        }
+
+        .invoice-card-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .invoice-count {
+            align-self: flex-start;
+        }
+
+    }
+
+
+    @@media (max-width: 480px) {
+
+        .invoice-title {
+            font-size: 25px;
+        }
+
+        .invoice-subtitle {
+            font-size: 12px;
+        }
+
+        .invoice-summary-card {
+            min-height: 90px;
+            padding: 14px;
+        }
+
+        .invoice-summary-value {
+            font-size: 17px;
+        }
+
+        .invoice-card-header {
+            padding: 16px;
+        }
+
+    }
+
+</style>

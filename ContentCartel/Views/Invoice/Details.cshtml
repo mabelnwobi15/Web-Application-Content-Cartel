@@ -1,0 +1,618 @@
+@model ContentCartel.Models.Invoice
+
+@{
+    ViewData["Title"] = "Invoice " + Model.InvoiceNumber;
+
+    var balanceDue =
+        Model.TotalAmount - Model.AmountPaid;
+
+    var paymentStatus =
+        string.IsNullOrWhiteSpace(Model.PaymentStatus)
+            ? "Pending"
+            : Model.PaymentStatus;
+}
+
+<style>
+
+    .invoice-page {
+        background: #f3efe5;
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+
+    .invoice-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .invoice-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+
+    .invoice-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 45px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    .invoice-brand {
+        font-size: 25px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        line-height: 1;
+    }
+
+    .invoice-title {
+        font-size: 38px;
+        font-weight: 800;
+        letter-spacing: -1px;
+    }
+
+    .invoice-number {
+        color: #666666;
+        font-size: 13px;
+    }
+
+    .invoice-section-title {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #777777;
+        margin-bottom: 8px;
+    }
+
+    .invoice-client-name {
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 30px;
+    }
+
+    .invoice-table th {
+        text-align: left;
+        padding: 12px;
+        border-bottom: 2px solid #111111;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .invoice-table td {
+        padding: 16px 12px;
+        border-bottom: 1px solid #dddddd;
+        font-size: 14px;
+    }
+
+    .invoice-table .amount {
+        text-align: right;
+        font-weight: 600;
+    }
+
+    .invoice-summary {
+        width: 320px;
+        margin-left: auto;
+        margin-top: 30px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 9px 0;
+        font-size: 14px;
+    }
+
+    .summary-total {
+        border-top: 2px solid #111111;
+        margin-top: 8px;
+        padding-top: 14px;
+        font-size: 19px;
+        font-weight: 800;
+    }
+
+    .balance-box {
+        margin-top: 25px;
+        background: #111111;
+        color: #ffffff;
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .balance-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: .75;
+    }
+
+    .balance-value {
+        font-size: 25px;
+        font-weight: 800;
+    }
+
+    .invoice-footer {
+        border-top: 1px solid #dddddd;
+        margin-top: 40px;
+        padding-top: 20px;
+        color: #777777;
+        font-size: 12px;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-paid {
+        background: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .status-partial {
+        background: #fff3cd;
+        color: #664d03;
+    }
+
+    .status-pending {
+        background: #e2e3e5;
+        color: #41464b;
+    }
+
+    @@media (max-width: 700px) {
+
+        .invoice-page {
+            padding: 20px 10px;
+        }
+
+        .invoice-card {
+            padding: 25px 18px;
+        }
+
+        .invoice-title {
+            font-size: 30px;
+        }
+
+        .invoice-summary {
+            width: 100%;
+        }
+
+        .balance-box {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+
+
+    /* ============================================================
+       PRINT
+       ============================================================ */
+
+    @@media print {
+
+        body {
+            background: #ffffff !important;
+        }
+
+        .invoice-page {
+            background: #ffffff !important;
+            padding: 0 !important;
+        }
+
+        .invoice-actions,
+        .admin-sidebar,
+        .admin-topbar,
+        .no-print {
+            display: none !important;
+        }
+
+        .invoice-container {
+            max-width: 100% !important;
+        }
+
+        .invoice-card {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 20px !important;
+        }
+
+        @@page {
+            size: A4;
+            margin: 15mm;
+        }
+    }
+
+</style>
+
+
+<div class="invoice-page">
+
+    <div class="invoice-container">
+
+
+        <!-- ========================================================
+             ACTION BAR
+             ======================================================== -->
+
+        <div class="invoice-actions no-print">
+
+            <div>
+
+                <a asp-controller="Invoice"
+                   asp-action="Index"
+                   class="btn btn-outline-dark">
+
+                    <i class="bi bi-arrow-left me-2"></i>
+
+                    Back to Invoices
+
+                </a>
+
+            </div>
+
+
+            <div class="d-flex gap-2">
+
+                <button type="button"
+                        class="btn btn-dark"
+                        onclick="window.print()">
+
+                    <i class="bi bi-printer me-2"></i>
+
+                    Print / Save PDF
+
+                </button>
+
+
+                <a asp-controller="Invoice"
+                   asp-action="Edit"
+                   asp-route-id="@Model.InvoiceId"
+                   class="btn btn-outline-dark">
+
+                    <i class="bi bi-pencil me-2"></i>
+
+                    Edit
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================================================
+             INVOICE
+             ======================================================== -->
+
+        <div class="invoice-card">
+
+
+            <!-- HEADER -->
+
+            <div class="d-flex justify-content-between align-items-start gap-4 mb-5">
+
+                <div>
+
+                    <div class="invoice-brand">
+                        CONTENT CARTEL
+                    </div>
+
+                    <div class="text-muted small mt-2">
+                        Digital Media & Creative Services
+                    </div>
+
+                </div>
+
+
+                <div class="text-end">
+
+                    <div class="invoice-title">
+                        INVOICE
+                    </div>
+
+                    <div class="invoice-number">
+                        @Model.InvoiceNumber
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- INVOICE META -->
+
+            <div class="row g-4 mb-4">
+
+
+                <div class="col-md-6">
+
+                    <div class="invoice-section-title">
+                        Bill To
+                    </div>
+
+                    <div class="invoice-client-name">
+                        @Model.ClientName
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.ClientEmail))
+                    {
+                        <div class="text-muted mt-1">
+                            @Model.ClientEmail
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.ClientPhone))
+                    {
+                        <div class="text-muted">
+                            @Model.ClientPhone
+                        </div>
+                    }
+
+                </div>
+
+
+                <div class="col-md-6 text-md-end">
+
+                    <div class="invoice-section-title">
+                        Invoice Information
+                    </div>
+
+                    <div>
+                        <strong>Issue Date:</strong>
+
+                        @Model.IssueDate
+                            .ToLocalTime()
+                            .ToString("dd MMMM yyyy")
+                    </div>
+
+                    @if (Model.DueDate.HasValue)
+                    {
+                        <div>
+                            <strong>Due Date:</strong>
+
+                            @Model.DueDate.Value
+                                .ToLocalTime()
+                                .ToString("dd MMMM yyyy")
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.BookingId))
+                    {
+                        <div class="mt-1">
+                            <strong>Booking:</strong>
+
+                            @Model.BookingId
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- SERVICE -->
+
+            <table class="invoice-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Service
+                        </th>
+
+                        <th>
+                            Booking
+                        </th>
+
+                        <th class="amount">
+                            Amount
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+                                @Model.ServiceName
+                            </strong>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.ServiceId))
+                            {
+                                <div class="text-muted small">
+                                    @Model.ServiceId
+                                </div>
+                            }
+
+                        </td>
+
+                        <td>
+                            @Model.BookingId
+                        </td>
+
+                        <td class="amount">
+                            R @Model.TotalAmount.ToString("N2")
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+
+            <!-- SUMMARY -->
+
+            <div class="invoice-summary">
+
+                <div class="summary-row">
+
+                    <span>
+                        Subtotal
+                    </span>
+
+                    <strong>
+                        R @Model.TotalAmount.ToString("N2")
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        Deposit
+                    </span>
+
+                    <strong>
+                        R @Model.DepositAmount.ToString("N2")
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row">
+
+                    <span>
+                        Amount Paid
+                    </span>
+
+                    <strong>
+                        R @Model.AmountPaid.ToString("N2")
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-row summary-total">
+
+                    <span>
+                        Balance Due
+                    </span>
+
+                    <strong>
+                        R @balanceDue.ToString("N2")
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- BALANCE -->
+
+            <div class="balance-box">
+
+                <div>
+
+                    <div class="balance-label">
+                        Outstanding Balance
+                    </div>
+
+                    <div class="balance-value">
+                        R @balanceDue.ToString("N2")
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    @if (paymentStatus.Equals(
+                        "Paid",
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        <span class="status-badge status-paid">
+                            Paid
+                        </span>
+                    }
+                    else if (paymentStatus.Equals(
+                        "Partial",
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        <span class="status-badge status-partial">
+                            Partially Paid
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="status-badge status-pending">
+                            Pending
+                        </span>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- FOOTER -->
+
+            <div class="invoice-footer">
+
+                <div class="row">
+
+                    <div class="col-md-8">
+
+                        <strong>
+                            Content Cartel
+                        </strong>
+
+                        <div>
+                            Thank you for choosing Content Cartel.
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+
+                        <div>
+                            Invoice:
+                            <strong>
+                                @Model.InvoiceNumber
+                            </strong>
+                        </div>
+
+                        <div>
+                            Status:
+                            @Model.Status
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>

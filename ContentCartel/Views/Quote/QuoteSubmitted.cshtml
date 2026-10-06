@@ -1,0 +1,245 @@
+@model ContentCartel.Models.QuoteRequest
+
+@{
+    ViewData["Title"] = "Quote Submitted";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5 text-center">
+
+                    <div class="mb-4">
+                        <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center"
+                             style="width: 80px; height: 80px; background: #f1f1f1;">
+                            <span style="font-size: 36px;">✓</span>
+                        </div>
+                    </div>
+
+                    <h1 class="fw-bold mb-3">
+                        Quote Request Submitted
+                    </h1>
+
+                    <p class="text-muted mb-4">
+                        Thank you, <strong>@Model.CustomerName</strong>.
+                        Your quote request has been successfully submitted.
+                    </p>
+
+                    <div class="text-start bg-light rounded p-4 mb-4">
+
+                        <h5 class="fw-bold mb-3">
+                            Request Details
+                        </h5>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Quote Reference
+                            </div>
+
+                            <div class="col-sm-7">
+                                #@Model.QuoteRequestId
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Brand Name
+                            </div>
+
+                            <div class="col-sm-7">
+                                @Model.BrandName
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Social Media
+                            </div>
+
+                            <div class="col-sm-7">
+                                @Model.SocialMediaHandle
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Contact Person
+                            </div>
+
+                            <div class="col-sm-7">
+                                @Model.CustomerName
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Email
+                            </div>
+
+                            <div class="col-sm-7">
+                                @Model.Email
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Phone
+                            </div>
+
+                            <div class="col-sm-7">
+                                @(Model.Phone ?? "Not provided")
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Service
+                            </div>
+
+                            <div class="col-sm-7">
+                                @Model.ServiceName
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Media Type
+                            </div>
+
+                            <div class="col-sm-7">
+                                @Model.MediaType
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Budget
+                            </div>
+
+                            <div class="col-sm-7">
+                                @Model.Budget
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Estimated Price
+                            </div>
+
+                            <div class="col-sm-7">
+                                @if (Model.EstimatedAmount.HasValue &&
+                                     Model.EstimatedAmount.Value > 0)
+                                {
+                                    <span>
+                                        R @Model.EstimatedAmount.Value.ToString("N2")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        To be confirmed
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.CampaignGoals))
+                        {
+                            <div class="row mb-2">
+                                <div class="col-sm-5 fw-semibold">
+                                    Campaign Goals
+                                </div>
+
+                                <div class="col-sm-7">
+                                    @Model.CampaignGoals
+                                </div>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Description))
+                        {
+                            <div class="row mb-2">
+                                <div class="col-sm-5 fw-semibold">
+                                    Description
+                                </div>
+
+                                <div class="col-sm-7">
+                                    @Model.Description
+                                </div>
+                            </div>
+                        }
+
+                        <div class="row mb-2">
+                            <div class="col-sm-5 fw-semibold">
+                                Submitted
+                            </div>
+
+                            <div class="col-sm-7">
+                                @(Model.CreatedAt
+                                    .ToLocalTime()
+                                    .ToString("dd MMM yyyy HH:mm"))
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-5 fw-semibold">
+                                Status
+                            </div>
+
+                            <div class="col-sm-7">
+                                @if (string.Equals(
+                                    Model.Status,
+                                    "Approved",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <span class="badge bg-success">
+                                        Approved
+                                    </span>
+                                }
+                                else if (string.Equals(
+                                    Model.Status,
+                                    "Rejected",
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <span class="badge bg-danger">
+                                        Rejected
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">
+                                        @Model.Status
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <p class="text-muted mb-4">
+                        Our team will review your request and get back to you
+                        with the next steps.
+                    </p>
+
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+
+                        <a asp-controller="Client"
+                           asp-action="Quotations"
+                           class="btn btn-dark px-4">
+                            View My Quotations
+                        </a>
+
+                        <a asp-controller="Client"
+                           asp-action="Dashboard"
+                           class="btn btn-outline-dark px-4">
+                            Back to Dashboard
+                        </a>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
