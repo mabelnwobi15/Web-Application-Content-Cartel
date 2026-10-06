@@ -8,6 +8,9 @@ namespace ContentCartel.Models
         [Key]
         public int GalleryItemId { get; set; }
 
+        public string Id { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
+
         [Required]
         public int BookingId { get; set; }
 
@@ -24,6 +27,8 @@ namespace ContentCartel.Models
         public string UploadedByStaffId { get; set; } = string.Empty;
 
         public bool IsApprovedByAdmin { get; set; } = false;
+
+        public string Description { get; set; } = string.Empty;
 
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
     }

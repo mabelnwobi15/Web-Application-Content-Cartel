@@ -1,5 +1,196 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<ContentCartel.Models.GalleryItem>
+
 @{
+    ViewData["Title"] = "My Galleries";
+
+    var galleries = Model?.ToList()
+        ?? new List<ContentCartel.Models.GalleryItem>();
 }
+
+<link rel="stylesheet"
+      href="~/css/client-portal.css"
+      asp-append-version="true" />
+
+<section class="client-portal">
+
+    <div class="container">
+
+        <div class="row g-4">
+
+            <aside class="col-12 col-lg-3">
+                @await Html.PartialAsync("_ClientPortalNav")
+            </aside>
+
+            <main class="col-12 col-lg-9">
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger mb-4">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <div class="client-portal-hero mb-4">
+
+                    <span class="client-portal-label">
+                        PRIVATE MEDIA
+                    </span>
+
+                    <h1 class="h2 fw-bold mt-2 mb-2">
+                        My Galleries
+                    </h1>
+
+                    <p class="mb-0">
+                        Access your private photos, videos and creative content.
+                    </p>
+
+                </div>
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-12 col-md-4">
+                        <div class="client-portal-card">
+
+                            <small class="text-muted">
+                                GALLERIES
+                            </small>
+
+                            <h2 class="fw-bold mt-2">
+                                @galleries.Count
+                            </h2>
+
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <div class="client-portal-card">
+
+                            <small class="text-muted">
+                                MEDIA
+                            </small>
+
+                            <h2 class="fw-bold mt-2">
+                                @galleries.Count
+                            </h2>
+
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <div class="client-portal-card">
+
+                            <small class="text-muted">
+                                ACCESS
+                            </small>
+
+                            <h2 class="fw-bold mt-2">
+                                Private
+                            </h2>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="client-portal-card">
+
+                    <h2 class="h4 fw-bold mb-4">
+                        Your Media
+                    </h2>
+
+                    @if (galleries.Any())
+                    {
+                        <div class="row g-4">
+
+                            @foreach (var gallery in galleries)
+                            {
+                                <div class="col-12 col-md-6">
+                                    <div class="border rounded-3 p-4 h-100">
+
+                                        <div class="d-flex justify-content-between">
+                                            <i class="bi bi-images fs-2"></i>
+                                        </div>
+
+                                        <h5 class="fw-bold mt-3">
+                                            @gallery.Title
+                                        </h5>
+
+                                        @if (!string.IsNullOrWhiteSpace(
+                                            gallery.Description))
+                                        {
+                                            <p class="text-muted small">
+                                                @gallery.Description
+                                            </p>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(
+                                            gallery.MediaType))
+                                        {
+                                            <span class="badge bg-dark">
+                                                @gallery.MediaType
+                                            </span>
+                                        }
+
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+
+                            <i class="bi bi-images fs-1 text-muted"></i>
+
+                            <h4 class="fw-bold mt-3">
+                                No galleries yet
+                            </h4>
+
+                            <p class="text-muted">
+                                Your private galleries will appear here
+                                once Content Cartel uploads your media.
+                            </p>
+
+                            <a asp-controller="Booking"
+                               asp-action="Index"
+                               class="btn btn-dark">
+                                Book a Service
+                            </a>
+
+                        </div>
+                    }
+
+                </div>
+
+                <div class="alert alert-light border mt-4">
+
+                    <div class="d-flex gap-3">
+
+                        <i class="bi bi-lock fs-4"></i>
+
+                        <div>
+
+                            <strong>
+                                Private Media
+                            </strong>
+
+                            <p class="small text-muted mb-0 mt-1">
+                                Your media is private and can only be
+                                accessed through your authenticated
+                                client account.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+</section>

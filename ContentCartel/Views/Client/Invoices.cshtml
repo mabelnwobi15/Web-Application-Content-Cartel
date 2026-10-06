@@ -1,5 +1,225 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<ContentCartel.Models.Invoice>
+
 @{
+    ViewData["Title"] = "Invoices & Payments";
+
+    var invoices = Model?.ToList()
+        ?? new List<ContentCartel.Models.Invoice>();
+
+    var totalOutstanding = invoices.Sum(invoice =>
+        Math.Max(0, invoice.BalanceDue));
+
+    var totalPaid = invoices.Sum(invoice =>
+        Math.Max(0, invoice.AmountPaid));
 }
+
+<link rel="stylesheet"
+      href="~/css/client-portal.css"
+      asp-append-version="true" />
+
+<section class="client-portal">
+
+    <div class="container">
+
+        <div class="row g-4">
+
+            <aside class="col-12 col-lg-3">
+
+                @await Html.PartialAsync("_ClientPortalNav")
+
+            </aside>
+
+
+            <main class="col-12 col-lg-9">
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success mb-4">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger mb-4">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+
+                <div class="client-portal-hero mb-4">
+
+                    <span class="client-portal-label">
+                        CLIENT PORTAL
+                    </span>
+
+                    <h1 class="h2 fw-bold mt-2 mb-2">
+                        Invoices & Payments
+                    </h1>
+
+                    <p class="mb-0">
+                        View your invoices, payments and outstanding balances.
+                    </p>
+
+                </div>
+
+
+                <!-- SUMMARY -->
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-12 col-md-6">
+
+                        <div class="client-portal-card">
+
+                            <small class="text-muted">
+                                TOTAL PAID
+                            </small>
+
+                            <h2 class="fw-bold mt-2">
+                                R @totalPaid.ToString("N2")
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-12 col-md-6">
+
+                        <div class="client-portal-card">
+
+                            <small class="text-muted">
+                                OUTSTANDING
+                            </small>
+
+                            <h2 class="fw-bold mt-2">
+                                R @totalOutstanding.ToString("N2")
+                            </h2>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- INVOICES -->
+
+                <div class="client-portal-card">
+
+                    <h2 class="h4 fw-bold mb-4">
+                        My Invoices
+                    </h2>
+
+
+                    @if (invoices.Any())
+                    {
+                        <div class="table-responsive">
+
+                            <table class="table align-middle">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Invoice</th>
+                                        <th>Booking</th>
+                                        <th>Date</th>
+                                        <th>Total</th>
+                                        <th>Paid</th>
+                                        <th>Balance</th>
+                                        <th>Status</th>
+                                        <th></th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    @foreach (var invoice in invoices
+                                        .OrderByDescending(i => i.IssueDate))
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                <strong>
+                                                    @invoice.InvoiceNumber
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                @invoice.BookingId
+                                            </td>
+
+                                            <td>
+                                                @invoice.IssueDate.ToString("dd MMM yyyy")
+                                            </td>
+
+                                            <td>
+                                                R @invoice.TotalAmount.ToString("N2")
+                                            </td>
+
+                                            <td>
+                                                R @invoice.AmountPaid.ToString("N2")
+                                            </td>
+
+                                            <td>
+                                                <strong>
+                                                    R @invoice.BalanceDue.ToString("N2")
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                @invoice.PaymentStatus
+                                            </td>
+
+                                            <td class="text-end">
+
+                                                <a asp-action="InvoiceDetails"
+                                                   asp-route-id="@invoice.InvoiceId"
+                                                   class="btn btn-sm btn-outline-dark">
+
+                                                    View
+
+                                                </a>
+
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+
+                            <i class="bi bi-receipt fs-1 text-muted"></i>
+
+                            <h4 class="fw-bold mt-3">
+                                No invoices yet
+                            </h4>
+
+                            <p class="text-muted mb-0">
+                                Your invoices will appear here once
+                                they have been issued.
+                            </p>
+
+                        </div>
+                    }
+
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+</section>

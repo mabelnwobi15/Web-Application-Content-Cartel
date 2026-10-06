@@ -1,16 +1,18 @@
-﻿namespace ContentCartel.Models
+namespace ContentCartel.Models
 {
-    public class ApplicationUser
+    public class UserProfile
     {
-        public string Id { get; set; } = string.Empty;
-
         public string Uid { get; set; } = string.Empty;
 
         public string FullName { get; set; } = string.Empty;
 
         public string Email { get; set; } = string.Empty;
 
+        public string Phone { get; set; } = string.Empty;
+
         public string Role { get; set; } = "Client";
+
+        public bool BiometricEnabled { get; set; }
 
         public string Status { get; set; } = "Active";
 

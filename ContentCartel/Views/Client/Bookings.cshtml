@@ -1,10 +1,10 @@
-﻿@model IEnumerable<ContentCartel.Models.QuoteRequest>
+@model IEnumerable<ContentCartel.Models.Booking>
 
 @{
-    ViewData["Title"] = "My Quotations";
+    ViewData["Title"] = "My Bookings";
 
-    var quotations = Model?.ToList()
-        ?? new List<ContentCartel.Models.QuoteRequest>();
+    var bookings = Model?.ToList()
+        ?? new List<ContentCartel.Models.Booking>();
 }
 
 <link rel="stylesheet"
@@ -17,12 +17,16 @@
 
         <div class="row g-4">
 
+            <!-- SIDEBAR -->
+
             <aside class="col-12 col-lg-3">
 
                 @await Html.PartialAsync("_ClientPortalNav")
 
             </aside>
 
+
+            <!-- MAIN -->
 
             <main class="col-12 col-lg-9">
 
@@ -33,7 +37,6 @@
                     </div>
                 }
 
-
                 <div class="client-portal-hero mb-4">
 
                     <span class="client-portal-label">
@@ -41,11 +44,11 @@
                     </span>
 
                     <h1 class="h2 fw-bold mt-2 mb-2">
-                        My Quotations
+                        My Bookings
                     </h1>
 
                     <p class="mb-0">
-                        View your quotation requests and their current status.
+                        View and manage your Content Cartel appointments.
                     </p>
 
                 </div>
@@ -59,27 +62,28 @@
                         <div>
 
                             <h2 class="h4 fw-bold mb-1">
-                                Quotation Requests
+                                Booking History
                             </h2>
 
                             <p class="text-muted mb-0">
-                                @quotations.Count request(s)
+                                @bookings.Count booking(s)
                             </p>
 
                         </div>
 
-                        <a asp-controller="Quote"
+                        <a asp-controller="Booking"
                            asp-action="Index"
                            class="btn btn-dark">
 
-                            Request a Quote
+                            <i class="bi bi-plus-lg"></i>
+                            New Booking
 
                         </a>
 
                     </div>
 
 
-                    @if (quotations.Any())
+                    @if (bookings.Any())
                     {
                         <div class="table-responsive">
 
@@ -89,18 +93,12 @@
 
                                     <tr>
 
-                                        <th>Brand</th>
-
-                                        <th>Media Type</th>
-
-                                        <th>Budget</th>
-
-                                        <th>Estimated Amount</th>
-
+                                        <th>Service</th>
                                         <th>Date</th>
-
+                                        <th>Time</th>
+                                        <th>Amount</th>
                                         <th>Status</th>
-
+                                        <th>Payment</th>
                                         <th></th>
 
                                     </tr>
@@ -109,64 +107,47 @@
 
                                 <tbody>
 
-                                    @foreach (var quote in quotations
-                                        .OrderByDescending(q => q.CreatedAt))
+                                    @foreach (var booking in bookings
+                                        .OrderByDescending(b => b.CreatedAt))
                                     {
                                         <tr>
 
                                             <td>
                                                 <strong>
-                                                    @quote.BrandName
+                                                    @booking.ServiceName
                                                 </strong>
                                             </td>
 
                                             <td>
-                                                @quote.MediaType
+                                                @booking.BookingDate.ToString("dd MMM yyyy")
                                             </td>
 
                                             <td>
-                                                @quote.Budget
+                                                @(string.IsNullOrWhiteSpace(booking.BookingTime)
+                                                    ? "—"
+                                                    : booking.BookingTime)
                                             </td>
-                                            <td>
-                                                @{
-                                                    decimal estimatedAmount = 0;
 
-                                                    decimal.TryParse(
-                                                        Convert.ToString(quote.EstimatedAmount),
-                                                        out estimatedAmount
-                                                    );
-                                                }
-
-                                                @if (estimatedAmount > 0)
-                                                {
-                                                    <span>
-                                                        R @estimatedAmount.ToString("N2")
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">
-                                                        To be confirmed
-                                                    </span>
-                                                }
-                                            </td>
                                             <td>
-                                                @quote.CreatedAt.ToString("dd MMM yyyy")
+                                                R @booking.TotalAmount.ToString("N2")
                                             </td>
 
                                             <td>
 
                                                 <span class="badge bg-dark">
-                                                    @quote.Status
+                                                    @booking.Status
                                                 </span>
 
                                             </td>
 
+                                            <td>
+                                                @booking.PaymentStatus
+                                            </td>
+
                                             <td class="text-end">
 
-                                                <a asp-controller="Quote"
-                                                   asp-action="QuoteSubmitted"
-                                                   asp-route-id="@quote.QuoteRequestId"
+                                                <a asp-action="BookingDetails"
+                                                   asp-route-id="@booking.BookingId"
                                                    class="btn btn-sm btn-outline-dark">
 
                                                     View
@@ -188,21 +169,21 @@
                     {
                         <div class="text-center py-5">
 
-                            <i class="bi bi-file-earmark-text fs-1 text-muted"></i>
+                            <i class="bi bi-calendar-x fs-1 text-muted"></i>
 
                             <h4 class="fw-bold mt-3">
-                                No quotations yet
+                                No bookings yet
                             </h4>
 
                             <p class="text-muted">
-                                You haven't submitted a quotation request yet.
+                                You haven't made any bookings yet.
                             </p>
 
-                            <a asp-controller="Quote"
+                            <a asp-controller="Booking"
                                asp-action="Index"
                                class="btn btn-dark">
 
-                                Request Your First Quote
+                                Book an Appointment
 
                             </a>
 

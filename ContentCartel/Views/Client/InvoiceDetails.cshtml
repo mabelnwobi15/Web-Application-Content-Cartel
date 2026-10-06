@@ -1,0 +1,280 @@
+@model ContentCartel.Models.Invoice
+
+@{
+    ViewData["Title"] = "Invoice Details";
+}
+
+<link rel="stylesheet"
+      href="~/css/client-portal.css"
+      asp-append-version="true" />
+
+<section class="client-portal">
+
+    <div class="container">
+
+        <div class="row g-4">
+
+            <aside class="col-12 col-lg-3">
+
+                @await Html.PartialAsync("_ClientPortalNav")
+
+            </aside>
+
+
+            <main class="col-12 col-lg-9">
+
+                <div class="client-portal-hero mb-4">
+
+                    <span class="client-portal-label">
+                        INVOICE
+                    </span>
+
+                    <h1 class="h2 fw-bold mt-2 mb-2">
+                        @Model.InvoiceNumber
+                    </h1>
+
+                    <p class="mb-0">
+                        Invoice and payment information.
+                    </p>
+
+                </div>
+
+
+                <div class="client-portal-card">
+
+                    <div class="d-flex justify-content-between
+                                align-items-start mb-4">
+
+                        <div>
+
+                            <small class="text-muted">
+                                INVOICE NUMBER
+                            </small>
+
+                            <h2 class="h4 fw-bold mt-2">
+                                @Model.InvoiceNumber
+                            </h2>
+
+                        </div>
+
+                        <span class="badge bg-dark">
+                            @Model.PaymentStatus
+                        </span>
+
+                    </div>
+
+
+                    <div class="row g-4">
+
+                        <div class="col-12 col-md-6">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    SERVICE
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+                                    @Model.ServiceName
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    ISSUE DATE
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+                                    @Model.IssueDate.ToString("dd MMMM yyyy")
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    BOOKING
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+                                    #@Model.BookingId
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <hr class="my-4" />
+
+
+                    <h3 class="h5 fw-bold mb-3">
+                        Payment Summary
+                    </h3>
+
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-4">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    TOTAL
+                                </small>
+
+                                <h5 class="fw-bold mt-1">
+                                    R @Model.TotalAmount.ToString("N2")
+                                </h5>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-4">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    PAID
+                                </small>
+
+                                <h5 class="fw-bold mt-1">
+                                    R @Model.AmountPaid.ToString("N2")
+                                </h5>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-4">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    BALANCE
+                                </small>
+
+                                <h5 class="fw-bold mt-1">
+                                    R @Model.BalanceDue.ToString("N2")
+                                </h5>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    @if (Model.BalanceDue > 0)
+                    {
+                        <hr class="my-4" />
+
+                        <h3 class="h5 fw-bold mb-3">
+                            Make Payment
+                        </h3>
+
+                        <form asp-action="SimulatePayment"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden"
+                                   name="invoiceId"
+                                   value="@Model.InvoiceId" />
+
+                            <div class="row g-3 align-items-end">
+
+                                <div class="col-12 col-md-8">
+
+                                    <label class="form-label">
+                                        Payment Amount
+                                    </label>
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+                                            R
+                                        </span>
+
+                                        <input type="number"
+                                               name="amount"
+                                               class="form-control"
+                                               min="1"
+                                               max="@Model.BalanceDue"
+                                               step="0.01"
+                                               value="@Model.BalanceDue" />
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="col-12 col-md-4">
+
+                                    <button type="submit"
+                                            class="btn btn-dark w-100">
+
+                                        Pay Now
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                            <small class="text-muted d-block mt-2">
+                                Payment is currently simulated for testing.
+                            </small>
+
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success mt-4 mb-0">
+
+                            <i class="bi bi-check-circle"></i>
+
+                            This invoice has been fully paid.
+
+                        </div>
+                    }
+
+
+                    <div class="mt-4">
+
+                        <a asp-action="Invoices"
+                           class="btn btn-outline-dark">
+
+                            <i class="bi bi-arrow-left"></i>
+                            Back to Invoices
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+</section>

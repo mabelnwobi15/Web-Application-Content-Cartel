@@ -1,0 +1,157 @@
+@model ContentCartel.Models.Booking
+
+@{
+    ViewData["Title"] = "Pay Deposit";
+}
+
+<section class="py-5 bg-cream min-vh-100">
+    <div class="container" style="max-width: 600px;">
+
+        <div class="text-center mb-4">
+            <span class="badge bg-gold text-dark text-uppercase px-3 py-2 fw-bold mb-3">
+                Secure Checkout (Simulation)
+            </span>
+            <h1 class="display-6 fw-bold text-uppercase">Pay Your Deposit</h1>
+        </div>
+
+        <!-- ORDER SUMMARY -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Booking Reference</span>
+                    <strong>@Model.Id</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Service</span>
+                    <strong>@Model.ServiceName</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Date &amp; Time</span>
+                    <strong>@Model.BookingDate.ToString("dd MMM yyyy"), @Model.BookingTime</strong>
+                </div>
+                <hr />
+                <div class="d-flex justify-content-between fs-5">
+                    <span class="fw-bold">Deposit Due Now</span>
+                    <strong class="text-success">R @Model.DepositAmount.ToString("N2")</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAYMENT FORM -->
+        <div class="card border-0 shadow-sm rounded-3">
+            <div class="card-body p-4">
+
+                <div class="alert alert-info small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    This is a simulation. Use any details, e.g. card
+                    <strong>4242 4242 4242 4242</strong>, any future expiry, any 3-digit CVV.
+                    No real money is charged and card details are never sent to the server.
+                </div>
+
+                <form asp-controller="Booking"
+                      asp-action="SimulatePayment"
+                      method="post"
+                      id="paymentForm">
+
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    @* Card inputs deliberately have no name attribute, so they are never posted *@
+
+                    <div class="mb-3">
+                        <label for="cardName" class="form-label fw-bold small">Name on Card</label>
+                        <input type="text" id="cardName" class="form-control"
+                               required autocomplete="off" placeholder="Jane Doe" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cardNumber" class="form-label fw-bold small">Card Number</label>
+                        <input type="text" id="cardNumber" class="form-control"
+                               required inputmode="numeric" maxlength="19"
+                               autocomplete="off" placeholder="4242 4242 4242 4242" />
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <label for="cardExpiry" class="form-label fw-bold small">Expiry (MM/YY)</label>
+                            <input type="text" id="cardExpiry" class="form-control"
+                                   required inputmode="numeric" maxlength="5"
+                                   autocomplete="off" placeholder="08/29" />
+                        </div>
+                        <div class="col-6">
+                            <label for="cardCvv" class="form-label fw-bold small">CVV</label>
+                            <input type="password" id="cardCvv" class="form-control"
+                                   required inputmode="numeric" maxlength="4"
+                                   autocomplete="off" placeholder="123" />
+                        </div>
+                    </div>
+
+                    <div id="paymentError" class="text-danger small mb-3 d-none"></div>
+
+                    <button type="submit" id="payBtn" class="btn btn-gold btn-lg w-100 fw-bold">
+                        Pay R @Model.DepositAmount.ToString("N2")
+                    </button>
+
+                    <a asp-action="ConfirmedBooking" asp-route-id="@Model.Id"
+                       class="btn btn-link w-100 mt-2 text-muted">
+                        Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const num = document.getElementById("cardNumber");
+        const exp = document.getElementById("cardExpiry");
+        const cvv = document.getElementById("cardCvv");
+        const err = document.getElementById("paymentError");
+
+        num.addEventListener("input", () => {
+            const d = num.value.replace(/\D/g, "").slice(0, 16);
+            num.value = d.replace(/(.{4})/g, "$1 ").trim();
+        });
+
+        exp.addEventListener("input", () => {
+            const d = exp.value.replace(/\D/g, "").slice(0, 4);
+            exp.value = d.length > 2 ? d.slice(0, 2) + "/" + d.slice(2) : d;
+        });
+
+        cvv.addEventListener("input", () => {
+            cvv.value = cvv.value.replace(/\D/g, "").slice(0, 4);
+        });
+
+        document.getElementById("paymentForm").addEventListener("submit", function (e) {
+            err.classList.add("d-none");
+            let msg = "";
+
+            const digits = num.value.replace(/\s/g, "");
+            const m = exp.value.match(/^(\d{2})\/(\d{2})$/);
+
+            if (digits.length !== 16) {
+                msg = "Card number must be 16 digits.";
+            } else if (!m || +m[1] < 1 || +m[1] > 12) {
+                msg = "Enter a valid expiry date (MM/YY).";
+            } else {
+                const now = new Date();
+                const expiry = new Date(2000 + +m[2], +m[1], 1); // first day after expiry month
+                if (expiry <= now) msg = "This card has expired.";
+            }
+            if (!msg && cvv.value.length < 3) msg = "CVV must be 3 or 4 digits.";
+
+            if (msg) {
+                e.preventDefault();
+                err.textContent = msg;
+                err.classList.remove("d-none");
+                return;
+            }
+
+            const btn = document.getElementById("payBtn");
+            btn.disabled = true;
+            btn.textContent = "Processing...";
+        });
+    </script>
+}

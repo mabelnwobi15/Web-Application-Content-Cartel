@@ -1,5 +1,656 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model ContentCartel.Models.ViewModels.ClientDashboardViewModel
+
 @{
+    ViewData["Title"] = "Client Portal";
+
+    var bookings = Model?.Bookings
+        ?? new List<ContentCartel.Models.Booking>();
+
+    var invoices = Model?.Invoices
+        ?? new List<ContentCartel.Models.Invoice>();
+
+    var quotations = Model?.Quotations
+        ?? new List<ContentCartel.Models.QuoteRequest>();
+
+    var totalOutstanding = invoices.Sum(i => Math.Max(0, i.BalanceDue));
+
+    var totalPaid = invoices.Sum(i => Math.Max(0, i.AmountPaid));
 }
+
+<link rel="stylesheet"
+      href="~/css/client-portal.css"
+      asp-append-version="true" />
+
+<section class="client-portal">
+
+    <div class="container">
+
+        <div class="row g-4">
+
+            <!-- =====================================================
+                 SIDEBAR
+                 ===================================================== -->
+
+            <aside class="col-12 col-lg-3">
+
+                @await Html.PartialAsync("_ClientPortalNav")
+
+            </aside>
+
+
+            <!-- =====================================================
+                 MAIN CONTENT
+                 ===================================================== -->
+
+            <main class="col-12 col-lg-9">
+
+                <!-- MESSAGES -->
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success mb-4">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger mb-4">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+
+                <!-- =================================================
+                     HERO
+                     ================================================= -->
+
+                <div class="client-portal-hero mb-4">
+
+                    <span class="client-portal-label">
+                        CONTENT CARTEL DIGITAL MEDIA HUB
+                    </span>
+
+                    <h1 class="display-6 fw-bold mt-2 mb-3">
+                        Welcome to your Client Portal
+                    </h1>
+
+                    <p class="mb-0">
+                        Manage your bookings, quotations, invoices and
+                        creative services from one place.
+                    </p>
+
+                </div>
+
+
+                <!-- =================================================
+                     SUMMARY CARDS
+                     ================================================= -->
+
+                <div class="row g-3 mb-4">
+
+                    <!-- BOOKINGS -->
+
+                    <div class="col-12 col-md-4">
+
+                        <div class="client-portal-card h-100">
+
+                            <div class="d-flex justify-content-between">
+
+                                <div>
+
+                                    <span class="text-muted small">
+                                        MY BOOKINGS
+                                    </span>
+
+                                    <h2 class="fw-bold mt-2 mb-1">
+                                        @bookings.Count
+                                    </h2>
+
+                                    <p class="text-muted small mb-0">
+                                        Total bookings
+                                    </p>
+
+                                </div>
+
+                                <div class="client-portal-card-icon">
+                                    <i class="bi bi-calendar-check"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- INVOICES -->
+
+                    <div class="col-12 col-md-4">
+
+                        <div class="client-portal-card h-100">
+
+                            <div class="d-flex justify-content-between">
+
+                                <div>
+
+                                    <span class="text-muted small">
+                                        INVOICES
+                                    </span>
+
+                                    <h2 class="fw-bold mt-2 mb-1">
+                                        @invoices.Count
+                                    </h2>
+
+                                    <p class="text-muted small mb-0">
+                                        Issued invoices
+                                    </p>
+
+                                </div>
+
+                                <div class="client-portal-card-icon">
+                                    <i class="bi bi-receipt"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- OUTSTANDING -->
+
+                    <div class="col-12 col-md-4">
+
+                        <div class="client-portal-card h-100">
+
+                            <div class="d-flex justify-content-between">
+
+                                <div>
+
+                                    <span class="text-muted small">
+                                        OUTSTANDING
+                                    </span>
+
+                                    <h2 class="fw-bold mt-2 mb-1">
+                                        R @totalOutstanding.ToString("N2")
+                                    </h2>
+
+                                    <p class="text-muted small mb-0">
+                                        Current balance
+                                    </p>
+
+                                </div>
+
+                                <div class="client-portal-card-icon">
+                                    <i class="bi bi-wallet2"></i>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     QUICK ACTIONS
+                     ================================================= -->
+
+                <div class="client-portal-card mb-4">
+
+                    <div class="mb-4">
+
+                        <span class="client-portal-label">
+                            QUICK ACCESS
+                        </span>
+
+                        <h2 class="h4 fw-bold mt-2">
+                            Manage your account
+                        </h2>
+
+                    </div>
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-6">
+
+                            <a asp-controller="Booking"
+                               asp-action="Index"
+                               class="text-decoration-none">
+
+                                <div class="border rounded-3 p-4 h-100">
+
+                                    <i class="bi bi-calendar-plus fs-3 text-dark"></i>
+
+                                    <h5 class="fw-bold mt-3">
+                                        Book an Appointment
+                                    </h5>
+
+                                    <p class="text-muted small mb-0">
+                                        Schedule a creative service with
+                                        Content Cartel.
+                                    </p>
+
+                                </div>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <a asp-controller="Quote"
+                               asp-action="Index"
+                               class="text-decoration-none">
+
+                                <div class="border rounded-3 p-4 h-100">
+
+                                    <i class="bi bi-file-earmark-text fs-3 text-dark"></i>
+
+                                    <h5 class="fw-bold mt-3">
+                                        Request a Quote
+                                    </h5>
+
+                                    <p class="text-muted small mb-0">
+                                        Submit a quotation request for
+                                        your next project.
+                                    </p>
+
+                                </div>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     RECENT BOOKINGS
+                     ================================================= -->
+
+                <div class="client-portal-card mb-4">
+
+                    <div class="d-flex justify-content-between
+                        align-items-center mb-4">
+
+                        <div>
+
+                            <span class="client-portal-label">
+                                ACTIVITY
+                            </span>
+
+                            <h2 class="h4 fw-bold mt-2 mb-0">
+                                Recent Bookings
+                            </h2>
+
+                        </div>
+
+                        <a asp-action="Bookings"
+                           class="btn btn-sm btn-outline-dark">
+
+                            View All
+
+                        </a>
+
+                    </div>
+
+
+                    @if (bookings.Any())
+                    {
+                        <div class="table-responsive">
+
+                            <table class="table align-middle">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Service</th>
+
+                                        <th>Date</th>
+
+                                        <th>Status</th>
+
+                                        <th>Payment</th>
+
+                                        <th></th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    @foreach (var booking in bookings
+                                        .OrderByDescending(b => b.CreatedAt)
+                                        .Take(5))
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                <strong>
+                                                    @booking.ServiceName
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                @booking.BookingDate.ToString("dd MMM yyyy")
+
+                                                @if (!string.IsNullOrWhiteSpace(booking.BookingTime))
+                                                {
+                                                    <br />
+
+                                                    <small class="text-muted">
+                                                        @booking.BookingTime
+                                                    </small>
+                                                }
+                                            </td>
+
+                                            <td>
+
+                                                <span class="badge bg-dark">
+                                                    @booking.Status
+                                                </span>
+
+                                            </td>
+
+                                            <td>
+                                                @booking.PaymentStatus
+                                            </td>
+
+                                            <td class="text-end">
+
+                                                <a asp-action="BookingDetails"
+                                                   asp-route-id="@booking.BookingId"
+                                                   class="btn btn-sm btn-outline-dark">
+
+                                                    View
+
+                                                </a>
+
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+
+                            <i class="bi bi-calendar-x fs-1 text-muted"></i>
+
+                            <h5 class="fw-bold mt-3">
+                                No bookings yet
+                            </h5>
+
+                            <p class="text-muted">
+                                Your bookings will appear here once
+                                you make an appointment.
+                            </p>
+
+                            <a asp-controller="Booking"
+                               asp-action="Index"
+                               class="btn btn-dark">
+
+                                Make a Booking
+
+                            </a>
+
+                        </div>
+                    }
+
+                </div>
+
+
+                <!-- =================================================
+                     RECENT INVOICES
+                     ================================================= -->
+
+                <div class="client-portal-card mb-4">
+
+                    <div class="d-flex justify-content-between
+                        align-items-center mb-4">
+
+                        <div>
+
+                            <span class="client-portal-label">
+                                FINANCIAL
+                            </span>
+
+                            <h2 class="h4 fw-bold mt-2 mb-0">
+                                Recent Invoices
+                            </h2>
+
+                        </div>
+
+                        <a asp-action="Invoices"
+                           class="btn btn-sm btn-outline-dark">
+
+                            View All
+
+                        </a>
+
+                    </div>
+
+
+                    @if (invoices.Any())
+                    {
+                        <div class="table-responsive">
+
+                            <table class="table align-middle">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Invoice</th>
+
+                                        <th>Service</th>
+
+                                        <th>Total</th>
+
+                                        <th>Balance</th>
+
+                                        <th>Status</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    @foreach (var invoice in invoices
+                                        .OrderByDescending(i => i.IssueDate)
+                                        .Take(5))
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                <strong>
+                                                    @invoice.InvoiceNumber
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                @invoice.ServiceName
+                                            </td>
+
+                                            <td>
+                                                R @invoice.TotalAmount.ToString("N2")
+                                            </td>
+
+                                            <td>
+                                                R @invoice.BalanceDue.ToString("N2")
+                                            </td>
+
+                                            <td>
+                                                @invoice.PaymentStatus
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+
+                            <i class="bi bi-receipt fs-1 text-muted"></i>
+
+                            <h5 class="fw-bold mt-3">
+                                No invoices yet
+                            </h5>
+
+                            <p class="text-muted mb-0">
+                                Your invoices will appear here.
+                            </p>
+
+                        </div>
+                    }
+
+                </div>
+
+
+                <!-- =================================================
+                     QUOTATIONS
+                     ================================================= -->
+
+                <div class="client-portal-card">
+
+                    <div class="d-flex justify-content-between
+                        align-items-center mb-4">
+
+                        <div>
+
+                            <span class="client-portal-label">
+                                QUOTATIONS
+                            </span>
+
+                            <h2 class="h4 fw-bold mt-2 mb-0">
+                                My Quotations
+                            </h2>
+
+                        </div>
+
+                        <a asp-action="Quotations"
+                           class="btn btn-sm btn-outline-dark">
+
+                            View Quotations
+
+                        </a>
+
+                    </div>
+
+
+                    @if (quotations.Any())
+                    {
+                        <div class="table-responsive">
+
+                            <table class="table align-middle">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Brand</th>
+
+                                        <th>Media Type</th>
+
+                                        <th>Budget</th>
+
+                                        <th>Estimated Price</th>
+
+                                        <th>Status</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    @foreach (var quote in quotations
+                                        .OrderByDescending(q => q.CreatedAt)
+                                        .Take(5))
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                @quote.BrandName
+                                            </td>
+
+                                            <td>
+                                                @quote.MediaType
+                                            </td>
+
+                                            <td>
+                                                @quote.Budget
+                                            </td>
+
+                                            <td>
+                                                @string.Format(
+                                                 "{0:dd MMM yyyy HH:mm}",
+                                                  quote.CreatedAt.ToLocalTime()
+                                                             )
+                                            </td>
+
+                                            <td>
+                                                <span class="badge bg-dark">
+                                                    @quote.Status
+                                                </span>
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+
+                            <p class="text-muted mb-3">
+                                You do not have any quotation requests yet.
+                            </p>
+
+                            <a asp-controller="Quote"
+                               asp-action="Index"
+                               class="btn btn-dark">
+
+                                Request a Quote
+
+                            </a>
+
+                        </div>
+                    }
+
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+</section>
