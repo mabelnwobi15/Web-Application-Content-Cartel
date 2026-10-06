@@ -24,24 +24,14 @@ namespace ContentCartel.Controllers
             _configuration = configuration;
         }
 
-        // =====================================================
-        // REGISTER GET
-        // =====================================================
-
         [HttpGet]
         public IActionResult Register()
         {
             ViewBag.RecaptchaSiteKey =
-                _configuration[
-                    "Recaptcha:SiteKey"
-                ];
+                _configuration["Recaptcha:SiteKey"];
 
             return View();
         }
-
-        // =====================================================
-        // REGISTER POST
-        // =====================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -49,9 +39,7 @@ namespace ContentCartel.Controllers
             RegisterViewModel model)
         {
             ViewBag.RecaptchaSiteKey =
-                _configuration[
-                    "Recaptcha:SiteKey"
-                ];
+                _configuration["Recaptcha:SiteKey"];
 
             if (!ModelState.IsValid)
             {
@@ -60,15 +48,13 @@ namespace ContentCartel.Controllers
 
             try
             {
-                var request =
-                    new
-                    {
-                        fullName = model.FullName,
-                        email = model.Email,
-                        password = model.Password,
-                        recaptchaToken =
-                            model.RecaptchaToken
-                    };
+                var request = new
+                {
+                    fullName = model.FullName,
+                    email = model.Email,
+                    password = model.Password,
+                    recaptchaToken = model.RecaptchaToken
+                };
 
                 var response =
                     await _httpClient.PostAsJsonAsync(
@@ -84,8 +70,8 @@ namespace ContentCartel.Controllers
 
                     ModelState.AddModelError(
                         "",
-                        error?.Message
-                        ?? "Registration failed."
+                        error?.Message ??
+                        "Registration failed."
                     );
 
                     return View(model);
@@ -110,27 +96,17 @@ namespace ContentCartel.Controllers
             }
         }
 
-        // =====================================================
-        // LOGIN GET
-        // =====================================================
-
         [HttpGet]
         public IActionResult Login(
             bool registered = false)
         {
             ViewBag.RecaptchaSiteKey =
-                _configuration[
-                    "Recaptcha:SiteKey"
-                ];
+                _configuration["Recaptcha:SiteKey"];
 
             ViewBag.Registered = registered;
 
             return View();
         }
-
-        // =====================================================
-        // LOGIN POST
-        // =====================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -138,9 +114,7 @@ namespace ContentCartel.Controllers
             LoginViewModel model)
         {
             ViewBag.RecaptchaSiteKey =
-                _configuration[
-                    "Recaptcha:SiteKey"
-                ];
+                _configuration["Recaptcha:SiteKey"];
 
             if (!ModelState.IsValid)
             {
@@ -149,14 +123,12 @@ namespace ContentCartel.Controllers
 
             try
             {
-                var request =
-                    new
-                    {
-                        email = model.Email,
-                        password = model.Password,
-                        recaptchaToken =
-                            model.RecaptchaToken
-                    };
+                var request = new
+                {
+                    email = model.Email,
+                    password = model.Password,
+                    recaptchaToken = model.RecaptchaToken
+                };
 
                 var response =
                     await _httpClient.PostAsJsonAsync(
@@ -172,8 +144,8 @@ namespace ContentCartel.Controllers
 
                     ModelState.AddModelError(
                         "",
-                        error?.Message
-                        ?? "Invalid email or password."
+                        error?.Message ??
+                        "Invalid email or password."
                     );
 
                     return View(model);
@@ -184,8 +156,7 @@ namespace ContentCartel.Controllers
                         .ReadFromJsonAsync<LoginResponse>();
 
                 if (result == null ||
-                    string.IsNullOrWhiteSpace(
-                        result.Uid))
+                    string.IsNullOrWhiteSpace(result.Uid))
                 {
                     ModelState.AddModelError(
                         "",
@@ -195,17 +166,30 @@ namespace ContentCartel.Controllers
                     return View(model);
                 }
 
-                // =================================================
                 // CREATE MVC LOGIN COOKIE
-                // =================================================
 
-          var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, result.Uid),
-                new Claim(ClaimTypes.Email, result.Email ?? model.Email),
-                new Claim(ClaimTypes.Name, result.FullName ?? "User"),
-                new Claim(ClaimTypes.Role, result.Role ?? "Client")
-            };
+                var claims = new List<Claim>
+                {
+                    new Claim(
+                        ClaimTypes.NameIdentifier,
+                        result.Uid
+                    ),
+
+                    new Claim(
+                        ClaimTypes.Email,
+                        result.Email ?? model.Email
+                    ),
+
+                    new Claim(
+                        ClaimTypes.Name,
+                        result.FullName ?? "User"
+                    ),
+
+                    new Claim(
+                        ClaimTypes.Role,
+                        result.Role ?? "Client"
+                    )
+                };
 
                 var identity =
                     new ClaimsIdentity(
@@ -223,12 +207,38 @@ namespace ContentCartel.Controllers
                     principal
                 );
 
-                if (string.Equals(result.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+                // ADMIN → ADMIN DASHBOARD
+
+                if (string.Equals(
+                        result.Role,
+                        "Admin",
+                        StringComparison.OrdinalIgnoreCase))
                 {
-                    return RedirectToAction("Dashboard", "Admin");
+                    return RedirectToAction(
+                        "Dashboard",
+                        "Admin"
+                    );
                 }
 
-                return RedirectToAction("Index", "Home");
+                // CLIENT → CLIENT DASHBOARD
+
+                if (string.Equals(
+                        result.Role,
+                        "Client",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return RedirectToAction(
+                        "Dashboard",
+                        "Client"
+                    );
+                }
+
+                // FALLBACK
+
+                return RedirectToAction(
+                    "Index",
+                    "Home"
+                );
             }
             catch (HttpRequestException)
             {
@@ -240,10 +250,6 @@ namespace ContentCartel.Controllers
                 return View(model);
             }
         }
-
-        // =====================================================
-        // LOGOUT
-        // =====================================================
 
         [HttpGet]
         public async Task<IActionResult> Logout()
@@ -259,10 +265,6 @@ namespace ContentCartel.Controllers
             );
         }
 
-        // =====================================================
-        // API RESPONSE
-        // =====================================================
-
         private class ApiResponse
         {
             public bool Success { get; set; }
@@ -270,19 +272,22 @@ namespace ContentCartel.Controllers
             public string? Message { get; set; }
         }
 
-        // =====================================================
-        // LOGIN RESPONSE
-        // =====================================================
-
         private class LoginResponse
         {
             public bool Success { get; set; }
+
             public string? Message { get; set; }
+
             public string? Uid { get; set; }
+
             public string? Email { get; set; }
+
             public string? FullName { get; set; }
+
             public string? Role { get; set; }
+
             public string? IdToken { get; set; }
+
             public string? RefreshToken { get; set; }
         }
     }
