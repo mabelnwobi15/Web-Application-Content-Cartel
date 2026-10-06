@@ -15,7 +15,7 @@ namespace ContentCartel.API.Controllers
             _firebaseService = firebaseService;
         }
 
-        [HttpPost("test")]
+        [HttpGet("test")]
         public async Task<IActionResult> TestFirebase()
         {
             try
