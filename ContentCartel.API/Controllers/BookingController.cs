@@ -90,6 +90,63 @@ namespace ContentCartel.API.Controllers
         }
 
         // ============================================================
+// GET CLIENT BOOKINGS
+// GET: /api/bookings/client/{userId}
+// ============================================================
+
+[HttpGet("client/{userId}")]
+public async Task<IActionResult> GetClientBookings(string userId)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Client ID is required."
+            });
+        }
+
+        var bookings =
+            await _firebaseService
+                .GetAsync<Dictionary<string, Booking>>("bookings");
+
+        if (bookings == null || bookings.Count == 0)
+        {
+            return Ok(new List<Booking>());
+        }
+
+        var result = bookings
+            .Where(x =>
+                x.Value != null &&
+                string.Equals(
+                    x.Value.UserId,
+                    userId,
+                    StringComparison.OrdinalIgnoreCase))
+            .Select(x =>
+            {
+                var booking = x.Value;
+                booking.Id = x.Key;
+                return booking;
+            })
+            .OrderByDescending(x => x.CreatedAt)
+            .ToList();
+
+        return Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new
+        {
+            success = false,
+            message = "Unable to retrieve client bookings.",
+            error = ex.Message
+        });
+    }
+}
+
+        // ============================================================
         // GET BOOKING
         // GET: /api/bookings/{id}
         // ============================================================

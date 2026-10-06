@@ -4,6 +4,8 @@
     {
         public string? Id { get; set; }
 
+        public string? UserId { get; set; }
+
         public string BrandName { get; set; } = string.Empty;
 
         public string SocialMediaHandle { get; set; } = string.Empty;
