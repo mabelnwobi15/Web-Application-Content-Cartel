@@ -1,0 +1,376 @@
+/* ROOT VARIABLES & THEME SETUP */
+:root {
+    --cream: #F0EBE0;
+    --ink: #1A1A1A;
+    --ink-soft: #5F5B52;
+    --sand: #E5D5AE;
+    --gold: #D4A853;
+    --gold-hover: #b88e38;
+    --white: #FFFFFF;
+    --line: rgba(26, 26, 26, 0.12);
+    --footer-bg: #14140F;
+    --footer-text: #8F8A78;
+    --footer-heading: #F0EBE0;
+    --bg-dark: var(--cream);
+    --bg-card: var(--white);
+    --text-primary: var(--ink);
+    --text-muted: var(--ink-soft);
+    --accent-gold: var(--gold);
+    --accent-gold-hover: var(--gold-hover);
+    --border-color: var(--line);
+}
+
+/* =========================================================
+   CONTENT CARTEL AUTHENTICATION
+   Login + Register
+   ========================================================= */
+
+.auth-page {
+    min-height: calc(100vh - 80px);
+    background: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.auth-logo {
+    margin-bottom: 30px;
+}
+
+    .auth-logo img {
+        max-width: 150px;
+        height: auto;
+    }
+
+.auth-header h1 {
+    font-size: 42px;
+    font-weight: 700;
+    color: #000000;
+    margin: 0 0 12px 0;
+    letter-spacing: -1px;
+}
+
+.auth-header p {
+    font-size: 15px;
+    color: #666666;
+    margin: 0;
+}
+
+.auth-form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 22px;
+}
+
+    .form-group label {
+        display: block;
+        color: #000000;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+.form-control {
+    width: 100%;
+    height: 54px;
+    border: 1px solid #cfcfcf;
+    border-radius: 0;
+    background: #ffffff;
+    color: #000000;
+    padding: 0 16px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+    .form-control:focus {
+        border-color: #000000;
+        box-shadow: none;
+    }
+
+    .form-control::placeholder {
+        color: #999999;
+    }
+
+textarea.form-control {
+    height: auto;
+    min-height: 120px;
+    padding-top: 14px;
+}
+
+.auth-button {
+    width: 100%;
+    height: 54px;
+    background: #000000;
+    color: #ffffff;
+    border: 2px solid #000000;
+    border-radius: 0;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+    .auth-button:hover {
+        background: #ffffff;
+        color: #000000;
+    }
+
+    .auth-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+.auth-footer {
+    text-align: center;
+    margin-top: 28px;
+}
+
+    .auth-footer p {
+        color: #666666;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .auth-footer a {
+        color: #000000;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+        .auth-footer a:hover {
+            color: #555555;
+        }
+
+.forgot-password {
+    text-align: right;
+    margin-top: -8px;
+    margin-bottom: 20px;
+}
+
+    .forgot-password a {
+        color: #000000;
+        font-size: 13px;
+        text-decoration: underline;
+    }
+
+        .forgot-password a:hover {
+            color: #666666;
+        }
+
+.recaptcha-status {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: #777777;
+    margin: 18px 0 4px;
+}
+
+.auth-error {
+    border: 1px solid #000000;
+    background: #f7f7f7;
+    padding: 14px 16px;
+    margin-bottom: 25px;
+    font-size: 13px;
+}
+
+    .auth-error ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+
+    .auth-error .text-danger {
+        color: #000000 !important;
+    }
+
+.auth-success {
+    border: 1px solid #000000;
+    background: #f7f7f7;
+    color: #000000;
+    padding: 14px 16px;
+    margin-bottom: 25px;
+    font-size: 13px;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    .auth-page {
+        padding: 40px 20px;
+        align-items: flex-start;
+    }
+
+    .auth-container {
+        max-width: 100%;
+    }
+
+    .auth-header h1 {
+        font-size: 34px;
+    }
+
+    .form-control {
+        height: 52px;
+    }
+
+    .auth-button {
+        height: 52px;
+    }
+}
+/* BASE LAYOUT FIXES */
+html {
+    height: 100%;
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    background-color: var(--cream) !important;
+    color: var(--ink) !important;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+/* FORCE SECTIONS TO LIGHT/CREAM THEME */
+main,
+section,
+.bg-dark,
+.bg-black {
+    background-color: var(--cream) !important;
+    color: var(--ink) !important;
+}
+
+/* TYPOGRAPHY OVERRIDES FOR LIGHT THEME */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    color: var(--ink) !important;
+}
+
+p, .lead, .text-muted, .text-secondary {
+    color: var(--ink-soft) !important;
+}
+
+.text-gold {
+    color: var(--gold) !important;
+}
+
+.bg-gold {
+    background-color: var(--gold) !important;
+}
+
+/* NAVBAR & BRAND LOGO */
+.navbar, .bg-dark-custom {
+    background-color: var(--cream) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.navbar-brand-logo {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+/* NAVBAR LINK CONTRAST FIX */
+.navbar-dark .navbar-nav .nav-link,
+.navbar-light .navbar-nav .nav-link {
+    color: var(--ink-soft) !important;
+    font-weight: 500;
+}
+
+    .navbar-dark .navbar-nav .nav-link:hover,
+    .navbar-light .navbar-nav .nav-link:hover {
+        color: var(--ink) !important;
+    }
+
+/* BUTTONS & CARDS */
+.card-dark, .card {
+    background-color: var(--white) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.btn-gold {
+    background-color: var(--gold) !important;
+    color: var(--ink) !important;
+    font-weight: 600;
+    border: none;
+}
+
+    .btn-gold:hover {
+        background-color: var(--gold-hover) !important;
+        color: var(--ink) !important;
+    }
+
+.btn-outline-dark {
+    color: var(--ink) !important;
+    border-color: var(--ink) !important;
+}
+
+    .btn-outline-dark:hover {
+        background-color: var(--ink) !important;
+        color: var(--white) !important;
+    }
+
+/* FLEX GROW FOR MAIN CONTAINER */
+main {
+    flex: 1 0 auto !important;
+    width: 100%;
+}
+
+/* FOOTER REMAINS DARK AS INTENDED */
+footer, .footer, footer.bg-dark, footer.bg-black {
+    flex-shrink: 0 !important;
+    width: 100% !important;
+    margin-top: auto !important;
+    background-color: var(--footer-bg) !important;
+    color: var(--footer-text) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    position: relative !important;
+    z-index: 10;
+}
+
+    .footer h1, .footer h2, .footer h3, .footer h4, .footer h5, .footer h6,
+    footer h1, footer h2, footer h3, footer h4, footer h5, footer h6 {
+        color: var(--footer-heading) !important;
+    }
+
+    .footer p, footer p,
+    .footer .text-muted, footer .text-muted {
+        color: var(--footer-text) !important;
+    }
+
+    .footer a, footer a {
+        color: var(--footer-text) !important;
+        text-decoration: none;
+    }
+
+        .footer a:hover, footer a:hover {
+            color: var(--gold) !important;
+        }

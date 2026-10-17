@@ -1,0 +1,1607 @@
+﻿@model ContentCartel.Models.ViewModels.AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="dashboard-page">
+
+    <!-- =========================
+         HEADER
+         ========================= -->
+    <div class="dashboard-header">
+
+        <div class="dashboard-heading">
+            <div class="eyebrow">CONTENT CARTEL ADMIN</div>
+
+            <h1>Dashboard</h1>
+
+            <p>
+                Monitor bookings, quotations, clients and platform activity.
+            </p>
+        </div>
+
+        <div class="dashboard-date">
+            <span class="date-label">TODAY</span>
+            <strong>@DateTime.Now.ToString("dd MMMM yyyy")</strong>
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         STATISTICS
+         ========================= -->
+    <div class="stats-grid">
+
+        <!-- BOOKINGS -->
+        <div class="stat-card">
+
+            <div class="stat-top">
+                <span class="stat-label">
+                    TOTAL BOOKINGS
+                </span>
+
+                <div class="stat-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+            </div>
+
+            <div class="stat-value">
+                @Model.TotalBookings
+            </div>
+
+            <div class="stat-footer">
+                <span class="pending-number">
+                    @Model.PendingBookings
+                </span>
+                pending bookings
+            </div>
+
+        </div>
+
+
+        <!-- QUOTATIONS -->
+        <div class="stat-card">
+
+            <div class="stat-top">
+                <span class="stat-label">
+                    TOTAL QUOTATIONS
+                </span>
+
+                <div class="stat-icon">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+            </div>
+
+            <div class="stat-value">
+                @Model.TotalQuotes
+            </div>
+
+            <div class="stat-footer">
+                <span class="pending-number">
+                    @Model.PendingQuotes
+                </span>
+                pending quotations
+            </div>
+
+        </div>
+
+
+        <!-- REVENUE -->
+        <div class="stat-card">
+
+            <div class="stat-top">
+                <span class="stat-label">
+                    BOOKING VALUE
+                </span>
+
+                <div class="stat-icon">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+
+            <div class="stat-value money">
+                R @Model.Revenue.ToString("N0")
+            </div>
+
+            <div class="stat-footer">
+                Total value of bookings
+            </div>
+
+        </div>
+
+
+        <!-- CLIENTS -->
+        <div class="stat-card">
+
+            <div class="stat-top">
+                <span class="stat-label">
+                    ACTIVE CLIENTS
+                </span>
+
+                <div class="stat-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+
+            <div class="stat-value">
+                @Model.ActiveClients
+            </div>
+
+            <div class="stat-footer">
+                Registered client accounts
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         RECENT ACTIVITY
+         ========================= -->
+    <div class="dashboard-columns">
+
+        <!-- RECENT BOOKINGS -->
+        <section class="dashboard-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-eyebrow">
+                        CLIENT ACTIVITY
+                    </span>
+
+                    <h2>
+                        Recent Bookings
+                    </h2>
+                </div>
+
+                <a asp-controller="Admin"
+                   asp-action="Invoices"
+                   class="panel-link">
+                    View all
+                    <i class="bi bi-arrow-up-right"></i>
+                </a>
+
+            </div>
+
+
+            @if (Model.RecentBookings != null &&
+                 Model.RecentBookings.Any())
+            {
+                <div class="booking-list">
+
+                    @foreach (var booking in Model.RecentBookings)
+                    {
+                        <div class="booking-item">
+
+                            <div class="booking-client">
+
+                                <div class="client-avatar">
+
+                                    @(
+                                        string.IsNullOrWhiteSpace(
+                                            booking.CustomerName
+                                        )
+                                        ? "?"
+                                        : booking.CustomerName
+                                            .Substring(0, 1)
+                                            .ToUpper()
+                                    )
+
+                                </div>
+
+                                <div class="client-details">
+
+                                    <div class="client-name">
+                                        @booking.CustomerName
+                                    </div>
+
+                                    <div class="client-service">
+
+                                        @(
+                                            string.IsNullOrWhiteSpace(
+                                                booking.ServiceName
+                                            )
+                                            ? booking.ServiceId
+                                            : booking.ServiceName
+                                        )
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="booking-date">
+
+                                <span>
+                                    @booking.BookingDate.ToString(
+                                        "dd MMM yyyy"
+                                    )
+                                </span>
+
+                                @if (!string.IsNullOrWhiteSpace(
+                                    booking.BookingTime))
+                                {
+                                    <small>
+                                        @booking.BookingTime
+                                    </small>
+                                }
+
+                            </div>
+
+
+                            <div class="booking-amount">
+                                R @booking.TotalAmount.ToString("N0")
+                            </div>
+
+
+                            <div class="booking-status">
+
+                                @{
+                                    var bookingStatus =
+                                        string.IsNullOrWhiteSpace(
+                                            booking.Status)
+                                        ? "Pending"
+                                        : booking.Status;
+
+                                    var bookingStatusClass =
+                                        bookingStatus.ToLower() switch
+                                        {
+                                            "approved" =>
+                                                "status-approved",
+
+                                            "confirmed" =>
+                                                "status-approved",
+
+                                            "completed" =>
+                                                "status-completed",
+
+                                            "cancelled" =>
+                                                "status-cancelled",
+
+                                            "rejected" =>
+                                                "status-cancelled",
+
+                                            _ =>
+                                                "status-pending"
+                                        };
+                                }
+
+                                <span class="status-badge @bookingStatusClass">
+                                    @bookingStatus
+                                </span>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        <i class="bi bi-calendar-x"></i>
+                    </div>
+
+                    <h3>
+                        No bookings yet
+                    </h3>
+
+                    <p>
+                        New client bookings will appear here.
+                    </p>
+
+                </div>
+            }
+
+        </section>
+
+
+        <!-- RECENT QUOTATIONS -->
+        <section class="dashboard-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <span class="panel-eyebrow">
+                        CLIENT REQUESTS
+                    </span>
+
+                    <h2>
+                        Recent Quotations
+                    </h2>
+                </div>
+
+                <a asp-controller="Admin"
+                   asp-action="Reports"
+                   class="panel-link">
+                    View all
+                    <i class="bi bi-arrow-up-right"></i>
+                </a>
+
+            </div>
+
+
+            @if (Model.RecentQuotes != null &&
+                 Model.RecentQuotes.Any())
+            {
+                <div class="quote-list">
+
+                    @foreach (var quote in Model.RecentQuotes)
+                    {
+                        <div class="quote-item">
+
+                            <div class="quote-main">
+
+                                <div class="quote-avatar">
+
+                                    @(
+                                        string.IsNullOrWhiteSpace(
+                                            quote.Name
+                                        )
+                                        ? "?"
+                                        : quote.Name
+                                            .Substring(0, 1)
+                                            .ToUpper()
+                                    )
+
+                                </div>
+
+
+                                <div class="quote-information">
+
+                                    <div class="quote-name">
+                                        @quote.Name
+                                    </div>
+
+                                    <div class="quote-service">
+                                        @quote.Service
+                                    </div>
+
+                                    <div class="quote-date">
+                                        @quote.CreatedAt.ToString(
+                                            "dd MMM yyyy"
+                                        )
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="quote-right">
+
+                                <div class="quote-budget">
+                                    R @quote.Budget.ToString("N0")
+                                </div>
+
+                                @{
+                                    var quoteStatus =
+                                        string.IsNullOrWhiteSpace(
+                                            quote.Status)
+                                        ? "Pending"
+                                        : quote.Status;
+
+                                    var quoteStatusClass =
+                                        quoteStatus.ToLower() switch
+                                        {
+                                            "approved" =>
+                                                "status-approved",
+
+                                            "accepted" =>
+                                                "status-approved",
+
+                                            "completed" =>
+                                                "status-completed",
+
+                                            "rejected" =>
+                                                "status-cancelled",
+
+                                            "cancelled" =>
+                                                "status-cancelled",
+
+                                            _ =>
+                                                "status-pending"
+                                        };
+                                }
+
+                                <span class="status-badge @quoteStatusClass">
+                                    @quoteStatus
+                                </span>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        <i class="bi bi-file-earmark-x"></i>
+                    </div>
+
+                    <h3>
+                        No quotations yet
+                    </h3>
+
+                    <p>
+                        New quotation requests will appear here.
+                    </p>
+
+                </div>
+            }
+
+        </section>
+
+    </div>
+
+
+    <!-- =========================
+         QUICK OVERVIEW
+         ========================= -->
+    <section class="overview-section">
+
+        <div class="section-heading">
+
+            <div>
+                <span class="panel-eyebrow">
+                    PLATFORM OVERVIEW
+                </span>
+
+                <h2>
+                    Quick Overview
+                </h2>
+            </div>
+
+        </div>
+
+
+        <div class="overview-grid">
+
+            <!-- PENDING BOOKINGS -->
+            <div class="overview-card">
+
+                <div class="overview-card-header">
+
+                    <div>
+                        <span class="overview-label">
+                            BOOKINGS
+                        </span>
+
+                        <h3>
+                            Pending Activity
+                        </h3>
+                    </div>
+
+                    <i class="bi bi-calendar2-check"></i>
+
+                </div>
+
+
+                <div class="overview-number">
+                    @Model.PendingBookings
+                </div>
+
+                <p>
+                    Bookings waiting for admin attention.
+                </p>
+
+                <a asp-controller="Admin"
+                   asp-action="Invoices"
+                   class="overview-link">
+
+                    Manage bookings
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <!-- PENDING QUOTES -->
+            <div class="overview-card">
+
+                <div class="overview-card-header">
+
+                    <div>
+                        <span class="overview-label">
+                            QUOTATIONS
+                        </span>
+
+                        <h3>
+                            Pending Requests
+                        </h3>
+                    </div>
+
+                    <i class="bi bi-file-text"></i>
+
+                </div>
+
+
+                <div class="overview-number">
+                    @Model.PendingQuotes
+                </div>
+
+                <p>
+                    Quote requests waiting for review.
+                </p>
+
+                <a asp-controller="Admin"
+                   asp-action="Reports"
+                   class="overview-link">
+
+                    Review quotations
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <!-- CLIENTS -->
+            <div class="overview-card">
+
+                <div class="overview-card-header">
+
+                    <div>
+                        <span class="overview-label">
+                            CLIENTS
+                        </span>
+
+                        <h3>
+                            Active Accounts
+                        </h3>
+                    </div>
+
+                    <i class="bi bi-person-check"></i>
+
+                </div>
+
+
+                <div class="overview-number">
+                    @Model.ActiveClients
+                </div>
+
+                <p>
+                    Clients currently registered on the platform.
+                </p>
+
+                <a asp-controller="Admin"
+                   asp-action="Staff"
+                   class="overview-link">
+
+                    View accounts
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+
+            <!-- REVENUE -->
+            <div class="overview-card">
+
+                <div class="overview-card-header">
+
+                    <div>
+                        <span class="overview-label">
+                            REVENUE
+                        </span>
+
+                        <h3>
+                            Booking Value
+                        </h3>
+                    </div>
+
+                    <i class="bi bi-wallet2"></i>
+
+                </div>
+
+
+                <div class="overview-number revenue-number">
+                    R @Model.Revenue.ToString("N0")
+                </div>
+
+                <p>
+                    Combined value of recorded bookings.
+                </p>
+
+                <a asp-controller="Admin"
+                   asp-action="Reports"
+                   class="overview-link">
+
+                    View reports
+
+                    <i class="bi bi-arrow-right"></i>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<style>
+
+/* =========================================================
+   GLOBAL BOX SIZING
+   ========================================================= */
+
+.dashboard-page *,
+.dashboard-page *::before,
+.dashboard-page *::after {
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MAIN DASHBOARD CONTAINER
+   ========================================================= */
+
+.dashboard-page {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    margin: 0;
+
+    padding: 28px 30px 45px;
+
+    overflow-x: hidden;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.dashboard-header {
+    width: 100%;
+    min-width: 0;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 28px;
+}
+
+.dashboard-heading {
+    min-width: 0;
+}
+
+.eyebrow {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    color: #77736c;
+}
+
+.dashboard-header h1 {
+    margin: 6px 0;
+
+    font-size: 34px;
+    line-height: 1;
+
+    font-weight: 700;
+    letter-spacing: -1.3px;
+
+    color: #111;
+}
+
+.dashboard-header p {
+    margin: 0;
+
+    font-size: 13px;
+    line-height: 1.5;
+
+    color: #77736c;
+}
+
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+.dashboard-date {
+    flex-shrink: 0;
+
+    min-width: 170px;
+
+    padding: 12px 15px;
+
+    background: #fff;
+
+    border: 1px solid #e5e1d8;
+    border-radius: 11px;
+}
+
+.date-label {
+    display: block;
+
+    margin-bottom: 4px;
+
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+
+    color: #96918a;
+}
+
+.dashboard-date strong {
+    display: block;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    color: #181818;
+}
+
+
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
+.stats-grid {
+    width: 100%;
+    min-width: 0;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+
+    margin-bottom: 18px;
+}
+
+.stat-card {
+    min-width: 0;
+
+    background: #fff;
+
+    border: 1px solid #e5e1d8;
+    border-radius: 14px;
+
+    padding: 18px;
+
+    overflow: hidden;
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, .05);
+}
+
+.stat-top {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+}
+
+.stat-label {
+    min-width: 0;
+
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+
+    color: #77736c;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stat-icon {
+    width: 32px;
+    height: 32px;
+
+    flex: 0 0 32px;
+
+    border-radius: 8px;
+
+    background: #f3efe5;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #111;
+
+    font-size: 14px;
+}
+
+.stat-value {
+    margin-top: 19px;
+
+    font-size: 27px;
+    line-height: 1;
+
+    font-weight: 700;
+    letter-spacing: -1px;
+
+    color: #111;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stat-value.money {
+    font-size: 22px;
+}
+
+.stat-footer {
+    margin-top: 9px;
+
+    font-size: 11px;
+
+    color: #8b8780;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pending-number {
+    color: #111;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   MAIN TWO-COLUMN AREA
+   ========================================================= */
+
+.dashboard-columns {
+    width: 100%;
+    min-width: 0;
+
+    display: grid;
+
+    /*
+       minmax(0, ...) prevents the cards
+       from forcing the page wider.
+    */
+    grid-template-columns:
+        minmax(0, 1.35fr)
+        minmax(0, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 22px;
+}
+
+.dashboard-panel {
+    width: 100%;
+    min-width: 0;
+
+    background: #fff;
+
+    border: 1px solid #e5e1d8;
+    border-radius: 14px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   PANEL HEADER
+   ========================================================= */
+
+.panel-header {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #eeeae2;
+}
+
+.panel-header > div {
+    min-width: 0;
+}
+
+.panel-eyebrow {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+
+    color: #77736c;
+}
+
+.panel-header h2 {
+    margin: 5px 0 0;
+
+    font-size: 17px;
+    font-weight: 700;
+
+    letter-spacing: -.3px;
+
+    color: #111;
+}
+
+.panel-link {
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 5px;
+
+    color: #111;
+
+    text-decoration: none;
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.panel-link:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   BOOKINGS
+   ========================================================= */
+
+.booking-list {
+    width: 100%;
+    min-width: 0;
+
+    padding: 2px 20px;
+}
+
+.booking-item {
+    width: 100%;
+    min-width: 0;
+
+    display: grid;
+
+    /*
+       Every column can shrink.
+    */
+    grid-template-columns:
+        minmax(0, 1.5fr)
+        minmax(75px, .8fr)
+        minmax(60px, .6fr)
+        auto;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid #eeeae2;
+}
+
+.booking-item:last-child {
+    border-bottom: none;
+}
+
+.booking-client {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+}
+
+.client-avatar {
+    width: 34px;
+    height: 34px;
+
+    min-width: 34px;
+
+    border-radius: 50%;
+
+    background: #111;
+    color: #fff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.client-details {
+    min-width: 0;
+}
+
+.client-name {
+    min-width: 0;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    color: #181818;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.client-service {
+    min-width: 0;
+
+    margin-top: 3px;
+
+    font-size: 10px;
+
+    color: #89847d;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.booking-date {
+    min-width: 0;
+}
+
+.booking-date span {
+    display: block;
+
+    font-size: 10px;
+    font-weight: 600;
+
+    color: #35322e;
+
+    white-space: nowrap;
+}
+
+.booking-date small {
+    display: block;
+
+    margin-top: 2px;
+
+    font-size: 9px;
+
+    color: #96918a;
+
+    white-space: nowrap;
+}
+
+.booking-amount {
+    min-width: 0;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    color: #111;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.booking-status {
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   QUOTATIONS
+   ========================================================= */
+
+.quote-list {
+    width: 100%;
+    min-width: 0;
+
+    padding: 2px 20px;
+}
+
+.quote-item {
+    width: 100%;
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid #eeeae2;
+}
+
+.quote-item:last-child {
+    border-bottom: none;
+}
+
+.quote-main {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+}
+
+.quote-avatar {
+    width: 34px;
+    height: 34px;
+
+    min-width: 34px;
+
+    border-radius: 50%;
+
+    background: #f3efe5;
+    color: #111;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.quote-information {
+    min-width: 0;
+}
+
+.quote-name {
+    font-size: 12px;
+    font-weight: 700;
+
+    color: #181818;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quote-service {
+    max-width: 180px;
+
+    margin-top: 3px;
+
+    font-size: 10px;
+
+    color: #77736c;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quote-date {
+    margin-top: 2px;
+
+    font-size: 9px;
+
+    color: #a09b93;
+}
+
+.quote-right {
+    flex-shrink: 0;
+
+    text-align: right;
+}
+
+.quote-budget {
+    margin-bottom: 5px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    color: #111;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 4px 7px;
+
+    border-radius: 20px;
+
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .2px;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+.status-pending {
+    background: #f3efe5;
+    color: #6d665c;
+}
+
+.status-approved {
+    background: #e9f2e9;
+    color: #416044;
+}
+
+.status-completed {
+    background: #e8eef5;
+    color: #405a72;
+}
+
+.status-cancelled {
+    background: #f4e8e5;
+    color: #76504a;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+    padding: 45px 20px;
+
+    text-align: center;
+}
+
+.empty-icon {
+    width: 42px;
+    height: 42px;
+
+    margin: 0 auto 12px;
+
+    border-radius: 50%;
+
+    background: #f3efe5;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #77736c;
+}
+
+.empty-state h3 {
+    margin: 0 0 5px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    color: #222;
+}
+
+.empty-state p {
+    margin: 0;
+
+    font-size: 10px;
+
+    color: #99948c;
+}
+
+
+/* =========================================================
+   OVERVIEW
+   ========================================================= */
+
+.overview-section {
+    width: 100%;
+    min-width: 0;
+
+    margin-top: 5px;
+}
+
+.section-heading {
+    margin-bottom: 13px;
+}
+
+.section-heading h2 {
+    margin: 5px 0 0;
+
+    font-size: 18px;
+    font-weight: 700;
+
+    color: #111;
+}
+
+.overview-grid {
+    width: 100%;
+    min-width: 0;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 14px;
+}
+
+.overview-card {
+    min-width: 0;
+
+    background: #fff;
+
+    border: 1px solid #e5e1d8;
+    border-radius: 14px;
+
+    padding: 18px;
+
+    overflow: hidden;
+}
+
+.overview-card-header {
+    min-width: 0;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 10px;
+}
+
+.overview-card-header > div {
+    min-width: 0;
+}
+
+.overview-label {
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+
+    color: #77736c;
+}
+
+.overview-card-header h3 {
+    margin: 5px 0 0;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    color: #171717;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.overview-card-header > i {
+    flex-shrink: 0;
+
+    font-size: 17px;
+
+    color: #858078;
+}
+
+.overview-number {
+    margin-top: 18px;
+
+    font-size: 25px;
+    font-weight: 700;
+
+    letter-spacing: -1px;
+
+    color: #111;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.revenue-number {
+    font-size: 20px;
+}
+
+.overview-card p {
+    min-height: 30px;
+
+    margin: 7px 0 15px;
+
+    font-size: 10px;
+    line-height: 1.5;
+
+    color: #88837b;
+}
+
+.overview-link {
+    display: inline-flex;
+    align-items: center;
+
+    gap: 6px;
+
+    color: #111;
+
+    text-decoration: none;
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.overview-link:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   LARGE SCREENS
+   ========================================================= */
+
+@@media (min-width: 1500px) {
+
+    .dashboard-page {
+        padding-left: 36px;
+        padding-right: 36px;
+    }
+
+}
+
+
+/* =========================================================
+   MEDIUM SCREENS
+   ========================================================= */
+
+@@media (max-width: 1200px) {
+
+    .stats-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .overview-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-columns {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@@media (max-width: 850px) {
+
+    .dashboard-page {
+        padding: 24px 20px 40px;
+    }
+
+    .dashboard-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .dashboard-date {
+        width: auto;
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@@media (max-width: 650px) {
+
+    .dashboard-page {
+        padding: 20px 15px 35px;
+    }
+
+    .dashboard-header h1 {
+        font-size: 29px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-item {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .booking-client {
+        width: 100%;
+    }
+
+    .booking-date {
+        margin-left: 43px;
+    }
+
+    .booking-amount {
+        margin-left: auto;
+    }
+
+    .booking-status {
+        margin-left: 43px;
+    }
+
+    .quote-item {
+        align-items: flex-start;
+    }
+
+}
+
+
+/* =========================================================
+   VERY SMALL SCREENS
+   ========================================================= */
+
+@@media (max-width: 430px) {
+
+    .dashboard-page {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .panel-header {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .booking-list,
+    .quote-list {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .panel-link {
+        font-size: 9px;
+    }
+
+}
+
+</style>

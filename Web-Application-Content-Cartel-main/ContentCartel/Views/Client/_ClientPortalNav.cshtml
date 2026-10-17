@@ -1,0 +1,165 @@
+@{
+    var currentController =
+        ViewContext.RouteData.Values["controller"]?.ToString();
+
+    var currentAction =
+        ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<div class="client-portal-nav">
+
+    <!-- PROFILE -->
+
+    <div class="mb-4">
+
+        <div class="d-flex align-items-center gap-3">
+
+            <div class="rounded-circle bg-dark text-white
+                        d-flex align-items-center
+                        justify-content-center"
+                 style="width:48px;height:48px;">
+
+                <i class="bi bi-person"></i>
+
+            </div>
+
+            <div>
+
+                <small class="text-muted">
+                    CLIENT PORTAL
+                </small>
+
+                <strong class="d-block">
+                    @User.Identity?.Name
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- NAVIGATION -->
+
+    <nav class="nav flex-column gap-1">
+
+        <a asp-controller="Client"
+           asp-action="Dashboard"
+           class="nav-link
+           @(currentAction == "Dashboard" ? "active" : "")">
+
+            <i class="bi bi-grid me-2"></i>
+
+            Dashboard
+
+        </a>
+
+
+        <a asp-controller="Client"
+           asp-action="Bookings"
+           class="nav-link
+           @(currentAction == "Bookings" ||
+             currentAction == "BookingDetails"
+                ? "active"
+                : "")">
+
+            <i class="bi bi-calendar-check me-2"></i>
+
+            My Bookings
+
+        </a>
+
+
+        <a asp-controller="Client"
+           asp-action="Quotations"
+           class="nav-link
+           @(currentAction == "Quotations" ||
+             currentAction == "QuotationDetails"
+                ? "active"
+                : "")">
+
+            <i class="bi bi-file-earmark-text me-2"></i>
+
+            My Quotations
+
+        </a>
+
+
+        <a asp-controller="Client"
+           asp-action="Invoices"
+           class="nav-link
+           @(currentAction == "Invoices" ||
+             currentAction == "InvoiceDetails"
+                ? "active"
+                : "")">
+
+            <i class="bi bi-receipt me-2"></i>
+
+            Invoices & Payments
+
+        </a>
+
+
+        <a asp-controller="Client"
+           asp-action="Galleries"
+           class="nav-link
+           @(currentAction == "Galleries" ? "active" : "")">
+
+            <i class="bi bi-images me-2"></i>
+
+            My Galleries
+
+        </a>
+
+
+        <a asp-controller="Client"
+           asp-action="Profile"
+           class="nav-link
+           @(currentAction == "Profile" ? "active" : "")">
+
+            <i class="bi bi-person-circle me-2"></i>
+
+            My Profile
+
+        </a>
+
+    </nav>
+
+
+    <hr class="my-4" />
+
+
+    <!-- BOOKING CTA -->
+
+    <a asp-controller="Booking"
+       asp-action="Index"
+       class="btn btn-dark w-100 mb-3">
+
+        <i class="bi bi-plus-lg me-1"></i>
+
+        Book a Service
+
+    </a>
+
+
+    <!-- LOGOUT -->
+
+    <form asp-controller="Client"
+          asp-action="Logout"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <button type="submit"
+                class="btn btn-outline-dark w-100">
+
+            <i class="bi bi-box-arrow-right me-1"></i>
+
+            Logout
+
+        </button>
+
+    </form>
+
+</div>

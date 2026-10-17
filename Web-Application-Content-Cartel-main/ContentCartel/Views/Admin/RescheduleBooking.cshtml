@@ -1,0 +1,214 @@
+﻿@model ContentCartel.Models.Booking
+
+@{
+    ViewData["Title"] = "Reschedule Booking";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .admin-page {
+        width: 100%;
+        max-width: 100%;
+        padding: 28px 30px 45px;
+    }
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+    }
+
+    .page-header p {
+        margin: 8px 0 0;
+        color: #666;
+    }
+
+    .form-card {
+        max-width: 700px;
+        background: white;
+        border-radius: 14px;
+        padding: 30px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.08);
+    }
+
+    .booking-summary {
+        padding: 18px;
+        margin-bottom: 25px;
+        border-radius: 10px;
+        background: #f5f2eb;
+    }
+
+    .booking-summary strong {
+        color: #111;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 13px;
+        border: 1px solid #d0d0d0;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: #1473ea;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: white;
+        color: #333;
+        border: 1px solid #aaa;
+    }
+</style>
+
+<div class="admin-page">
+
+    <div class="page-header">
+
+        <h1>Reschedule Booking</h1>
+
+        <p>
+            Select a new date and time for this booking.
+        </p>
+
+    </div>
+
+    <div class="form-card">
+
+        <div class="booking-summary">
+
+            <strong>
+                @Model.CustomerName
+            </strong>
+
+            <br />
+
+            @Model.ServiceName
+
+            <br />
+
+            Current date:
+            @Model.BookingDate.ToString("dd MMM yyyy")
+
+            @if (!string.IsNullOrWhiteSpace(Model.BookingTime))
+            {
+                <span>
+                    at @Model.BookingTime
+                </span>
+            }
+
+        </div>
+
+        <form asp-action="RescheduleBooking"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   asp-for="Id" />
+
+            <input type="hidden"
+                   asp-for="UserId" />
+
+            <input type="hidden"
+                   asp-for="CustomerName" />
+
+            <input type="hidden"
+                   asp-for="Email" />
+
+            <input type="hidden"
+                   asp-for="Phone" />
+
+            <input type="hidden"
+                   asp-for="ServiceId" />
+
+            <input type="hidden"
+                   asp-for="ServiceName" />
+
+            <input type="hidden"
+                   asp-for="Status" />
+
+            <input type="hidden"
+                   asp-for="PaymentStatus" />
+
+            <input type="hidden"
+                   asp-for="CreatedAt" />
+
+            <div class="form-group">
+
+                <label asp-for="BookingDate">
+                    New Booking Date
+                </label>
+
+                <input asp-for="BookingDate"
+                       type="date"
+                       class="form-control"
+                       required />
+
+            </div>
+
+            <div class="form-group">
+
+                <label asp-for="BookingTime">
+                    New Booking Time
+                </label>
+
+                <input asp-for="BookingTime"
+                       type="time"
+                       class="form-control"
+                       required />
+
+            </div>
+
+            <div class="actions">
+
+                <a asp-action="Dashboard"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+                    Reschedule Booking
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

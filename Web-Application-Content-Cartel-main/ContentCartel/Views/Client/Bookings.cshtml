@@ -1,0 +1,201 @@
+@model IEnumerable<ContentCartel.Models.Booking>
+
+@{
+    ViewData["Title"] = "My Bookings";
+
+    var bookings = Model?.ToList()
+        ?? new List<ContentCartel.Models.Booking>();
+}
+
+<link rel="stylesheet"
+      href="~/css/client-portal.css"
+      asp-append-version="true" />
+
+<section class="client-portal">
+
+    <div class="container">
+
+        <div class="row g-4">
+
+            <!-- SIDEBAR -->
+
+            <aside class="col-12 col-lg-3">
+
+                @await Html.PartialAsync("_ClientPortalNav")
+
+            </aside>
+
+
+            <!-- MAIN -->
+
+            <main class="col-12 col-lg-9">
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger mb-4">
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <div class="client-portal-hero mb-4">
+
+                    <span class="client-portal-label">
+                        CLIENT PORTAL
+                    </span>
+
+                    <h1 class="h2 fw-bold mt-2 mb-2">
+                        My Bookings
+                    </h1>
+
+                    <p class="mb-0">
+                        View and manage your Content Cartel appointments.
+                    </p>
+
+                </div>
+
+
+                <div class="client-portal-card">
+
+                    <div class="d-flex justify-content-between
+                                align-items-center mb-4">
+
+                        <div>
+
+                            <h2 class="h4 fw-bold mb-1">
+                                Booking History
+                            </h2>
+
+                            <p class="text-muted mb-0">
+                                @bookings.Count booking(s)
+                            </p>
+
+                        </div>
+
+                        <a asp-controller="Booking"
+                           asp-action="Index"
+                           class="btn btn-dark">
+
+                            <i class="bi bi-plus-lg"></i>
+                            New Booking
+
+                        </a>
+
+                    </div>
+
+
+                    @if (bookings.Any())
+                    {
+                        <div class="table-responsive">
+
+                            <table class="table align-middle">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Service</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Payment</th>
+                                        <th></th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    @foreach (var booking in bookings
+                                        .OrderByDescending(b => b.CreatedAt))
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                <strong>
+                                                    @booking.ServiceName
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                @booking.BookingDate.ToString("dd MMM yyyy")
+                                            </td>
+
+                                            <td>
+                                                @(string.IsNullOrWhiteSpace(booking.BookingTime)
+                                                    ? "—"
+                                                    : booking.BookingTime)
+                                            </td>
+
+                                            <td>
+                                                R @booking.TotalAmount.ToString("N2")
+                                            </td>
+
+                                            <td>
+
+                                                <span class="badge bg-dark">
+                                                    @booking.Status
+                                                </span>
+
+                                            </td>
+
+                                            <td>
+                                                @booking.PaymentStatus
+                                            </td>
+
+                                            <td class="text-end">
+
+                                                <a asp-action="BookingDetails"
+                                                   asp-route-id="@booking.BookingId"
+                                                   class="btn btn-sm btn-outline-dark">
+
+                                                    View
+
+                                                </a>
+
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+
+                            <i class="bi bi-calendar-x fs-1 text-muted"></i>
+
+                            <h4 class="fw-bold mt-3">
+                                No bookings yet
+                            </h4>
+
+                            <p class="text-muted">
+                                You haven't made any bookings yet.
+                            </p>
+
+                            <a asp-controller="Booking"
+                               asp-action="Index"
+                               class="btn btn-dark">
+
+                                Book an Appointment
+
+                            </a>
+
+                        </div>
+                    }
+
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+</section>

@@ -1,0 +1,274 @@
+@model ContentCartel.Models.Booking
+
+@{
+    ViewData["Title"] = "Booking Details";
+}
+
+<link rel="stylesheet"
+      href="~/css/client-portal.css"
+      asp-append-version="true" />
+
+<section class="client-portal">
+
+    <div class="container">
+
+        <div class="row g-4">
+
+            <aside class="col-12 col-lg-3">
+
+                @await Html.PartialAsync("_ClientPortalNav")
+
+            </aside>
+
+
+            <main class="col-12 col-lg-9">
+
+                <div class="client-portal-hero mb-4">
+
+                    <span class="client-portal-label">
+                        MY BOOKING
+                    </span>
+
+                    <h1 class="h2 fw-bold mt-2 mb-2">
+                        Booking Details
+                    </h1>
+
+                    <p class="mb-0">
+                        View the details of your appointment.
+                    </p>
+
+                </div>
+
+
+                <div class="client-portal-card">
+
+                    <div class="d-flex justify-content-between
+                                align-items-start mb-4">
+
+                        <div>
+
+                            <span class="text-muted small">
+                                BOOKING #@Model.BookingId
+                            </span>
+
+                            <h2 class="h4 fw-bold mt-2">
+                                @Model.ServiceName
+                            </h2>
+
+                        </div>
+
+                        <span class="badge bg-dark">
+                            @Model.Status
+                        </span>
+
+                    </div>
+
+
+                    <div class="row g-4">
+
+                        <div class="col-12 col-md-6">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    CUSTOMER
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+                                    @Model.CustomerName
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    EMAIL
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+                                    @Model.Email
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    PHONE
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+                                    @(string.IsNullOrWhiteSpace(Model.Phone)
+                                        ? "Not provided"
+                                        : Model.Phone)
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    BOOKING DATE
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+                                    @Model.BookingDate.ToString("dd MMMM yyyy")
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    BOOKING TIME
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+                                    @(string.IsNullOrWhiteSpace(Model.BookingTime)
+                                        ? "Not specified"
+                                        : Model.BookingTime)
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    PAYMENT STATUS
+                                </small>
+
+                                <div class="fw-semibold mt-1">
+                                    @Model.PaymentStatus
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <hr class="my-4" />
+
+
+                    <h3 class="h5 fw-bold mb-3">
+                        Payment Summary
+                    </h3>
+
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-4">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    TOTAL
+                                </small>
+
+                                <h5 class="fw-bold mt-1 mb-0">
+                                    R @Model.TotalAmount.ToString("N2")
+                                </h5>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-4">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    DEPOSIT
+                                </small>
+
+                                <h5 class="fw-bold mt-1 mb-0">
+                                    R @Model.DepositAmount.ToString("N2")
+                                </h5>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-4">
+
+                            <div class="border rounded-3 p-3">
+
+                                <small class="text-muted">
+                                    REMAINING
+                                </small>
+
+                                <h5 class="fw-bold mt-1 mb-0">
+                                    R @Model.RemainingBalance.ToString("N2")
+                                </h5>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                    {
+                        <hr class="my-4" />
+
+                        <h3 class="h5 fw-bold">
+                            Notes
+                        </h3>
+
+                        <p class="text-muted mb-0">
+                            @Model.Notes
+                        </p>
+                    }
+
+
+                    <div class="mt-4">
+
+                        <a asp-action="Bookings"
+                           class="btn btn-outline-dark">
+
+                            <i class="bi bi-arrow-left"></i>
+                            Back to Bookings
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+</section>

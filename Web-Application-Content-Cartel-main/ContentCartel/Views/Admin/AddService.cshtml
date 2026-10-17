@@ -1,0 +1,534 @@
+﻿@model ContentCartel.Models.Service
+
+@{
+    ViewData["Title"] = "Add Service";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="form-page">
+
+    <div class="page-header">
+
+        <div>
+            <h1>Add Service</h1>
+            <p>Create a new service and set its pricing.</p>
+        </div>
+
+        <a asp-action="ServicesPricing"
+           class="back-btn">
+            ← Back
+        </a>
+
+    </div>
+
+
+    <div class="form-card">
+
+        <form asp-action="AddService"
+              method="post"
+              id="serviceForm">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="validation"></div>
+
+
+            <!-- CATEGORY -->
+            <div class="form-group">
+
+                <label asp-for="Category">
+                    Category
+                </label>
+
+                <select asp-for="Category"
+                        class="form-control"
+                        id="categorySelect">
+
+                    <option value="">
+                        Select a category
+                    </option>
+
+                    <option value="Video Production">
+                        Video Production
+                    </option>
+
+                    <option value="Photography">
+                        Photography
+                    </option>
+
+                    <option value="Podcast">
+                        Podcast
+                    </option>
+
+                    <option value="Social Media">
+                        Social Media
+                    </option>
+
+                    <option value="Content Creation">
+                        Content Creation
+                    </option>
+
+                    <option value="Influencer">
+                        Influencer
+                    </option>
+
+                    <option value="Events">
+                        Events
+                    </option>
+
+                    <option value="Branding">
+                        Branding
+                    </option>
+
+                    <option value="Other">
+                        Other
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="Category"
+                      class="field-error"></span>
+
+            </div>
+
+
+            <!-- SERVICE NAME -->
+            <div class="form-group">
+
+                <label>
+                    Service Name
+                </label>
+
+                <select id="serviceNameSelect"
+                        class="form-control">
+
+                    <option value="">
+                        Select a service
+                    </option>
+
+                    <option value="Short-Form Reels Package">
+                        Short-Form Reels Package
+                    </option>
+
+                    <option value="Podcast Studio Production">
+                        Podcast Studio Production
+                    </option>
+
+                    <option value="Influencer Creator Collab">
+                        Influencer Creator Collab
+                    </option>
+
+                    <option value="Social Media Management">
+                        Social Media Management
+                    </option>
+
+                    <option value="Photography Session">
+                        Photography Session
+                    </option>
+
+                    <option value="Event Content Package">
+                        Event Content Package
+                    </option>
+
+                    <option value="Brand Content Package">
+                        Brand Content Package
+                    </option>
+
+                    <option value="Other">
+                        Other
+                    </option>
+
+                </select>
+
+
+                <!-- CUSTOM SERVICE NAME -->
+
+                <div id="customServiceContainer"
+                     class="custom-service">
+
+                    <input type="text"
+                           id="customServiceName"
+                           class="form-control"
+                           placeholder="Enter custom service name" />
+
+                </div>
+
+
+                <!-- ACTUAL MODEL VALUE -->
+
+                <input asp-for="Name"
+                       type="hidden"
+                       id="serviceNameValue" />
+
+                <span asp-validation-for="Name"
+                      class="field-error"></span>
+
+            </div>
+
+
+            <!-- DESCRIPTION -->
+            <div class="form-group">
+
+                <label asp-for="Description">
+                    Description
+                </label>
+
+                <textarea asp-for="Description"
+                          class="form-control"
+                          rows="5"
+                          placeholder="Describe what is included in this service..."></textarea>
+
+                <span asp-validation-for="Description"
+                      class="field-error"></span>
+
+            </div>
+
+
+            <!-- PRICE -->
+            <div class="form-group">
+
+                <label asp-for="BasePrice">
+                    Price (R)
+                </label>
+
+                <div class="price-input">
+
+                    <span>R</span>
+
+                    <input asp-for="BasePrice"
+                           type="number"
+                           step="0.01"
+                           min="0"
+                           class="form-control"
+                           placeholder="3500" />
+
+                </div>
+
+                <span asp-validation-for="BasePrice"
+                      class="field-error"></span>
+
+            </div>
+
+
+            <!-- ACTIVE -->
+            <div class="checkbox-group">
+
+                <input asp-for="IsActive"
+                       type="checkbox" />
+
+                <label asp-for="IsActive">
+                    Service is active
+                </label>
+
+            </div>
+
+
+            <!-- SUBMIT -->
+            <button type="submit"
+                    class="save-btn">
+
+                Add Service
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    .form-page {
+        padding: 30px;
+        max-width: 850px;
+    }
+
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 30px;
+    }
+
+
+    .page-header p {
+        color: #777;
+        margin-top: 8px;
+    }
+
+
+    .back-btn {
+        text-decoration: none;
+        color: #111;
+        background: #f2f2f2;
+        padding: 11px 18px;
+        border-radius: 8px;
+    }
+
+
+    .form-card {
+        background: white;
+        border: 1px solid #e5e5e5;
+        border-radius: 14px;
+        padding: 30px;
+    }
+
+
+    .form-group {
+        margin-bottom: 22px;
+    }
+
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+
+    .form-control {
+        width: 100%;
+        padding: 13px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 15px;
+        background: white;
+    }
+
+
+    .form-control:focus {
+        outline: none;
+        border-color: #111;
+    }
+
+
+    select.form-control {
+        cursor: pointer;
+    }
+
+
+    textarea.form-control {
+        resize: vertical;
+    }
+
+
+    /* CUSTOM SERVICE */
+
+    .custom-service {
+        display: none;
+        margin-top: 12px;
+    }
+
+
+    .custom-service.show {
+        display: block;
+    }
+
+
+    /* PRICE */
+
+    .price-input {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+
+    .price-input > span {
+        position: absolute;
+        left: 14px;
+        font-weight: 600;
+        z-index: 1;
+    }
+
+
+    .price-input input {
+        padding-left: 35px;
+    }
+
+
+    /* CHECKBOX */
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 25px;
+    }
+
+
+    .checkbox-group input {
+        width: 17px;
+        height: 17px;
+        cursor: pointer;
+    }
+
+
+    .checkbox-group label {
+        margin: 0;
+        cursor: pointer;
+    }
+
+
+    /* BUTTON */
+
+    .save-btn {
+        width: 100%;
+        padding: 14px;
+        background: #111;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+
+    .save-btn:hover {
+        background: #333;
+    }
+
+
+    /* VALIDATION */
+
+    .validation,
+    .field-error {
+        color: #b42318;
+        font-size: 13px;
+    }
+
+
+    @@media (max-width: 700px) {
+
+        .form-page {
+            padding: 20px;
+        }
+
+        .page-header {
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .form-card {
+            padding: 20px;
+        }
+
+    }
+
+</style>
+
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const serviceSelect =
+            document.getElementById("serviceNameSelect");
+
+        const customContainer =
+            document.getElementById("customServiceContainer");
+
+        const customInput =
+            document.getElementById("customServiceName");
+
+        const serviceValue =
+            document.getElementById("serviceNameValue");
+
+        function updateServiceName() {
+
+            const selected =
+                serviceSelect.value;
+
+            if (selected === "Other") {
+
+                customContainer.classList.add("show");
+
+                customInput.required = true;
+
+                serviceValue.value =
+                    customInput.value;
+
+            }
+            else {
+
+                customContainer.classList.remove("show");
+
+                customInput.required = false;
+
+                customInput.value = "";
+
+                serviceValue.value = selected;
+
+            }
+        }
+
+
+        serviceSelect.addEventListener(
+            "change",
+            updateServiceName
+        );
+
+
+        customInput.addEventListener(
+            "input",
+            function () {
+
+                if (serviceSelect.value === "Other") {
+
+                    serviceValue.value =
+                        customInput.value;
+
+                }
+
+            }
+        );
+
+
+        document.getElementById("serviceForm")
+            .addEventListener("submit", function (event) {
+
+                if (serviceSelect.value === "Other") {
+
+                    serviceValue.value =
+                        customInput.value.trim();
+
+                    if (!serviceValue.value) {
+
+                        event.preventDefault();
+
+                        customInput.focus();
+
+                        alert(
+                            "Please enter a service name."
+                        );
+
+                    }
+
+                }
+
+            });
+
+
+        updateServiceName();
+
+    });
+
+</script>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

@@ -1,0 +1,215 @@
+@model ContentCartel.Models.Invoice
+
+@{
+    ViewData["Title"] = "Record Payment";
+}
+
+<div class="admin-page">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h1 class="fw-bold mb-1">
+                Record Payment
+            </h1>
+
+            <p class="text-muted mb-0">
+                @Model.InvoiceNumber
+            </p>
+        </div>
+
+        <a asp-action="Details"
+           asp-route-id="@Model.InvoiceId"
+           class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>
+            Back
+        </a>
+
+    </div>
+
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-7">
+
+            <div class="admin-card">
+
+                <div class="text-center mb-4">
+
+                    <i class="bi bi-cash-stack display-4 text-success"></i>
+
+                    <h4 class="fw-bold mt-3">
+                        Record Invoice Payment
+                    </h4>
+
+                    <p class="text-muted">
+                        Enter the amount received from the client.
+                    </p>
+
+                </div>
+
+
+                <!-- INVOICE SUMMARY -->
+                <div class="border rounded p-4 mb-4">
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span class="text-muted">
+                            Invoice
+                        </span>
+
+                        <strong>
+                            @Model.InvoiceNumber
+                        </strong>
+
+                    </div>
+
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span class="text-muted">
+                            Client
+                        </span>
+
+                        <strong>
+                            @Model.ClientName
+                        </strong>
+
+                    </div>
+
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span class="text-muted">
+                            Total
+                        </span>
+
+                        <strong>
+                            R @Model.TotalAmount.ToString("N2")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span class="text-muted">
+                            Already Paid
+                        </span>
+
+                        <span class="text-success">
+                            R @Model.AmountPaid.ToString("N2")
+                        </span>
+
+                    </div>
+
+
+                    <hr />
+
+
+                    <div class="d-flex justify-content-between">
+
+                        <strong>
+                            Balance Due
+                        </strong>
+
+                        <strong class="text-danger fs-5">
+                            R @Model.BalanceDue.ToString("N2")
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                @if (Model.BalanceDue <= 0)
+                {
+                    <div class="alert alert-success text-center">
+
+                        <i class="bi bi-check-circle fs-4"></i>
+
+                        <div class="fw-bold mt-2">
+                            This invoice is fully paid.
+                        </div>
+
+                    </div>
+                }
+                else
+                {
+                    <form asp-action="Payment"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="id"
+                               value="@Model.InvoiceId" />
+
+
+                        <div class="mb-4">
+
+                            <label for="amount"
+                                   class="form-label fw-bold">
+                                Payment Amount
+                            </label>
+
+                            <div class="input-group input-group-lg">
+
+                                <span class="input-group-text">
+                                    R
+                                </span>
+
+                                <input type="number"
+                                       id="amount"
+                                       name="amount"
+                                       class="form-control"
+                                       step="0.01"
+                                       min="0.01"
+                                       max="@Model.BalanceDue"
+                                       required />
+
+                            </div>
+
+                            <small class="text-muted">
+                                Maximum payment:
+                                R @Model.BalanceDue.ToString("N2")
+                            </small>
+
+                        </div>
+
+
+                        <div class="d-flex justify-content-end gap-2">
+
+                            <a asp-action="Details"
+                               asp-route-id="@Model.InvoiceId"
+                               class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+
+                            <button type="submit"
+                                    class="btn btn-success">
+                                <i class="bi bi-check-lg me-2"></i>
+                                Record Payment
+                            </button>
+
+                        </div>
+
+                    </form>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
