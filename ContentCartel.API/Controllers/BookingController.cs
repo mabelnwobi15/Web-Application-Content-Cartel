@@ -1,4 +1,4 @@
-﻿using ContentCartel.API.Models;
+using ContentCartel.API.Models;
 using ContentCartel.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -110,26 +110,44 @@ public async Task<IActionResult> GetClientBookings(string userId)
 
         var bookings =
             await _firebaseService
-                .GetAsync<Dictionary<string, Booking>>("bookings");
+                .GetAsync<Dictionary<string, System.Text.Json.JsonElement>>("bookings");
 
         if (bookings == null || bookings.Count == 0)
         {
             return Ok(new List<Booking>());
         }
 
-        var result = bookings
-            .Where(x =>
-                x.Value != null &&
-                string.Equals(
-                    x.Value.UserId,
-                    userId,
-                    StringComparison.OrdinalIgnoreCase))
-            .Select(x =>
+        var options = new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        var result = new List<Booking>();
+
+        foreach (var entry in bookings)
+        {
+            try
             {
-                var booking = x.Value;
-                booking.Id = x.Key;
-                return booking;
-            })
+                var item = System.Text.Json.JsonSerializer
+                    .Deserialize<Booking>(entry.Value, options);
+
+                if (item != null &&
+                    string.Equals(
+                        item.UserId,
+                        userId,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    item.Id = entry.Key;
+                    result.Add(item);
+                }
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                // Skip legacy records that don't match the model.
+            }
+        }
+
+        result = result
             .OrderByDescending(x => x.CreatedAt)
             .ToList();
 
