@@ -1,0 +1,454 @@
+@model ContentCartel.Models.Invoice
+
+@{
+    ViewData["Title"] = "Create Invoice";
+
+    var bookings =
+        ViewBag.Bookings as List<ContentCartel.Models.Booking>
+        ?? new List<ContentCartel.Models.Booking>();
+}
+
+<div class="admin-page">
+
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h1 class="fw-bold mb-1">
+                Create Invoice
+            </h1>
+
+            <p class="text-muted mb-0">
+                Generate an invoice directly from a client booking.
+            </p>
+        </div>
+
+        <a asp-controller="Invoice"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left me-2"></i>
+            Back to Invoices
+
+        </a>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- SUCCESS MESSAGE -->
+    <!-- ========================================================= -->
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+
+            <i class="bi bi-check-circle me-2"></i>
+
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+
+            <i class="bi bi-check-circle me-2"></i>
+
+            @TempData["SuccessMessage"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- ERROR MESSAGE -->
+    <!-- ========================================================= -->
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+
+            <i class="bi bi-exclamation-triangle me-2"></i>
+
+            @TempData["Error"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+
+            <i class="bi bi-exclamation-triangle me-2"></i>
+
+            @TempData["ErrorMessage"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- INFO MESSAGE -->
+    <!-- ========================================================= -->
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show">
+
+            <i class="bi bi-info-circle me-2"></i>
+
+            @TempData["InfoMessage"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- MAIN CARD -->
+    <!-- ========================================================= -->
+
+    <div class="admin-card">
+
+        <form asp-controller="Invoice"
+              asp-action="Create"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+
+            <!-- ================================================= -->
+            <!-- SELECT BOOKING -->
+            <!-- ================================================= -->
+
+            <div class="mb-4">
+
+                <h5 class="fw-bold mb-2">
+
+                    <i class="bi bi-calendar-check me-2"></i>
+
+                    Select Booking
+
+                </h5>
+
+                <p class="text-muted mb-4">
+
+                    Select the booking you want to generate an invoice for.
+                    All invoice information will be retrieved automatically.
+
+                </p>
+
+
+                @if (bookings.Any())
+                {
+                    <label asp-for="BookingId"
+                           class="form-label fw-semibold">
+
+                        Booking
+
+                    </label>
+
+
+                    <!-- ================================================= -->
+                    <!-- BOOKING DROPDOWN -->
+                    <!-- IMPORTANT: booking.Id = FIREBASE ID -->
+                    <!-- ================================================= -->
+
+                    <select asp-for="BookingId"
+                            class="form-select form-select-lg"
+                            required>
+
+                        <option value="">
+                            -- Select a client booking --
+                        </option>
+
+                        @foreach (var booking in bookings)
+                        {
+                            <option value="@booking.Id">
+
+                                @booking.CustomerName
+
+                                @if (!string.IsNullOrWhiteSpace(booking.ServiceName))
+                                {
+                                    <text>
+                                        — @booking.ServiceName
+                                    </text>
+                                }
+
+                                @if (booking.BookingDate != default)
+                                {
+                                    <text>
+                                        —
+                                        @booking.BookingDate.ToString("dd MMM yyyy")
+                                    </text>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(booking.BookingTime))
+                                {
+                                    <text>
+                                        —
+                                        @booking.BookingTime
+                                    </text>
+                                }
+
+                            </option>
+                        }
+
+                    </select>
+
+
+                    <span asp-validation-for="BookingId"
+                          class="text-danger">
+                    </span>
+
+
+                    <small class="text-muted d-block mt-2">
+
+                        <i class="bi bi-info-circle me-1"></i>
+
+                        Only bookings that do not already have an active
+                        invoice are shown.
+
+                    </small>
+                }
+                else
+                {
+                    <div class="alert alert-warning mb-0">
+
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+
+                        <strong>No available bookings.</strong>
+
+                        <div class="mt-1">
+
+                            There are currently no bookings available
+                            for invoice generation, or all bookings
+                            already have invoices.
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+
+
+            <hr class="my-4" />
+
+
+            <!-- ================================================= -->
+            <!-- INVOICE INFORMATION -->
+            <!-- ================================================= -->
+
+            <h5 class="fw-bold mb-3">
+
+                <i class="bi bi-database-check me-2"></i>
+
+                Invoice Information
+
+            </h5>
+
+
+            <div class="row g-3 mb-4">
+
+                <!-- CLIENT -->
+
+                <div class="col-md-4">
+
+                    <div class="border rounded p-3 h-100">
+
+                        <div class="text-muted small mb-1">
+                            CLIENT
+                        </div>
+
+                        <div class="fw-semibold">
+                            Retrieved from booking
+                        </div>
+
+                        <small class="text-muted">
+                            Name, email, phone and client ID
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- SERVICE -->
+
+                <div class="col-md-4">
+
+                    <div class="border rounded p-3 h-100">
+
+                        <div class="text-muted small mb-1">
+                            SERVICE
+                        </div>
+
+                        <div class="fw-semibold">
+                            Retrieved from booking
+                        </div>
+
+                        <small class="text-muted">
+                            Service ID and service name
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <!-- FINANCIAL -->
+
+                <div class="col-md-4">
+
+                    <div class="border rounded p-3 h-100">
+
+                        <div class="text-muted small mb-1">
+                            FINANCIAL
+                        </div>
+
+                        <div class="fw-semibold">
+                            Retrieved from booking
+                        </div>
+
+                        <small class="text-muted">
+                            Total amount and deposit
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- PROCESS INFORMATION -->
+            <!-- ================================================= -->
+
+            <div class="alert alert-light border mb-4">
+
+                <div class="d-flex">
+
+                    <i class="bi bi-lightbulb me-3 fs-4"></i>
+
+                    <div>
+
+                        <strong>
+                            How invoice generation works
+                        </strong>
+
+                        <ol class="mb-0 mt-2">
+
+                            <li>
+                                Select an existing client booking.
+                            </li>
+
+                            <li>
+                                The system retrieves the booking from the API.
+                            </li>
+
+                            <li>
+                                Client, service and financial information
+                                are copied automatically.
+                            </li>
+
+                            <li>
+                                The invoice is saved to Firebase.
+                            </li>
+
+                            <li>
+                                You are taken directly to the generated invoice.
+                            </li>
+
+                        </ol>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- BUTTONS -->
+            <!-- ================================================= -->
+
+            <div class="d-flex justify-content-end gap-2">
+
+                <a asp-controller="Invoice"
+                   asp-action="Index"
+                   class="btn btn-outline-secondary">
+
+                    Cancel
+
+                </a>
+
+
+                @if (bookings.Any())
+                {
+                    <button type="submit"
+                            class="btn btn-dark">
+
+                        <i class="bi bi-file-earmark-plus me-2"></i>
+
+                        Generate Invoice
+
+                    </button>
+                }
+                else
+                {
+                    <button type="button"
+                            class="btn btn-dark"
+                            disabled>
+
+                        <i class="bi bi-file-earmark-plus me-2"></i>
+
+                        Generate Invoice
+
+                    </button>
+                }
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+}

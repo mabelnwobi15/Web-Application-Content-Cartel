@@ -1,0 +1,36 @@
+# Place at the REPO ROOT (replaces the existing render.yaml).
+# Secret Files (firebase-service-account.json) cannot be declared here:
+# add it by hand in the Render dashboard on the API service
+# (Environment -> Secret Files).
+services:
+  # ---------- API ----------
+  - type: web
+    name: contentcartel-api
+    runtime: docker
+    dockerfilePath: ./ContentCartel.API/Dockerfile.api
+    dockerContext: .
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Firebase__ApiKey
+        sync: false          # enter the value in the dashboard
+      - key: Recaptcha__SecretKey
+        sync: false          # enter the value in the dashboard
+
+  # ---------- Web (MVC front end) ----------
+  - type: web
+    name: contentcartel-web
+    runtime: docker
+    dockerfilePath: ./ContentCartel/Dockerfile.web
+    dockerContext: .
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Api__BaseUrl
+        sync: false          # e.g. https://contentcartel-api.onrender.com/  (keep the trailing slash)

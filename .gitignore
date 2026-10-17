@@ -1,0 +1,13 @@
+*.iml\n.gradle\n/local.properties\n/.idea/caches\n/.idea/libraries\n/.idea/modules.xml\n/.idea/workspace.xml\n/.idea/navEditor.xml\n/.idea/assetWizardSettings.xml\n.DS_Store\n/build\n/captures\n.externalNativeBuild\n.cxx\nlocal.properties\n.vs/
+.vs/ 
+.vs/ 
+
+firebase-service-account.json*
+google-services.json
+bin/
+obj/
+
+bin/
+obj/
+firebase-service-account.json*
+google-services.json

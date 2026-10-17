@@ -1,0 +1,20 @@
+# ---------- Build ----------
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY ContentCartel.API/ContentCartel.API.csproj ContentCartel.API/
+RUN dotnet restore ContentCartel.API/ContentCartel.API.csproj
+
+COPY ContentCartel.API/ ContentCartel.API/
+RUN dotnet publish ContentCartel.API/ContentCartel.API.csproj -c Release -o /app/publish --no-restore
+
+# ---------- Runtime ----------
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
+
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENTRYPOINT ["/docker-entrypoint.sh", "ContentCartel.API.dll"]

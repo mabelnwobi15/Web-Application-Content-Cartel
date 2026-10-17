@@ -1,0 +1,162 @@
+﻿@{
+    ViewData["Title"] = "System Settings";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .admin-page {
+        padding: 28px 30px 45px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .page-header {
+        margin-bottom: 28px;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+    }
+
+    .page-header p {
+        margin: 8px 0 0;
+        color: #666;
+    }
+
+    .settings-card {
+        max-width: 900px;
+        background: white;
+        border-radius: 14px;
+        padding: 30px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.08);
+    }
+
+    .setting-section {
+        margin-bottom: 30px;
+    }
+
+        .setting-section h2 {
+            margin: 0 0 6px;
+            font-size: 19px;
+        }
+
+        .setting-section p {
+            margin: 0 0 20px;
+            color: #777;
+            font-size: 14px;
+        }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    input {
+        width: 100%;
+        padding: 13px;
+        border: 1px solid #d0d0d0;
+        border-radius: 8px;
+    }
+
+    .checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .checkbox input {
+            width: 18px;
+        }
+
+    .save-btn {
+        border: none;
+        background: #1473ea;
+        color: white;
+        padding: 13px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+</style>
+
+<div class="admin-page">
+
+    <div class="page-header">
+        <h1>System Settings</h1>
+        <p>Manage platform configuration and administrator preferences.</p>
+    </div>
+
+    <div class="settings-card">
+
+        <form asp-controller="Admin"
+              asp-action="SaveSettings"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div class="setting-section">
+
+                <h2>Business Information</h2>
+
+                <p>
+                    Configure the basic information displayed throughout
+                    the platform.
+                </p>
+
+                <div class="form-group">
+                    <label>Business Name</label>
+
+                    <input type="text"
+                           name="businessName"
+                           value="Content Cartel" />
+                </div>
+
+                <div class="form-group">
+                    <label>Support Email</label>
+
+                    <input type="email"
+                           name="supportEmail"
+                           value="mabelnwobi15@gmail.com" />
+                </div>
+
+            </div>
+
+            <div class="setting-section">
+
+                <h2>Security</h2>
+
+                <p>
+                    Manage administrator security settings.
+                </p>
+
+                <div class="checkbox">
+                    <input type="checkbox"
+                           name="biometricEnabled"
+                           value="true" />
+
+                    <label style="margin:0;">
+                        Enable biometric authentication
+                    </label>
+                </div>
+
+            </div>
+
+            <button type="submit"
+                    class="save-btn">
+                <i class="bi bi-check-lg"></i>
+                Save Settings
+            </button>
+
+        </form>
+
+    </div>
+
+</div>

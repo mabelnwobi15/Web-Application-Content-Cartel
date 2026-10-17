@@ -1,0 +1,143 @@
+﻿@{
+    ViewData["Title"] = "Discount & Loyalty";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .admin-page {
+        padding: 28px 30px 45px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .page-header {
+        margin-bottom: 28px;
+    }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        .page-header p {
+            margin: 8px 0 0;
+            color: #666;
+        }
+
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.08);
+    }
+
+    .card-icon {
+        width: 46px;
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #f1f1f1;
+        font-size: 21px;
+        margin-bottom: 18px;
+    }
+
+    .card h2 {
+        margin: 0 0 8px;
+        font-size: 19px;
+    }
+
+    .card p {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .primary-btn {
+        display: inline-block;
+        margin-top: 12px;
+        background: #1473ea;
+        color: white;
+        padding: 11px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    @@media(max-width:800px) {
+        .cards {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="admin-page">
+
+    <div class="page-header">
+        <h1>Discount & Loyalty</h1>
+        <p>Manage discounts, loyalty rewards and client retention.</p>
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+            <div class="card-icon">
+                <i class="bi bi-percent"></i>
+            </div>
+
+            <h2>Discounts</h2>
+
+            <p>
+                Create and manage promotional discounts for eligible clients
+                and campaigns.
+            </p>
+
+            <a href="#" class="primary-btn">
+                Manage Discounts
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">
+                <i class="bi bi-heart"></i>
+            </div>
+
+            <h2>Loyalty Programme</h2>
+
+            <p>
+                Monitor returning clients and manage loyalty rewards.
+            </p>
+
+            <a href="#" class="primary-btn">
+                View Loyalty
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-icon">
+                <i class="bi bi-robot"></i>
+            </div>
+
+            <h2>Loyalty Bot</h2>
+
+            <p>
+                Review automated discount and loyalty recommendations.
+            </p>
+
+            <a asp-action="DiscountLoyalty"
+               class="primary-btn">
+                Review Recommendations
+            </a>
+        </div>
+
+    </div>
+
+</div>

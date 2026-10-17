@@ -1,0 +1,317 @@
+﻿@model List<ContentCartel.Models.Service>
+
+@{
+    ViewData["Title"] = "Services & Pricing";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="services-page">
+
+    <div class="page-header">
+        <div>
+            <h1>Services & Pricing</h1>
+            <p>Manage your services, descriptions and pricing.</p>
+        </div>
+
+        <a asp-controller="Admin"
+           asp-action="AddService"
+           class="add-btn">
+            + Add Service
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert error">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">+</div>
+
+            <h2>No services yet</h2>
+
+            <p>
+                Add your first service and set its pricing.
+            </p>
+
+            <a asp-controller="Admin"
+               asp-action="AddService"
+               class="add-btn">
+                Add Service
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="service-grid">
+
+            @foreach (var service in Model)
+            {
+                <div class="service-card">
+
+                    <div class="service-card-header">
+
+                        <div>
+                            <span class="category">
+                                @service.Category
+                            </span>
+
+                            <h2>
+                                @service.Name
+                            </h2>
+                        </div>
+
+                        @if (service.IsActive)
+                        {
+                            <span class="status active">
+                                Active
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="status inactive">
+                                Inactive
+                            </span>
+                        }
+
+                    </div>
+
+                    <p class="description">
+                        @(string.IsNullOrWhiteSpace(service.Description)
+                            ? "No description provided."
+                            : service.Description)
+                    </p>
+
+                    <div class="price">
+                        R @service.BasePrice.ToString("N2")
+                    </div>
+
+                    <div class="service-actions">
+
+                        <a asp-controller="Admin"
+                           asp-action="EditService"
+                           asp-route-id="@service.ServiceId"
+                           class="edit-btn">
+                            Edit
+                        </a>
+
+                        <form asp-controller="Admin"
+                              asp-action="DeleteService"
+                              asp-route-id="@service.ServiceId"
+                              method="post"
+                              onsubmit="return confirm('Are you sure you want to delete this service?');">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="delete-btn">
+                                Delete
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+
+</div>
+
+<style>
+
+    .services-page {
+        padding: 30px;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 30px;
+    }
+
+    .page-header p {
+        margin-top: 8px;
+        color: #777;
+    }
+
+    .add-btn {
+        display: inline-block;
+        background: #111;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .add-btn:hover {
+        background: #333;
+    }
+
+    .alert {
+        padding: 14px 18px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .success {
+        background: #e9f7ef;
+        color: #176b3a;
+    }
+
+    .error {
+        background: #fdecec;
+        color: #a32121;
+    }
+
+    .service-grid {
+        display: grid;
+        grid-template-columns:
+            repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .service-card {
+        background: white;
+        border: 1px solid #e5e5e5;
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    }
+
+    .service-card-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .category {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #777;
+    }
+
+    .service-card h2 {
+        margin: 8px 0 0;
+        font-size: 20px;
+    }
+
+    .description {
+        color: #666;
+        line-height: 1.6;
+        min-height: 50px;
+    }
+
+    .price {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 20px 0;
+    }
+
+    .status {
+        height: fit-content;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status.active {
+        background: #e8f7ed;
+        color: #21733d;
+    }
+
+    .status.inactive {
+        background: #eee;
+        color: #666;
+    }
+
+    .service-actions {
+        display: flex;
+        gap: 10px;
+        border-top: 1px solid #eee;
+        padding-top: 18px;
+    }
+
+    .edit-btn,
+    .delete-btn {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        border-radius: 7px;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .edit-btn {
+        background: #f1f1f1;
+        color: #111;
+    }
+
+    .delete-btn {
+        background: #111;
+        color: white;
+        border: none;
+    }
+
+    .service-actions form {
+        flex: 1;
+        display: flex;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        border: 1px dashed #ccc;
+        border-radius: 14px;
+    }
+
+    .empty-icon {
+        font-size: 40px;
+        margin-bottom: 15px;
+    }
+
+    @@media (max-width: 700px) {
+
+        .services-page {
+            padding: 20px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .add-btn {
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+    }
+
+</style>

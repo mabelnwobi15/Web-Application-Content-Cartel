@@ -1,0 +1,630 @@
+﻿@model ContentCartel.Models.ContactMessage
+
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<!-- =========================================================
+     CONTACT HERO
+     ========================================================= -->
+
+<section class="py-5 bg-cream text-center border-bottom border-secondary border-opacity-10">
+
+    <div class="container py-3">
+
+        <span class="badge bg-dark text-white text-uppercase px-3 py-2 fw-bold mb-3">
+            Get In Touch
+        </span>
+
+        <h1 class="display-4 fw-bold text-uppercase">
+            Contact Us
+        </h1>
+
+        <p class="lead text-secondary mx-auto mb-0"
+           style="max-width: 700px;">
+
+            Let's talk about your next creative project,
+            campaign or content idea.
+
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     CONTACT CONTENT
+     ========================================================= -->
+
+<section class="py-5 bg-cream">
+
+    <div class="container">
+
+        <div class="row g-5 align-items-start">
+
+
+            <!-- =================================================
+                 CONTACT INFORMATION
+                 ================================================= -->
+
+            <div class="col-lg-5">
+
+                <div class="mb-4">
+
+                    <h2 class="fw-bold text-uppercase mb-3">
+                        Let's Create
+                    </h2>
+
+                    <p class="text-secondary">
+
+                        The Content Cartel is a digital marketing and
+                        media company focused on helping brands grow
+                        through creative content, social media and
+                        strategic digital campaigns.
+
+                    </p>
+
+                    <p class="text-secondary">
+
+                        We create engaging, culturally relevant content
+                        that connects businesses with their target
+                        audiences, builds brand awareness and drives
+                        measurable attention online.
+
+                    </p>
+
+                </div>
+
+
+                <!-- =================================================
+                     WHATSAPP
+                     ================================================= -->
+
+                <a href="https://wa.me/27750528272"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="text-decoration-none text-dark">
+
+                    <div class="contact-card mb-3">
+
+                        <div class="contact-icon">
+
+                            <i class="bi bi-whatsapp"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h6 class="fw-bold mb-1">
+                                WhatsApp
+                            </h6>
+
+                            <span class="text-secondary">
+                                +27 75 052 8272
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+                <!-- =================================================
+                     INSTAGRAM
+                     ================================================= -->
+
+                <a href="https://www.instagram.com/contentcartel24/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="text-decoration-none text-dark">
+
+                    <div class="contact-card mb-3">
+
+                        <div class="contact-icon">
+
+                            <i class="bi bi-instagram"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h6 class="fw-bold mb-1">
+                                Instagram
+                            </h6>
+
+                            <span class="text-secondary">
+                                @@contentcartel24
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+                <!-- =================================================
+                     BUSINESS DETAILS
+                     ================================================= -->
+
+                <div class="business-details mt-4">
+
+                    <h5 class="fw-bold text-uppercase mb-3">
+                        Business Details
+                    </h5>
+
+                    <div class="detail-row">
+
+                        <i class="bi bi-building"></i>
+
+                        <span>
+                            Content Cartel
+                        </span>
+
+                    </div>
+
+                    <div class="detail-row">
+
+                        <i class="bi bi-camera"></i>
+
+                        <span>
+                            Digital Marketing & Media
+                        </span>
+
+                    </div>
+
+                    <div class="detail-row">
+
+                        <i class="bi bi-megaphone"></i>
+
+                        <span>
+                            Creative Content & Social Media
+                        </span>
+
+                    </div>
+
+                    <div class="detail-row">
+
+                        <i class="bi bi-geo-alt"></i>
+
+                        <span>
+                            Johannesburg, South Africa
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 CONTACT FORM
+                 ================================================= -->
+
+            <div class="col-lg-7">
+
+                <div class="card border-0 shadow-sm p-4 p-md-5 bg-white rounded-3">
+
+                    <h3 class="fw-bold text-uppercase mb-2">
+                        Send Us A Message
+                    </h3>
+
+                    <p class="text-secondary mb-4">
+
+                        Complete the form below and our team will
+                        get back to you.
+
+                    </p>
+
+
+                    <form asp-controller="Contact"
+                          asp-action="SendEmail"
+                          method="post"
+                          id="contactForm">
+
+                        @Html.AntiForgeryToken()
+
+
+                        <!-- VALIDATION -->
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-4">
+                        </div>
+
+
+                        <!-- =================================================
+                             NAME + EMAIL
+                             ================================================= -->
+
+                        <div class="row g-3 mb-3">
+
+                            <div class="col-md-6">
+
+                                <label asp-for="Name"
+                                       class="form-label fw-bold small">
+                                    Full Name
+                                </label>
+
+                                <input asp-for="Name"
+                                       type="text"
+                                       class="form-control"
+                                       placeholder="Your full name"
+                                       required />
+
+                                <span asp-validation-for="Name"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label asp-for="Email"
+                                       class="form-label fw-bold small">
+                                    Email Address
+                                </label>
+
+                                <input asp-for="Email"
+                                       type="email"
+                                       class="form-control"
+                                       placeholder="you@example.com"
+                                       required />
+
+                                <span asp-validation-for="Email"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             PHONE
+                             ================================================= -->
+
+                        <div class="mb-3">
+
+                            <label asp-for="Phone"
+                                   class="form-label fw-bold small">
+
+                                Phone / WhatsApp Number
+
+                            </label>
+
+                            <input asp-for="Phone"
+                                   type="tel"
+                                   class="form-control"
+                                   placeholder="+27 75 052 8272" />
+
+                            <span asp-validation-for="Phone"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             SERVICE
+                             ================================================= -->
+
+                        <div class="mb-3">
+
+                            <label asp-for="ServiceInterest"
+                                   class="form-label fw-bold small">
+
+                                What Can We Help You With?
+
+                            </label>
+
+                            <select asp-for="ServiceInterest"
+                                    class="form-select">
+
+                                <option value="">
+                                    Select a service
+                                </option>
+
+                                <option value="Short-Form Reels">
+                                    Short-Form Reels
+                                </option>
+
+                                <option value="Podcast Production">
+                                    Podcast Production
+                                </option>
+
+                                <option value="Photography">
+                                    Photography
+                                </option>
+
+                                <option value="Influencer Campaign">
+                                    Influencer Campaign
+                                </option>
+
+                                <option value="Social Media Management">
+                                    Social Media Management
+                                </option>
+
+                                <option value="Event Content">
+                                    Event Content
+                                </option>
+
+                                <option value="Brand Content">
+                                    Brand Content
+                                </option>
+
+                                <option value="General Inquiry">
+                                    General Inquiry
+                                </option>
+
+                            </select>
+
+                            <span asp-validation-for="ServiceInterest"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             MESSAGE
+                             ================================================= -->
+
+                        <div class="mb-4">
+
+                            <label asp-for="Message"
+                                   class="form-label fw-bold small">
+
+                                Message
+
+                            </label>
+
+                            <textarea asp-for="Message"
+                                      class="form-control"
+                                      rows="6"
+                                      placeholder="Tell us about your project..."
+                                      required></textarea>
+
+                            <span asp-validation-for="Message"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             SUBMIT
+                             ================================================= -->
+
+                        <button type="submit"
+                                class="btn btn-dark w-100 py-3 fw-bold text-uppercase">
+
+                            <i class="bi bi-send me-2"></i>
+
+                            Send Message
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     STYLES
+     ========================================================= -->
+
+<style>
+
+    .bg-cream {
+        background-color: #f8f5ed;
+    }
+
+
+    /* =========================================================
+       CONTACT CARD
+       ========================================================= */
+
+    .contact-card {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 16px;
+
+        padding: 18px;
+
+        background: #ffffff;
+
+        border: 1px solid #e5e5e5;
+
+        border-radius: 10px;
+
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
+
+    }
+
+
+    .contact-card:hover {
+
+        transform: translateY(-2px);
+
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+
+        border-color: #111111;
+
+    }
+
+
+    /* =========================================================
+       CONTACT ICON
+       ========================================================= */
+
+    .contact-icon {
+
+        width: 48px;
+
+        height: 48px;
+
+        min-width: 48px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        background: #111111;
+
+        color: #ffffff;
+
+        border-radius: 50%;
+
+        font-size: 20px;
+
+    }
+
+
+    /* =========================================================
+       BUSINESS DETAILS
+       ========================================================= */
+
+    .business-details {
+
+        padding-top: 20px;
+
+        border-top: 1px solid #dddddd;
+
+    }
+
+
+    .detail-row {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+
+        margin-bottom: 14px;
+
+        color: #555555;
+
+        font-size: 14px;
+
+    }
+
+
+    .detail-row i {
+
+        width: 20px;
+
+        color: #111111;
+
+        font-size: 16px;
+
+    }
+
+
+    /* =========================================================
+       FORM
+       ========================================================= */
+
+    .form-control,
+    .form-select {
+
+        border: 1px solid #d8d8d8;
+
+        border-radius: 6px;
+
+        padding: 12px 14px;
+
+        font-size: 14px;
+
+    }
+
+
+    .form-control:focus,
+    .form-select:focus {
+
+        border-color: #111111;
+
+        box-shadow: 0 0 0 0.15rem rgba(0, 0, 0, 0.08);
+
+    }
+
+
+    textarea.form-control {
+
+        resize: vertical;
+
+    }
+
+
+    /* =========================================================
+       BUTTON
+       ========================================================= */
+
+    .btn-dark {
+
+        background: #111111;
+
+        border-color: #111111;
+
+    }
+
+
+    .btn-dark:hover {
+
+        background: #333333;
+
+        border-color: #333333;
+
+    }
+
+
+    /* =========================================================
+       MOBILE
+       ========================================================= */
+
+    @@media (max-width: 768px) {
+
+        .display-4 {
+
+            font-size: 2.2rem;
+
+        }
+
+        .card {
+
+            padding: 25px !important;
+
+        }
+
+    }
+
+</style>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}
