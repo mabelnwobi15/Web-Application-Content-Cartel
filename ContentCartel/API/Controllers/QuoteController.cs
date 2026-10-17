@@ -2,6 +2,7 @@
 using ContentCartel.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace ContentCartel.API.Controllers
 {
     [ApiController]
@@ -86,6 +87,63 @@ namespace ContentCartel.API.Controllers
                 );
             }
         }
+
+        // ============================================================
+// GET CLIENT QUOTATIONS
+// GET: /api/quotes/client/{userId}
+// ============================================================
+
+[HttpGet("client/{userId}")]
+public async Task<IActionResult> GetClientQuotes(string userId)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Client ID is required."
+            });
+        }
+
+        var quotes =
+            await _firebaseService
+                .GetAsync<Dictionary<string, QuoteRequest>>("quotes");
+
+        if (quotes == null || quotes.Count == 0)
+        {
+            return Ok(new List<QuoteRequest>());
+        }
+
+        var result = quotes
+            .Where(x =>
+                x.Value != null &&
+                string.Equals(
+                    x.Value.UserId,
+                    userId,
+                    StringComparison.OrdinalIgnoreCase))
+            .Select(x =>
+            {
+                var quote = x.Value;
+                quote.Id = x.Key;
+                return quote;
+            })
+            .OrderByDescending(x => x.CreatedAt)
+            .ToList();
+
+        return Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new
+        {
+            success = false,
+            message = "Unable to retrieve client quotations.",
+            error = ex.Message
+        });
+    }
+}
 
         // GET: api/quotes/{id}
         [HttpGet("{id}")]
