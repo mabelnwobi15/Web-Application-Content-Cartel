@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
+=======
+using ContentCartel.API.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+>>>>>>> bde5a1049f558c8d0a1af69dd1a9dda38a07dd99
 
 namespace ContentCartel
 {
@@ -10,6 +15,7 @@ namespace ContentCartel
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllersWithViews();
+<<<<<<< HEAD
 
             // API base URL comes from config so it can differ per environment.
             // On Render set the env var:  Api__BaseUrl = https://<your-api>.onrender.com/
@@ -31,6 +37,21 @@ namespace ContentCartel
 
             builder.Services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+=======
+            builder.Services.AddControllers();
+
+            builder.Services.AddHttpClient("ContentCartelAPI", client =>
+            {
+                client.BaseAddress = new Uri(
+                    "https://web-application-content-cartel.onrender.com/"
+                );
+            });
+
+            builder.Services
+                .AddAuthentication(
+                    CookieAuthenticationDefaults.AuthenticationScheme
+                )
+>>>>>>> bde5a1049f558c8d0a1af69dd1a9dda38a07dd99
                 .AddCookie(options =>
                 {
                     options.LoginPath = "/Account/Login";
@@ -40,6 +61,7 @@ namespace ContentCartel
                     options.SlidingExpiration = true;
                 });
 
+<<<<<<< HEAD
             // Render terminates TLS and forwards plain HTTP to the container.
             builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
@@ -47,10 +69,25 @@ namespace ContentCartel
                     ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
                 options.KnownNetworks.Clear();
                 options.KnownProxies.Clear();
+=======
+            builder.Services.AddScoped<FirebaseService>();
+            builder.Services.AddScoped<RecaptchaService>();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSameOrigin", policy =>
+                {
+                    policy
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .SetIsOriginAllowed(_ => true);
+                });
+>>>>>>> bde5a1049f558c8d0a1af69dd1a9dda38a07dd99
             });
 
             var app = builder.Build();
 
+<<<<<<< HEAD
             app.UseForwardedHeaders();
 
             if (!app.Environment.IsDevelopment())
@@ -68,6 +105,26 @@ namespace ContentCartel
             app.UseAuthentication();
             app.UseAuthorization();
 
+=======
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            app.UseCors("AllowSameOrigin");
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.MapControllers();
+
+>>>>>>> bde5a1049f558c8d0a1af69dd1a9dda38a07dd99
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}"
