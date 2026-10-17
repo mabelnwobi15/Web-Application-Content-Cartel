@@ -1,4 +1,4 @@
-﻿using ContentCartel.API.Models;
+using ContentCartel.API.Models;
 using ContentCartel.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -109,26 +109,44 @@ public async Task<IActionResult> GetClientQuotes(string userId)
 
         var quotes =
             await _firebaseService
-                .GetAsync<Dictionary<string, QuoteRequest>>("quotes");
+                .GetAsync<Dictionary<string, System.Text.Json.JsonElement>>("quotes");
 
         if (quotes == null || quotes.Count == 0)
         {
             return Ok(new List<QuoteRequest>());
         }
 
-        var result = quotes
-            .Where(x =>
-                x.Value != null &&
-                string.Equals(
-                    x.Value.UserId,
-                    userId,
-                    StringComparison.OrdinalIgnoreCase))
-            .Select(x =>
+        var options = new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        var result = new List<QuoteRequest>();
+
+        foreach (var entry in quotes)
+        {
+            try
             {
-                var quote = x.Value;
-                quote.Id = x.Key;
-                return quote;
-            })
+                var item = System.Text.Json.JsonSerializer
+                    .Deserialize<QuoteRequest>(entry.Value, options);
+
+                if (item != null &&
+                    string.Equals(
+                        item.UserId,
+                        userId,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    item.Id = entry.Key;
+                    result.Add(item);
+                }
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                // Skip legacy records that don't match the model.
+            }
+        }
+
+        result = result
             .OrderByDescending(x => x.CreatedAt)
             .ToList();
 
