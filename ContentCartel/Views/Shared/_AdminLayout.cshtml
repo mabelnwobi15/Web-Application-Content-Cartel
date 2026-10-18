@@ -611,6 +611,36 @@
                 </a>
 
 
+                <!-- BOOKINGS -->
+
+                <a asp-controller="Admin"
+                   asp-action="Bookings"
+                   class="nav-link @(currentAction == "Bookings" || currentAction == "EditBooking" || currentAction == "RescheduleBooking" ? "active" : "")">
+
+                    <i class="bi bi-calendar-check"></i>
+
+                    <span>
+                        Bookings
+                    </span>
+
+                </a>
+
+
+                <!-- QUOTATIONS -->
+
+                <a asp-controller="Admin"
+                   asp-action="Quotations"
+                   class="nav-link @(currentAction == "Quotations" || currentAction == "QuoteDetails" ? "active" : "")">
+
+                    <i class="bi bi-file-earmark-text"></i>
+
+                    <span>
+                        Quotations
+                    </span>
+
+                </a>
+
+
                 <!-- STAFF -->
 
                 <a asp-controller="Admin"

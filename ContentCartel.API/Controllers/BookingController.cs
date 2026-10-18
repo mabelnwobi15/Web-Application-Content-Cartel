@@ -74,18 +74,9 @@ namespace ContentCartel.API.Controllers
 
                 booking.Id = id;
 
-                // Every booking gets an invoice straight away.
-                try
-                {
-                    await InvoiceHelper.EnsureInvoiceAsync(
-                        _firebaseService,
-                        booking
-                    );
-                }
-                catch
-                {
-                    // The booking is saved; the invoice is rebuilt on demand.
-                }
+                // Every booking gets an invoice so the admin can see it
+                // under Invoicing & Payments and the client can pay it.
+                await CreateInvoiceForBookingAsync(booking);
 
                 return Ok(booking);
             }
@@ -103,7 +94,7 @@ namespace ContentCartel.API.Controllers
         }
 
         // ============================================================
-        // GET ALL BOOKINGS (ADMIN)
+        // GET ALL BOOKINGS (admin)
         // GET: /api/bookings
         // ============================================================
 
@@ -114,42 +105,25 @@ namespace ContentCartel.API.Controllers
             {
                 var bookings =
                     await _firebaseService
-                        .GetAsync<Dictionary<string, System.Text.Json.JsonElement>>("bookings");
+                        .GetAsync<Dictionary<string, Booking>>("bookings");
 
-                var result = new List<Booking>();
-
-                if (bookings != null)
+                if (bookings == null || bookings.Count == 0)
                 {
-                    var options = new System.Text.Json.JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    };
-
-                    foreach (var entry in bookings)
-                    {
-                        try
-                        {
-                            var item = System.Text.Json.JsonSerializer
-                                .Deserialize<Booking>(entry.Value, options);
-
-                            if (item != null)
-                            {
-                                item.Id = entry.Key;
-                                result.Add(item);
-                            }
-                        }
-                        catch (System.Text.Json.JsonException)
-                        {
-                            // Skip records that don't match the model.
-                        }
-                    }
+                    return Ok(new List<Booking>());
                 }
 
-                return Ok(
-                    result
-                        .OrderByDescending(x => x.CreatedAt)
-                        .ToList()
-                );
+                var result = bookings
+                    .Where(x => x.Value != null)
+                    .Select(x =>
+                    {
+                        var booking = x.Value;
+                        booking.Id = x.Key;
+                        return booking;
+                    })
+                    .OrderByDescending(x => x.CreatedAt)
+                    .ToList();
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -183,44 +157,26 @@ public async Task<IActionResult> GetClientBookings(string userId)
 
         var bookings =
             await _firebaseService
-                .GetAsync<Dictionary<string, System.Text.Json.JsonElement>>("bookings");
+                .GetAsync<Dictionary<string, Booking>>("bookings");
 
         if (bookings == null || bookings.Count == 0)
         {
             return Ok(new List<Booking>());
         }
 
-        var options = new System.Text.Json.JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
-        var result = new List<Booking>();
-
-        foreach (var entry in bookings)
-        {
-            try
+        var result = bookings
+            .Where(x =>
+                x.Value != null &&
+                string.Equals(
+                    x.Value.UserId,
+                    userId,
+                    StringComparison.OrdinalIgnoreCase))
+            .Select(x =>
             {
-                var item = System.Text.Json.JsonSerializer
-                    .Deserialize<Booking>(entry.Value, options);
-
-                if (item != null &&
-                    string.Equals(
-                        item.UserId,
-                        userId,
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    item.Id = entry.Key;
-                    result.Add(item);
-                }
-            }
-            catch (System.Text.Json.JsonException)
-            {
-                // Skip records that don't match the model.
-            }
-        }
-
-        result = result
+                var booking = x.Value;
+                booking.Id = x.Key;
+                return booking;
+            })
             .OrderByDescending(x => x.CreatedAt)
             .ToList();
 
@@ -383,36 +339,6 @@ public async Task<IActionResult> GetClientBookings(string userId)
                     booking
                 );
 
-                // Keep the invoice in step with the booking.
-                try
-                {
-                    if (string.Equals(
-                            booking.PaymentStatus,
-                            "Paid",
-                            StringComparison.OrdinalIgnoreCase) &&
-                        !string.Equals(
-                            existingBooking.PaymentStatus,
-                            "Paid",
-                            StringComparison.OrdinalIgnoreCase))
-                    {
-                        await InvoiceHelper.MarkDepositPaidAsync(
-                            _firebaseService,
-                            booking
-                        );
-                    }
-                    else
-                    {
-                        await InvoiceHelper.EnsureInvoiceAsync(
-                            _firebaseService,
-                            booking
-                        );
-                    }
-                }
-                catch
-                {
-                    // The booking is saved; the invoice is rebuilt on demand.
-                }
-
                 return Ok(booking);
             }
             catch (Exception ex)
@@ -478,6 +404,52 @@ public async Task<IActionResult> GetClientBookings(string userId)
                         error = ex.Message
                     }
                 );
+            }
+        }
+
+        // ============================================================
+        // INVOICE FOR A NEW BOOKING
+        // ============================================================
+
+        private async Task CreateInvoiceForBookingAsync(Booking booking)
+        {
+            try
+            {
+                if (booking.TotalAmount <= 0)
+                {
+                    return;
+                }
+
+                var now = DateTime.UtcNow;
+
+                var invoice = new Invoice
+                {
+                    InvoiceNumber =
+                        $"CC-{now:yyyy}-{now:MMddHHmmssfff}",
+                    BookingId = booking.Id ?? string.Empty,
+                    ClientId = booking.UserId ?? string.Empty,
+                    ClientName = booking.CustomerName,
+                    ClientEmail = booking.Email,
+                    ClientPhone = booking.Phone,
+                    ServiceId = booking.ServiceId,
+                    ServiceName = booking.ServiceName ?? string.Empty,
+                    TotalAmount = booking.TotalAmount,
+                    DepositAmount = booking.DepositAmount,
+                    AmountPaid = 0,
+                    BalanceDue = booking.TotalAmount,
+                    PaymentStatus = "Pending",
+                    Status = "Issued",
+                    IssueDate = now,
+                    DueDate = booking.BookingDate,
+                    CreatedAt = now
+                };
+
+                await _firebaseService.CreateAsync("invoices", invoice);
+            }
+            catch
+            {
+                // The booking is already saved; never fail it because
+                // the invoice could not be written.
             }
         }
 

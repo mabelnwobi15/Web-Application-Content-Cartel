@@ -248,7 +248,13 @@ namespace ContentCartel.Controllers
                     $"api/bookings/{Uri.EscapeDataString(id)}", booking);
 
                 if (putResponse.IsSuccessStatusCode)
+                {
+                    // Also record the deposit on the invoice so the admin
+                    // sees the payment under Invoicing & Payments.
+                    await RecordDepositOnInvoiceAsync(booking, id);
+
                     TempData["Success"] = "Deposit recorded. Your booking is confirmed.";
+                }
                 else
                     TempData["Error"] = "Payment could not be recorded. Please try again.";
             }
@@ -258,6 +264,44 @@ namespace ContentCartel.Controllers
             }
 
             return RedirectToAction(nameof(ConfirmedBooking), new { id });
+        }
+
+
+        // ============================================================
+        // HELPER: put the deposit on the booking's invoice
+        // ============================================================
+
+        private async Task RecordDepositOnInvoiceAsync(Booking booking, string bookingId)
+        {
+            try
+            {
+                var clientId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(clientId)) return;
+
+                var invoices = await _httpClient.GetFromJsonAsync<List<Invoice>>(
+                    $"api/invoices/client/{Uri.EscapeDataString(clientId)}");
+
+                var invoice = invoices?.FirstOrDefault(i =>
+                    string.Equals(i.BookingId, bookingId,
+                        StringComparison.OrdinalIgnoreCase));
+
+                if (invoice == null) return;
+
+                var deposit = booking.DepositAmount > 0
+                    ? booking.DepositAmount
+                    : invoice.DepositAmount;
+
+                var outstanding = deposit - invoice.AmountPaid;
+                if (outstanding <= 0) return;
+
+                await _httpClient.PutAsJsonAsync(
+                    $"api/invoices/{Uri.EscapeDataString(invoice.InvoiceId)}/payment",
+                    new { Amount = outstanding });
+            }
+            catch
+            {
+                // Booking is already confirmed; don't fail the page.
+            }
         }
 
 

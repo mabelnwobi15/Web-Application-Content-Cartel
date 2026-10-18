@@ -89,6 +89,49 @@ namespace ContentCartel.API.Controllers
         }
 
         // ============================================================
+        // GET ALL QUOTATIONS (admin)
+        // GET: /api/quotes
+        // ============================================================
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllQuotes()
+        {
+            try
+            {
+                var quotes =
+                    await _firebaseService
+                        .GetAsync<Dictionary<string, QuoteRequest>>("quotes");
+
+                if (quotes == null || quotes.Count == 0)
+                {
+                    return Ok(new List<QuoteRequest>());
+                }
+
+                var result = quotes
+                    .Where(x => x.Value != null)
+                    .Select(x =>
+                    {
+                        var quote = x.Value;
+                        quote.Id = x.Key;
+                        return quote;
+                    })
+                    .OrderByDescending(x => x.CreatedAt)
+                    .ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Unable to retrieve quotations.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        // ============================================================
 // GET CLIENT QUOTATIONS
 // GET: /api/quotes/client/{userId}
 // ============================================================

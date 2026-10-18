@@ -1,0 +1,83 @@
+@model ContentCartel.Models.Invoice
+
+@{
+    ViewData["Title"] = "Invoice " + Model.InvoiceNumber;
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .admin-page { width: 100%; max-width: 100%; padding: 28px 30px 45px; box-sizing: border-box; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 25px; }
+    .page-header h1 { margin: 0; font-size: 30px; font-weight: 800; color: #111; }
+    .page-header p { margin: 8px 0 0; color: #666; }
+    .card-x { max-width: 900px; background: #fff; border-radius: 14px; padding: 28px; box-shadow: 0 3px 15px rgba(0,0,0,.08); margin-bottom: 20px; }
+    .grid-x { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px 30px; }
+    .lbl { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; color: #77736c; text-transform: uppercase; }
+    .val { margin-top: 4px; font-size: 15px; font-weight: 600; color: #111; }
+    .btn-x { padding: 11px 18px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-dark-x { background: #111; color: #fff; }
+    .btn-light-x { background: #fff; color: #333; border: 1px solid #aaa; }
+    .pay-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+    .pay-row input { padding: 12px; border: 1px solid #d0d0d0; border-radius: 8px; width: 220px; }
+    .alert-box { padding: 12px 16px; border-radius: 8px; margin-bottom: 18px; font-size: 13px; max-width: 900px; }
+    .alert-ok { background: #e9f2e9; color: #416044; }
+    .alert-err { background: #f4e8e5; color: #76504a; }
+    @@media (max-width: 700px) { .grid-x { grid-template-columns: 1fr; } }
+</style>
+
+<div class="admin-page">
+
+    <div class="page-header">
+        <div>
+            <h1>@Model.InvoiceNumber</h1>
+            <p>Invoice details and payments received.</p>
+        </div>
+        <a asp-action="Invoices" class="btn-x btn-light-x">Back to invoices</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert-box alert-ok">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert-box alert-err">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card-x">
+        <div class="grid-x">
+            <div><div class="lbl">Client</div><div class="val">@Model.ClientName</div></div>
+            <div><div class="lbl">Email</div><div class="val">@Model.ClientEmail</div></div>
+            <div><div class="lbl">Phone</div><div class="val">@Model.ClientPhone</div></div>
+            <div><div class="lbl">Service</div><div class="val">@Model.ServiceName</div></div>
+            <div><div class="lbl">Booking</div><div class="val">#@Model.BookingId</div></div>
+            <div><div class="lbl">Issued</div><div class="val">@Model.IssueDate.ToLocalTime().ToString("dd MMM yyyy")</div></div>
+            <div><div class="lbl">Total</div><div class="val">R @Model.TotalAmount.ToString("N2")</div></div>
+            <div><div class="lbl">Deposit (30%)</div><div class="val">R @Model.DepositAmount.ToString("N2")</div></div>
+            <div><div class="lbl">Amount paid</div><div class="val">R @Model.AmountPaid.ToString("N2")</div></div>
+            <div><div class="lbl">Balance due</div><div class="val">R @Model.BalanceDue.ToString("N2")</div></div>
+            <div><div class="lbl">Payment status</div><div class="val">@Model.PaymentStatus</div></div>
+            <div><div class="lbl">Status</div><div class="val">@Model.Status</div></div>
+        </div>
+    </div>
+
+    @if (Model.BalanceDue > 0)
+    {
+        <div class="card-x">
+            <div class="lbl" style="margin-bottom:12px;">Record a payment (EFT / cash / card)</div>
+            <form asp-action="RecordPayment" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="invoiceId" value="@Model.InvoiceId" />
+                <div class="pay-row">
+                    <div>
+                        <div class="lbl" style="margin-bottom:6px;">Amount (R)</div>
+                        <input type="number" name="amount" step="0.01" min="0.01"
+                               max="@Model.BalanceDue.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                               value="@Model.BalanceDue.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" required />
+                    </div>
+                    <button type="submit" class="btn-x btn-dark-x">Record payment</button>
+                </div>
+            </form>
+        </div>
+    }
+</div>

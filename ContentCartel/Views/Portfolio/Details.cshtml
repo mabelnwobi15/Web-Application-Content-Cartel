@@ -1,0 +1,134 @@
+@model ContentCartel.Models.PortfolioItem
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<link rel="stylesheet"
+      href="~/css/portfolio.css"
+      asp-append-version="true" />
+
+<div class="portfolio-page">
+
+    <section class="portfolio-detail-hero">
+
+        <div class="container">
+
+            <a asp-controller="Portfolio"
+               asp-action="Index"
+               class="portfolio-back-link">
+
+                <i class="bi bi-arrow-left me-2"
+                   aria-hidden="true"></i>
+
+                Back to Portfolio
+            </a>
+
+            <div class="row align-items-center g-5 mt-1">
+
+                <div class="col-12 col-lg-6">
+
+                    <span class="portfolio-label">
+                        @Model.Category
+                    </span>
+
+                    <h1 class="display-4 fw-bold mb-3">
+                        @Model.Title
+                    </h1>
+
+                    <p class="lead text-secondary mb-0">
+                        @Model.Description
+                    </p>
+
+                </div>
+
+                <div class="col-12 col-lg-6">
+
+                    <div class="portfolio-detail-cover">
+
+                        <img src="@Model.CoverImageUrl"
+                             alt="@Model.Title" />
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    @foreach (var portfolioSection in Model.Sections)
+    {
+        <section class="portfolio-gallery-section">
+
+            <div class="container">
+
+                <div class="portfolio-section-heading">
+
+                    <span class="portfolio-label">
+                        Portfolio Collection
+                    </span>
+
+                    <h2 class="fw-bold">
+                        @portfolioSection.Heading
+                    </h2>
+
+                    <p class="text-secondary">
+                        @portfolioSection.Description
+                    </p>
+
+                </div>
+
+
+                <div class="portfolio-gallery-grid">
+
+                    @foreach (var image in portfolioSection.Images)
+                    {
+                        <figure class="portfolio-gallery-item">
+
+                            <img src="@image.ImageUrl"
+                                 alt="@image.AltText"
+                                 loading="lazy" />
+
+                        </figure>
+                    }
+
+                </div>
+
+            </div>
+
+        </section>
+    }
+
+
+    <section class="portfolio-cta">
+
+        <div class="container text-center">
+
+            <span class="portfolio-label">
+                Work With Us
+            </span>
+
+            <h2 class="fw-bold mb-3">
+                Interested in content like this?
+            </h2>
+
+            <p class="text-secondary mx-auto mb-4">
+                Let Content Cartel help bring your next
+                creative project to life.
+            </p>
+
+            <a asp-controller="Quote"
+               asp-action="Index"
+               class="btn btn-gold">
+                Request Similar Work
+            </a>
+
+        </div>
+
+    </section>
+
+</div>

@@ -89,7 +89,7 @@ namespace ContentCartel.API.Controllers
         }
 
         // ============================================================
-        // GET ALL QUOTATIONS (ADMIN)
+        // GET ALL QUOTATIONS (admin)
         // GET: /api/quotes
         // ============================================================
 
@@ -100,42 +100,25 @@ namespace ContentCartel.API.Controllers
             {
                 var quotes =
                     await _firebaseService
-                        .GetAsync<Dictionary<string, System.Text.Json.JsonElement>>("quotes");
+                        .GetAsync<Dictionary<string, QuoteRequest>>("quotes");
 
-                var result = new List<QuoteRequest>();
-
-                if (quotes != null)
+                if (quotes == null || quotes.Count == 0)
                 {
-                    var options = new System.Text.Json.JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    };
-
-                    foreach (var entry in quotes)
-                    {
-                        try
-                        {
-                            var item = System.Text.Json.JsonSerializer
-                                .Deserialize<QuoteRequest>(entry.Value, options);
-
-                            if (item != null)
-                            {
-                                item.Id = entry.Key;
-                                result.Add(item);
-                            }
-                        }
-                        catch (System.Text.Json.JsonException)
-                        {
-                            // Skip records that don't match the model.
-                        }
-                    }
+                    return Ok(new List<QuoteRequest>());
                 }
 
-                return Ok(
-                    result
-                        .OrderByDescending(x => x.CreatedAt)
-                        .ToList()
-                );
+                var result = quotes
+                    .Where(x => x.Value != null)
+                    .Select(x =>
+                    {
+                        var quote = x.Value;
+                        quote.Id = x.Key;
+                        return quote;
+                    })
+                    .OrderByDescending(x => x.CreatedAt)
+                    .ToList();
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -169,44 +152,26 @@ public async Task<IActionResult> GetClientQuotes(string userId)
 
         var quotes =
             await _firebaseService
-                .GetAsync<Dictionary<string, System.Text.Json.JsonElement>>("quotes");
+                .GetAsync<Dictionary<string, QuoteRequest>>("quotes");
 
         if (quotes == null || quotes.Count == 0)
         {
             return Ok(new List<QuoteRequest>());
         }
 
-        var options = new System.Text.Json.JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
-        var result = new List<QuoteRequest>();
-
-        foreach (var entry in quotes)
-        {
-            try
+        var result = quotes
+            .Where(x =>
+                x.Value != null &&
+                string.Equals(
+                    x.Value.UserId,
+                    userId,
+                    StringComparison.OrdinalIgnoreCase))
+            .Select(x =>
             {
-                var item = System.Text.Json.JsonSerializer
-                    .Deserialize<QuoteRequest>(entry.Value, options);
-
-                if (item != null &&
-                    string.Equals(
-                        item.UserId,
-                        userId,
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    item.Id = entry.Key;
-                    result.Add(item);
-                }
-            }
-            catch (System.Text.Json.JsonException)
-            {
-                // Skip records that don't match the model.
-            }
-        }
-
-        result = result
+                var quote = x.Value;
+                quote.Id = x.Key;
+                return quote;
+            })
             .OrderByDescending(x => x.CreatedAt)
             .ToList();
 
