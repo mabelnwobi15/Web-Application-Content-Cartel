@@ -74,6 +74,19 @@ namespace ContentCartel.API.Controllers
 
                 booking.Id = id;
 
+                // Every booking gets an invoice straight away.
+                try
+                {
+                    await InvoiceHelper.EnsureInvoiceAsync(
+                        _firebaseService,
+                        booking
+                    );
+                }
+                catch
+                {
+                    // The booking is saved; the invoice is rebuilt on demand.
+                }
+
                 return Ok(booking);
             }
             catch (Exception ex)
@@ -86,6 +99,66 @@ namespace ContentCartel.API.Controllers
                         error = ex.Message
                     }
                 );
+            }
+        }
+
+        // ============================================================
+        // GET ALL BOOKINGS (ADMIN)
+        // GET: /api/bookings
+        // ============================================================
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllBookings()
+        {
+            try
+            {
+                var bookings =
+                    await _firebaseService
+                        .GetAsync<Dictionary<string, System.Text.Json.JsonElement>>("bookings");
+
+                var result = new List<Booking>();
+
+                if (bookings != null)
+                {
+                    var options = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                    foreach (var entry in bookings)
+                    {
+                        try
+                        {
+                            var item = System.Text.Json.JsonSerializer
+                                .Deserialize<Booking>(entry.Value, options);
+
+                            if (item != null)
+                            {
+                                item.Id = entry.Key;
+                                result.Add(item);
+                            }
+                        }
+                        catch (System.Text.Json.JsonException)
+                        {
+                            // Skip records that don't match the model.
+                        }
+                    }
+                }
+
+                return Ok(
+                    result
+                        .OrderByDescending(x => x.CreatedAt)
+                        .ToList()
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Unable to retrieve bookings.",
+                    error = ex.Message
+                });
             }
         }
 
@@ -143,7 +216,7 @@ public async Task<IActionResult> GetClientBookings(string userId)
             }
             catch (System.Text.Json.JsonException)
             {
-                // Skip legacy records that don't match the model.
+                // Skip records that don't match the model.
             }
         }
 
@@ -309,6 +382,36 @@ public async Task<IActionResult> GetClientBookings(string userId)
                     $"bookings/{id}",
                     booking
                 );
+
+                // Keep the invoice in step with the booking.
+                try
+                {
+                    if (string.Equals(
+                            booking.PaymentStatus,
+                            "Paid",
+                            StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(
+                            existingBooking.PaymentStatus,
+                            "Paid",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        await InvoiceHelper.MarkDepositPaidAsync(
+                            _firebaseService,
+                            booking
+                        );
+                    }
+                    else
+                    {
+                        await InvoiceHelper.EnsureInvoiceAsync(
+                            _firebaseService,
+                            booking
+                        );
+                    }
+                }
+                catch
+                {
+                    // The booking is saved; the invoice is rebuilt on demand.
+                }
 
                 return Ok(booking);
             }

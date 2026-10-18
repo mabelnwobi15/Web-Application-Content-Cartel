@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Quotations";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 
     var quotations = Model?.ToList()
         ?? new List<ContentCartel.Models.QuoteRequest>();
@@ -38,19 +39,6 @@
          MESSAGES
          ============================================================ -->
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">
-            @TempData["SuccessMessage"]
-        </div>
-    }
-
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger">
-            @TempData["ErrorMessage"]
-        </div>
-    }
 
 
     <!-- ============================================================

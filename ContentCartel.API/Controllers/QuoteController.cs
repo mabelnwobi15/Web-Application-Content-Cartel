@@ -89,6 +89,66 @@ namespace ContentCartel.API.Controllers
         }
 
         // ============================================================
+        // GET ALL QUOTATIONS (ADMIN)
+        // GET: /api/quotes
+        // ============================================================
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllQuotes()
+        {
+            try
+            {
+                var quotes =
+                    await _firebaseService
+                        .GetAsync<Dictionary<string, System.Text.Json.JsonElement>>("quotes");
+
+                var result = new List<QuoteRequest>();
+
+                if (quotes != null)
+                {
+                    var options = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                    foreach (var entry in quotes)
+                    {
+                        try
+                        {
+                            var item = System.Text.Json.JsonSerializer
+                                .Deserialize<QuoteRequest>(entry.Value, options);
+
+                            if (item != null)
+                            {
+                                item.Id = entry.Key;
+                                result.Add(item);
+                            }
+                        }
+                        catch (System.Text.Json.JsonException)
+                        {
+                            // Skip records that don't match the model.
+                        }
+                    }
+                }
+
+                return Ok(
+                    result
+                        .OrderByDescending(x => x.CreatedAt)
+                        .ToList()
+                );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Unable to retrieve quotations.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        // ============================================================
 // GET CLIENT QUOTATIONS
 // GET: /api/quotes/client/{userId}
 // ============================================================
@@ -142,7 +202,7 @@ public async Task<IActionResult> GetClientQuotes(string userId)
             }
             catch (System.Text.Json.JsonException)
             {
-                // Skip legacy records that don't match the model.
+                // Skip records that don't match the model.
             }
         }
 

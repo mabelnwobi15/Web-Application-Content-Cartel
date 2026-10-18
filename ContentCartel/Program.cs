@@ -1,4 +1,4 @@
-﻿using ContentCartel.API.Services;
+using ContentCartel.API.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -16,8 +16,7 @@ namespace ContentCartel
             // On Render set the env var:  Api__BaseUrl = https://<your-api>.onrender.com/
             var apiBaseUrl =
                 builder.Configuration["Api:BaseUrl"]
-                ?? "https://web-application-content-cartel.onrender.com/";
-
+                ?? $"http://localhost:{Environment.GetEnvironmentVariable("PORT") ?? "10000"}/";
             if (!apiBaseUrl.EndsWith('/'))
             {
                 apiBaseUrl += "/";

@@ -618,7 +618,7 @@ namespace ContentCartel.Controllers
                 var paymentResponse =
                     await _httpClient.PutAsJsonAsync(
                         $"api/invoices/{Uri.EscapeDataString(invoiceId)}/payment",
-                        amount
+                        new { Amount = amount }
                     );
 
                 if (!paymentResponse.IsSuccessStatusCode)
