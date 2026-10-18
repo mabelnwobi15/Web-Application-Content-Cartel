@@ -546,43 +546,88 @@ namespace ContentCartel.Controllers
             return View(galleryItems);
         }
 
+        // Upload a file (any type) or add an external link.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequestSizeLimit(104_857_600)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 104_857_600)]
         public async Task<IActionResult> AddGalleryItem(
             string bookingId,
             string title,
-            string mediaType,
-            string fileUrl,
-            string? description)
+            string? mediaType,
+            string? fileUrl,
+            string? description,
+            IFormFile? file)
         {
+            var hasFile = file != null && file.Length > 0;
+
             if (string.IsNullOrWhiteSpace(bookingId) ||
                 string.IsNullOrWhiteSpace(title) ||
-                string.IsNullOrWhiteSpace(fileUrl))
+                (!hasFile && string.IsNullOrWhiteSpace(fileUrl)))
             {
                 TempData["ErrorMessage"] =
-                    "Booking, title and file link are all required.";
+                    "Choose a booking, enter a title, and either pick a file or paste a link.";
 
                 return RedirectToAction(nameof(Gallery));
             }
 
+            var staffId =
+                User.FindFirst(
+                    System.Security.Claims.ClaimTypes.NameIdentifier
+                )?.Value ?? string.Empty;
+
             try
             {
-                var response = await _httpClient.PostAsJsonAsync(
-                    "api/galleries",
-                    new
+                HttpResponseMessage response;
+
+                if (hasFile)
+                {
+                    // Long timeout: large files take a while to pass through.
+                    using var uploadClient = new HttpClient
                     {
-                        BookingId = bookingId,
-                        Title = title,
-                        MediaType = string.IsNullOrWhiteSpace(mediaType)
-                            ? "Photo"
-                            : mediaType,
-                        FileUrl = fileUrl,
-                        Description = description ?? string.Empty,
-                        UploadedByStaffId =
-                            User.FindFirst(
-                                System.Security.Claims.ClaimTypes.NameIdentifier
-                            )?.Value ?? string.Empty
-                    });
+                        BaseAddress = _httpClient.BaseAddress,
+                        Timeout = TimeSpan.FromMinutes(10)
+                    };
+
+                    using var form = new MultipartFormDataContent();
+
+                    form.Add(new StringContent(bookingId), "BookingId");
+                    form.Add(new StringContent(title), "Title");
+                    form.Add(new StringContent(mediaType ?? string.Empty), "MediaType");
+                    form.Add(new StringContent(description ?? string.Empty), "Description");
+                    form.Add(new StringContent(staffId), "UploadedByStaffId");
+
+                    await using var stream = file!.OpenReadStream();
+
+                    var fileContent = new StreamContent(stream);
+
+                    fileContent.Headers.ContentType =
+                        System.Net.Http.Headers.MediaTypeHeaderValue
+                            .TryParse(file.ContentType, out var parsed)
+                            ? parsed
+                            : new System.Net.Http.Headers.MediaTypeHeaderValue(
+                                "application/octet-stream");
+
+                    form.Add(fileContent, "File", file.FileName);
+
+                    response = await uploadClient.PostAsync("api/galleries/upload", form);
+                }
+                else
+                {
+                    response = await _httpClient.PostAsJsonAsync(
+                        "api/galleries",
+                        new
+                        {
+                            BookingId = bookingId,
+                            Title = title,
+                            MediaType = string.IsNullOrWhiteSpace(mediaType)
+                                ? "Photo"
+                                : mediaType,
+                            FileUrl = fileUrl,
+                            Description = description ?? string.Empty,
+                            UploadedByStaffId = staffId
+                        });
+                }
 
                 if (!response.IsSuccessStatusCode)
                 {
