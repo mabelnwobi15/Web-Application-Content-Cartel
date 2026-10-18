@@ -1163,19 +1163,17 @@ namespace ContentCartel.Controllers
         // REPORTS
         // ============================================================
 
+        // Reports now live in ReportController (real data + PDF download).
         [HttpGet]
         public IActionResult Reports()
         {
-            return View();
+            return RedirectToAction("Index", "Report");
         }
 
         [HttpGet]
         public IActionResult DownloadReport(string month)
         {
-            TempData["SuccessMessage"] =
-                $"Report for {month} is ready for download.";
-
-            return RedirectToAction(nameof(Reports));
+            return RedirectToAction("DownloadPdf", "Report", new { month });
         }
 
         // ============================================================

@@ -1,351 +1,441 @@
-﻿using System.Globalization;
-using System.Net.Http.Json;
-using System.Security.Claims;
-using System.Text.Json;
-using ContentCartel.Models;
+﻿using ContentCartel.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using System.Globalization;
+using System.Net.Http.Json;
 
 namespace ContentCartel.Controllers
 {
-    [Authorize(Roles = "Client")]
-    public class QuoteController : Controller
+    [Authorize(Roles = "Admin")]
+    public class ReportController : Controller
     {
         private readonly HttpClient _httpClient;
 
-        public QuoteController(
-            IHttpClientFactory httpClientFactory)
+        public ReportController(IHttpClientFactory httpClientFactory)
         {
-            _httpClient =
-                httpClientFactory.CreateClient("ContentCartelAPI");
+            _httpClient = httpClientFactory.CreateClient("ContentCartelAPI");
         }
 
         // ============================================================
-        // QUOTE FORM
-        // GET: /Quote
+        // REPORT LIST
+        // GET: /Report
         // ============================================================
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var model = new QuoteRequest
-            {
-                CustomerName =
-                    User.FindFirstValue(ClaimTypes.Name)
-                    ?? string.Empty
-            };
+            var data = await LoadAsync();
 
-            return View(model);
+            if (data == null)
+            {
+                TempData["ErrorMessage"] =
+                    "Unable to load activity from the API. Please try again.";
+
+                return View(new List<ReportMonthRow>());
+            }
+
+            var tz = GetTimeZone();
+            var nowLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
+            var current = new DateTime(nowLocal.Year, nowLocal.Month, 1);
+
+            // Start at the earliest activity (max 12 months back).
+            var all = data.Bookings.Select(b => ToLocal(b.CreatedAt, tz))
+                .Concat(data.Quotes.Select(q => ToLocal(q.CreatedAt, tz)))
+                .Concat(data.Invoices.Select(i => ToLocal(i.CreatedAt, tz)))
+                .ToList();
+
+            var earliest = all.Any()
+                ? new DateTime(all.Min().Year, all.Min().Month, 1)
+                : current;
+
+            var limit = current.AddMonths(-11);
+            if (earliest < limit) earliest = limit;
+
+            var rows = new List<ReportMonthRow>();
+
+            for (var m = current; m >= earliest; m = m.AddMonths(-1))
+            {
+                var slice = data.Slice(m, m.AddMonths(1), tz);
+
+                rows.Add(new ReportMonthRow
+                {
+                    Key = m.ToString("yyyy-MM"),
+                    Label = m.ToString("MMMM yyyy", CultureInfo.InvariantCulture),
+                    Bookings = slice.Bookings.Count,
+                    Quotes = slice.Quotes.Count,
+                    Invoiced = slice.Invoices.Sum(i => i.TotalAmount),
+                    Collected = slice.Invoices.Sum(i => i.AmountPaid),
+                    IsCurrent = m == current
+                });
+            }
+
+            ViewBag.AllBookings = data.Bookings.Count;
+            ViewBag.AllQuotes = data.Quotes.Count;
+            ViewBag.AllInvoiced = data.Invoices.Sum(i => i.TotalAmount);
+            ViewBag.AllCollected = data.Invoices.Sum(i => i.AmountPaid);
+
+            return View(rows);
         }
 
         // ============================================================
-        // SUBMIT QUOTE
-        // POST: /Quote/SubmitQuote
-        // ============================================================
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitQuote(
-            QuoteRequest quote)
-        {
-            var clientId =
-                User.FindFirstValue(
-                    ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrWhiteSpace(clientId))
-            {
-                return Challenge();
-            }
-
-            // --------------------------------------------------------
-            // VALIDATE ONLY WHAT THE CLIENT ACTUALLY ENTERS
-            // --------------------------------------------------------
-
-            if (string.IsNullOrWhiteSpace(quote.BrandName))
-            {
-                ModelState.AddModelError(
-                    nameof(quote.BrandName),
-                    "Company / brand name is required.");
-            }
-
-            if (string.IsNullOrWhiteSpace(quote.CustomerName))
-            {
-                ModelState.AddModelError(
-                    nameof(quote.CustomerName),
-                    "Contact person name is required.");
-            }
-
-            if (string.IsNullOrWhiteSpace(quote.Phone))
-            {
-                ModelState.AddModelError(
-                    nameof(quote.Phone),
-                    "Phone number is required.");
-            }
-
-            if (string.IsNullOrWhiteSpace(quote.MediaType))
-            {
-                ModelState.AddModelError(
-                    nameof(quote.MediaType),
-                    "Please choose a media focus.");
-            }
-
-            // Properties the form never posts must not block the save
-            foreach (var key in new[]
-            {
-                nameof(QuoteRequest.Id),
-                nameof(QuoteRequest.UserId),
-                nameof(QuoteRequest.Email),
-                nameof(QuoteRequest.ServiceName),
-                nameof(QuoteRequest.Description),
-                nameof(QuoteRequest.ContactPersonName),
-                nameof(QuoteRequest.Status),
-                nameof(QuoteRequest.CreatedAt)
-            })
-            {
-                ModelState.Remove(key);
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return View("Index", quote);
-            }
-
-            // --------------------------------------------------------
-            // PAYLOAD USES THE API'S PROPERTY NAMES
-            // (CustomerName -> ContactPersonName,
-            //  EstimatedAmount -> EstimatedPrice)
-            // --------------------------------------------------------
-
-            var payload = new
-            {
-                UserId = clientId,
-                BrandName = (quote.BrandName ?? "").Trim(),
-                SocialMediaHandle = (quote.SocialMediaHandle ?? "").Trim(),
-                ContactPersonName = (quote.CustomerName ?? "").Trim(),
-                Phone = (quote.Phone ?? "").Trim(),
-                MediaType = (quote.MediaType ?? "").Trim(),
-                Budget = (quote.Budget ?? "").Trim(),
-                CampaignGoals = (quote.CampaignGoals ?? "").Trim(),
-                EstimatedPrice = quote.EstimatedAmount ?? 0m,
-                Status = "Pending",
-                CreatedAt = DateTime.UtcNow
-            };
-
-            try
-            {
-                var response =
-                    await _httpClient.PostAsJsonAsync(
-                        "api/quotes",
-                        payload);
-
-                var body =
-                    await response.Content
-                        .ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    ModelState.AddModelError(
-                        "",
-                        ExtractMessage(body)
-                        ?? "Unable to submit quote.");
-
-                    return View("Index", quote);
-                }
-
-                string? newId = null;
-
-                try
-                {
-                    using var document = JsonDocument.Parse(body);
-                    newId = Str(document.RootElement, "id");
-                }
-                catch (JsonException)
-                {
-                    // handled below
-                }
-
-                if (string.IsNullOrWhiteSpace(newId))
-                {
-                    ModelState.AddModelError(
-                        "",
-                        "Your quote was saved, but the API did not return a reference. " +
-                        "You can find it under Quotations.");
-
-                    return View("Index", quote);
-                }
-
-                return RedirectToAction(
-                    nameof(QuoteSubmitted),
-                    new { id = newId });
-            }
-            catch (HttpRequestException)
-            {
-                ModelState.AddModelError(
-                    "",
-                    "The quote service is currently unavailable. " +
-                    "Please make sure the ContentCartel API is running.");
-
-                return View("Index", quote);
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(
-                    "",
-                    "An error occurred while submitting your quote: "
-                    + ex.Message);
-
-                return View("Index", quote);
-            }
-        }
-
-        // ============================================================
-        // CONFIRMATION
-        // GET: /Quote/QuoteSubmitted/{id}
+        // PDF
+        // GET: /Report/DownloadPdf?month=2026-10   (or month=all)
         // ============================================================
 
         [HttpGet]
-        public async Task<IActionResult> QuoteSubmitted(
-            string id)
+        public async Task<IActionResult> DownloadPdf(string month)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (string.IsNullOrWhiteSpace(month))
             {
-                return NotFound();
+                return BadRequest("Report month not specified.");
             }
 
-            var clientId =
-                User.FindFirstValue(
-                    ClaimTypes.NameIdentifier);
+            var data = await LoadAsync();
 
-            if (string.IsNullOrWhiteSpace(clientId))
+            if (data == null)
             {
-                return Challenge();
+                TempData["ErrorMessage"] =
+                    "Unable to load activity from the API. Please try again.";
+
+                return RedirectToAction(nameof(Index));
             }
 
+            var tz = GetTimeZone();
+            string title;
+            string fileKey;
+            ReportData slice;
+
+            if (string.Equals(month, "all", StringComparison.OrdinalIgnoreCase))
+            {
+                title = "All activity";
+                fileKey = "All_Activity";
+                slice = data;
+            }
+            else if (DateTime.TryParseExact(
+                         month, "yyyy-MM",
+                         CultureInfo.InvariantCulture,
+                         DateTimeStyles.None,
+                         out var start))
+            {
+                title = start.ToString("MMMM yyyy", CultureInfo.InvariantCulture);
+                fileKey = start.ToString("yyyy-MM");
+                slice = data.Slice(start, start.AddMonths(1), tz);
+            }
+            else
+            {
+                return BadRequest("Invalid month. Use yyyy-MM, e.g. 2026-10.");
+            }
+
+            var pdf = BuildPdf(title, slice, tz);
+
+            return File(pdf, "application/pdf", $"ContentCartel_Report_{fileKey}.pdf");
+        }
+
+        // ============================================================
+        // DATA
+        // ============================================================
+
+        private async Task<ReportData?> LoadAsync()
+        {
+            var bookings = await TryGetListAsync<Booking>("api/bookings");
+            var invoices = await TryGetListAsync<Invoice>("api/invoices");
+            var quotes = await TryGetListAsync<QuoteRequest>("api/quotes");
+
+            if (bookings == null && invoices == null && quotes == null)
+            {
+                return null;
+            }
+
+            return new ReportData
+            {
+                Bookings = bookings ?? new(),
+                Invoices = invoices ?? new(),
+                Quotes = quotes ?? new()
+            };
+        }
+
+        private async Task<List<T>?> TryGetListAsync<T>(string url)
+        {
             try
             {
-                var response =
-                    await _httpClient.GetAsync(
-                        $"api/quotes/{Uri.EscapeDataString(id)}");
+                var response = await _httpClient.GetAsync(url);
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    return NotFound();
-                }
+                if (!response.IsSuccessStatusCode) return null;
 
-                var body =
-                    await response.Content
-                        .ReadAsStringAsync();
-
-                using var document = JsonDocument.Parse(body);
-                var root = document.RootElement;
-
-                // A client may only open their own quote
-                if (!string.Equals(
-                        Str(root, "userId"),
-                        clientId,
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    return Forbid();
-                }
-
-                var contact = Str(root, "contactPersonName");
-
-                var quote = new QuoteRequest
-                {
-                    Id = id,
-                    UserId = clientId,
-                    BrandName = Str(root, "brandName"),
-                    SocialMediaHandle = Str(root, "socialMediaHandle"),
-                    CustomerName = contact,
-                    ContactPersonName = contact,
-                    Phone = Str(root, "phone"),
-                    Email = User.FindFirstValue(ClaimTypes.Email),
-                    MediaType = Str(root, "mediaType"),
-                    ServiceName = Str(root, "mediaType"),
-                    Budget = Str(root, "budget"),
-                    CampaignGoals = Str(root, "campaignGoals"),
-                    Status = Str(root, "status") ?? "Pending"
-                };
-
-                if (decimal.TryParse(
-                        Str(root, "estimatedPrice"),
-                        NumberStyles.Any,
-                        CultureInfo.InvariantCulture,
-                        out var price))
-                {
-                    quote.EstimatedPrice = price;
-                    quote.EstimatedAmount = price;
-                }
-
-                if (DateTime.TryParse(
-                        Str(root, "createdAt"),
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.RoundtripKind,
-                        out var created))
-                {
-                    quote.CreatedAt = created;
-                }
-
-                return View(quote);
+                return await response.Content.ReadFromJsonAsync<List<T>>()
+                       ?? new List<T>();
             }
             catch
             {
-                return NotFound();
-            }
-        }
-
-        // ============================================================
-        // HELPERS
-        // ============================================================
-
-        private static string? ExtractMessage(string body)
-        {
-            try
-            {
-                using var document = JsonDocument.Parse(body);
-                var root = document.RootElement;
-
-                if (root.ValueKind != JsonValueKind.Object)
-                {
-                    return null;
-                }
-
-                return Str(root, "message") ?? Str(root, "error");
-            }
-            catch (JsonException)
-            {
                 return null;
             }
         }
 
-        // Case-insensitive property read (API may send id / Id)
-        private static string? Str(JsonElement root, string name)
+        private static TimeZoneInfo GetTimeZone()
         {
-            if (root.ValueKind != JsonValueKind.Object)
+            foreach (var id in new[] { "Africa/Johannesburg", "South Africa Standard Time" })
             {
-                return null;
+                try { return TimeZoneInfo.FindSystemTimeZoneById(id); }
+                catch { }
             }
 
-            foreach (var property in root.EnumerateObject())
+            return TimeZoneInfo.Utc;
+        }
+
+        private static DateTime ToLocal(DateTime value, TimeZoneInfo tz)
+        {
+            var utc = value.Kind == DateTimeKind.Local
+                ? value.ToUniversalTime()
+                : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+
+            return TimeZoneInfo.ConvertTimeFromUtc(utc, tz);
+        }
+
+        // ============================================================
+        // PDF BUILDER
+        // ============================================================
+
+        private static string Money(decimal value) =>
+            "R " + value.ToString("N2", CultureInfo.InvariantCulture);
+
+        private static string S(string? value) =>
+            string.IsNullOrWhiteSpace(value) ? "-" : value!;
+
+        private static byte[] BuildPdf(string title, ReportData d, TimeZoneInfo tz)
+        {
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var bookings = d.Bookings.OrderByDescending(b => b.CreatedAt).ToList();
+            var invoices = d.Invoices.OrderByDescending(i => i.CreatedAt).ToList();
+            var quotes = d.Quotes.OrderByDescending(q => q.CreatedAt).ToList();
+
+            bool Is(string? v, string e) =>
+                string.Equals(v?.Trim(), e, StringComparison.OrdinalIgnoreCase);
+
+            var invoiced = invoices.Sum(i => i.TotalAmount);
+            var collected = invoices.Sum(i => i.AmountPaid);
+            var outstanding = invoices.Sum(i => i.BalanceDue);
+
+            var generated = TimeZoneInfo
+                .ConvertTimeFromUtc(DateTime.UtcNow, tz)
+                .ToString("dd MMM yyyy HH:mm", CultureInfo.InvariantCulture);
+
+            var clients = bookings.Select(b => b.UserId)
+                .Concat(invoices.Select(i => i.ClientId))
+                .Concat(quotes.Select(q => q.UserId ?? string.Empty))
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Count();
+
+            return Document.Create(container =>
             {
-                if (!string.Equals(
-                        property.Name,
-                        name,
-                        StringComparison.OrdinalIgnoreCase))
+                container.Page(page =>
                 {
-                    continue;
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.DefaultTextStyle(x => x.FontSize(9));
+
+                    page.Header().Column(col =>
+                    {
+                        col.Item().Text("CONTENT CARTEL")
+                            .FontSize(9).Bold().FontColor(Colors.Grey.Darken1);
+
+                        col.Item().Text("Business Report - " + title)
+                            .FontSize(20).Bold();
+
+                        col.Item().PaddingBottom(6)
+                            .Text("Generated " + generated)
+                            .FontColor(Colors.Grey.Darken1);
+
+                        col.Item().LineHorizontal(1);
+                    });
+
+                    page.Content().PaddingVertical(10).Column(col =>
+                    {
+                        // ---------- SUMMARY ----------
+                        col.Item().Text("Summary").FontSize(12).Bold();
+
+                        col.Item().PaddingTop(4).Table(t =>
+                        {
+                            t.ColumnsDefinition(c =>
+                            {
+                                c.RelativeColumn(3);
+                                c.RelativeColumn(2);
+                            });
+
+                            void Row(string label, string value)
+                            {
+                                t.Cell().BorderBottom(0.5f)
+                                    .BorderColor(Colors.Grey.Lighten2)
+                                    .Padding(4).Text(label);
+
+                                t.Cell().BorderBottom(0.5f)
+                                    .BorderColor(Colors.Grey.Lighten2)
+                                    .Padding(4).AlignRight().Text(value).Bold();
+                            }
+
+                            Row("Bookings", bookings.Count.ToString());
+                            Row("  Pending", bookings.Count(b => Is(b.Status, "Pending")).ToString());
+                            Row("  Confirmed / approved", bookings.Count(b => Is(b.Status, "Confirmed") || Is(b.Status, "Approved")).ToString());
+                            Row("  Completed", bookings.Count(b => Is(b.Status, "Completed")).ToString());
+                            Row("  Cancelled", bookings.Count(b => Is(b.Status, "Cancelled")).ToString());
+                            Row("Quotations", quotes.Count.ToString());
+                            Row("  Pending", quotes.Count(q => Is(q.Status, "Pending")).ToString());
+                            Row("Invoices issued", invoices.Count.ToString());
+                            Row("Total invoiced", Money(invoiced));
+                            Row("Payments received", Money(collected));
+                            Row("Outstanding balance", Money(outstanding));
+                            Row("Active clients", clients.ToString());
+                        });
+
+                        // ---------- BOOKINGS ----------
+                        AddTable(col, "Bookings",
+                            new[] { "Created", "Client", "Service", "Booking date", "Total", "Status", "Payment" },
+                            new float[] { 2, 3, 3, 2, 2, 2, 2 },
+                            bookings.Select(b => new[]
+                            {
+                                ToLocal(b.CreatedAt, tz).ToString("dd MMM yyyy", CultureInfo.InvariantCulture),
+                                S(b.CustomerName),
+                                S(string.IsNullOrWhiteSpace(b.ServiceName) ? b.ServiceId : b.ServiceName),
+                                b.BookingDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture),
+                                Money(b.TotalAmount),
+                                S(b.Status),
+                                S(b.PaymentStatus)
+                            }).ToList());
+
+                        // ---------- INVOICES ----------
+                        AddTable(col, "Invoices & payments",
+                            new[] { "Invoice", "Client", "Total", "Paid", "Balance", "Status" },
+                            new float[] { 3, 3, 2, 2, 2, 2 },
+                            invoices.Select(i => new[]
+                            {
+                                S(i.InvoiceNumber),
+                                S(i.ClientName),
+                                Money(i.TotalAmount),
+                                Money(i.AmountPaid),
+                                Money(i.BalanceDue),
+                                S(i.PaymentStatus)
+                            }).ToList());
+
+                        // ---------- QUOTATIONS ----------
+                        AddTable(col, "Quotations",
+                            new[] { "Created", "Brand", "Contact", "Media type", "Budget", "Status" },
+                            new float[] { 2, 3, 3, 3, 3, 2 },
+                            quotes.Select(q => new[]
+                            {
+                                ToLocal(q.CreatedAt, tz).ToString("dd MMM yyyy", CultureInfo.InvariantCulture),
+                                S(q.BrandName),
+                                S(string.IsNullOrWhiteSpace(q.ContactPersonName) ? q.CustomerName : q.ContactPersonName),
+                                S(q.MediaType),
+                                S(q.Budget),
+                                S(q.Status)
+                            }).ToList());
+                    });
+
+                    page.Footer().AlignCenter().Text(t =>
+                    {
+                        t.DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Darken1));
+                        t.Span("Content Cartel  |  Page ");
+                        t.CurrentPageNumber();
+                        t.Span(" of ");
+                        t.TotalPages();
+                    });
+                });
+            }).GeneratePdf();
+        }
+
+        private static void AddTable(
+            ColumnDescriptor col,
+            string title,
+            string[] headers,
+            float[] widths,
+            List<string[]> rows)
+        {
+            col.Item().PaddingTop(16)
+                .Text($"{title} ({rows.Count})")
+                .FontSize(12).Bold();
+
+            if (rows.Count == 0)
+            {
+                col.Item().PaddingTop(4)
+                    .Text("No records for this period.")
+                    .FontColor(Colors.Grey.Darken1);
+
+                return;
+            }
+
+            col.Item().PaddingTop(4).Table(table =>
+            {
+                table.ColumnsDefinition(c =>
+                {
+                    foreach (var w in widths) c.RelativeColumn(w);
+                });
+
+                table.Header(h =>
+                {
+                    foreach (var text in headers)
+                    {
+                        h.Cell().Background(Colors.Grey.Lighten3)
+                            .Padding(4).Text(text).Bold().FontSize(8);
+                    }
+                });
+
+                foreach (var row in rows)
+                {
+                    foreach (var cell in row)
+                    {
+                        table.Cell().BorderBottom(0.5f)
+                            .BorderColor(Colors.Grey.Lighten2)
+                            .Padding(4).Text(cell).FontSize(8);
+                    }
                 }
+            });
+        }
+    }
 
-                return property.Value.ValueKind switch
-                {
-                    JsonValueKind.Null => null,
-                    JsonValueKind.Undefined => null,
-                    JsonValueKind.String => property.Value.GetString(),
-                    _ => property.Value.ToString()
-                };
+    // ================================================================
+    // SUPPORTING TYPES
+    // ================================================================
+
+    public class ReportMonthRow
+    {
+        public string Key { get; set; } = string.Empty;
+        public string Label { get; set; } = string.Empty;
+        public int Bookings { get; set; }
+        public int Quotes { get; set; }
+        public decimal Invoiced { get; set; }
+        public decimal Collected { get; set; }
+        public bool IsCurrent { get; set; }
+    }
+
+    public class ReportData
+    {
+        public List<Booking> Bookings { get; set; } = new();
+        public List<Invoice> Invoices { get; set; } = new();
+        public List<QuoteRequest> Quotes { get; set; } = new();
+
+        // Items created from 'from' (inclusive) to 'to' (exclusive), local time.
+        public ReportData Slice(DateTime from, DateTime to, TimeZoneInfo tz)
+        {
+            bool In(DateTime value)
+            {
+                var utc = value.Kind == DateTimeKind.Local
+                    ? value.ToUniversalTime()
+                    : DateTime.SpecifyKind(value, DateTimeKind.Utc);
+
+                var local = TimeZoneInfo.ConvertTimeFromUtc(utc, tz);
+                return local >= from && local < to;
             }
 
-            return null;
+            return new ReportData
+            {
+                Bookings = Bookings.Where(b => In(b.CreatedAt)).ToList(),
+                Invoices = Invoices.Where(i => In(i.CreatedAt)).ToList(),
+                Quotes = Quotes.Where(q => In(q.CreatedAt)).ToList()
+            };
         }
     }
 }

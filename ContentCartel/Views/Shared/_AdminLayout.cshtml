@@ -720,7 +720,7 @@
 
                 <a asp-controller="Admin"
                    asp-action="Reports"
-                   class="nav-link @(currentAction == "Reports" ? "active" : "")">
+                   class="nav-link @(currentAction == "Reports" || currentController == "Report" ? "active" : "")">
 
                     <i class="bi bi-bar-chart"></i>
 
