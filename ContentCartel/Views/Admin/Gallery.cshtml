@@ -234,14 +234,101 @@
             </p>
         </div>
 
-        <a href="#"
+        <a href="#addMedia"
            class="primary-btn">
 
             <i class="bi bi-cloud-upload"></i>
 
-            Upload File
+            Add Media
 
         </a>
+
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div style="padding:12px 16px;border-radius:8px;margin-bottom:18px;background:#e9f2e9;color:#416044;font-size:13px;">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div style="padding:12px 16px;border-radius:8px;margin-bottom:18px;background:#f4e8e5;color:#76504a;font-size:13px;">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @{
+        var galleryBookings =
+            ViewBag.Bookings as List<ContentCartel.Models.Booking>
+            ?? new List<ContentCartel.Models.Booking>();
+    }
+
+    <div class="gallery-card" id="addMedia" style="margin-bottom:22px;padding:24px;">
+
+        <h3 style="margin:0 0 4px;font-size:17px;font-weight:700;">Add media for a client</h3>
+
+        <p style="margin:0 0 16px;color:#666;font-size:13px;">
+            Paste a link to the file (Google Drive, Dropbox, YouTube, etc.).
+            It stays hidden from the client until you approve it.
+        </p>
+
+        <form asp-controller="Admin" asp-action="AddGalleryItem" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;">
+
+                <div>
+                    <label style="font-size:12px;font-weight:700;">Booking</label>
+                    <select name="bookingId" required
+                            style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;">
+                        <option value="">Select a booking</option>
+                        @foreach (var b in galleryBookings)
+                        {
+                            <option value="@b.Id">
+                                @b.CustomerName - @(string.IsNullOrWhiteSpace(b.ServiceName) ? b.ServiceId : b.ServiceName) (@b.BookingDate.ToString("dd MMM yyyy"))
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size:12px;font-weight:700;">Media type</label>
+                    <select name="mediaType"
+                            style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;">
+                        <option value="Photo">Photo</option>
+                        <option value="Video">Video</option>
+                        <option value="Reel">Reel</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size:12px;font-weight:700;">Title</label>
+                    <input type="text" name="title" required
+                           style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;" />
+                </div>
+
+                <div>
+                    <label style="font-size:12px;font-weight:700;">File link</label>
+                    <input type="url" name="fileUrl" required placeholder="https://..."
+                           style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;" />
+                </div>
+
+                <div style="grid-column:1 / -1;">
+                    <label style="font-size:12px;font-weight:700;">Description (optional)</label>
+                    <input type="text" name="description"
+                           style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;" />
+                </div>
+
+            </div>
+
+            <button type="submit" class="primary-btn" style="margin-top:16px;border:none;cursor:pointer;">
+                <i class="bi bi-plus-lg"></i>
+                Add to gallery
+            </button>
+
+        </form>
 
     </div>
 
@@ -361,7 +448,7 @@
 
                                         <input type="hidden"
                                                name="id"
-                                               value="@item.GalleryItemId" />
+                                               value="@item.Id" />
 
                                         <button type="submit"
                                                 class="action-btn"

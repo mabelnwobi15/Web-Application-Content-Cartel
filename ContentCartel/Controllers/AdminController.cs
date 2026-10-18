@@ -525,19 +525,115 @@ namespace ContentCartel.Controllers
 
 
         [HttpGet]
-        public IActionResult Gallery()
+        public async Task<IActionResult> Gallery()
         {
-            var galleryItems = new List<GalleryItem>();
+            var galleryItems =
+                await TryGetListAsync<GalleryItem>("api/galleries");
+
+            if (galleryItems == null)
+            {
+                TempData["ErrorMessage"] =
+                    "Unable to load gallery items from the API. Please try again.";
+
+                galleryItems = new List<GalleryItem>();
+            }
+
+            // Bookings for the "add media" form.
+            ViewBag.Bookings =
+                await TryGetListAsync<Booking>("api/bookings")
+                ?? new List<Booking>();
 
             return View(galleryItems);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ApproveGalleryItem(string id)
+        public async Task<IActionResult> AddGalleryItem(
+            string bookingId,
+            string title,
+            string mediaType,
+            string fileUrl,
+            string? description)
         {
-            TempData["SuccessMessage"] =
-                $"Gallery item {id} approved.";
+            if (string.IsNullOrWhiteSpace(bookingId) ||
+                string.IsNullOrWhiteSpace(title) ||
+                string.IsNullOrWhiteSpace(fileUrl))
+            {
+                TempData["ErrorMessage"] =
+                    "Booking, title and file link are all required.";
+
+                return RedirectToAction(nameof(Gallery));
+            }
+
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(
+                    "api/galleries",
+                    new
+                    {
+                        BookingId = bookingId,
+                        Title = title,
+                        MediaType = string.IsNullOrWhiteSpace(mediaType)
+                            ? "Photo"
+                            : mediaType,
+                        FileUrl = fileUrl,
+                        Description = description ?? string.Empty,
+                        UploadedByStaffId =
+                            User.FindFirst(
+                                System.Security.Claims.ClaimTypes.NameIdentifier
+                            )?.Value ?? string.Empty
+                    });
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+
+                    TempData["ErrorMessage"] =
+                        "Unable to add gallery item. " + error;
+
+                    return RedirectToAction(nameof(Gallery));
+                }
+
+                TempData["SuccessMessage"] =
+                    "Gallery item added. Approve it so the client can see it.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] =
+                    "Unable to add gallery item: " + ex.Message;
+            }
+
+            return RedirectToAction(nameof(Gallery));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveGalleryItem(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                var response = await _httpClient.PutAsync(
+                    $"api/galleries/{Uri.EscapeDataString(id)}/approve",
+                    null
+                );
+
+                TempData[response.IsSuccessStatusCode
+                    ? "SuccessMessage"
+                    : "ErrorMessage"] =
+                    response.IsSuccessStatusCode
+                        ? "Gallery item approved. The client can now see it."
+                        : "Unable to approve gallery item.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] =
+                    "Unable to approve gallery item: " + ex.Message;
+            }
 
             return RedirectToAction(nameof(Gallery));
         }
