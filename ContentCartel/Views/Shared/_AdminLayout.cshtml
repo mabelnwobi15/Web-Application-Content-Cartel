@@ -555,6 +555,7 @@
 
     </style>
 
+    <partial name="_AccessibilityScript" />
 </head>
 
 
@@ -735,7 +736,7 @@
 
                 <a asp-controller="Admin"
                    asp-action="Settings"
-                   class="nav-link @(currentAction == "Settings" ? "active" : "")">
+                   class="nav-link @(currentAction == "Settings" || currentController == "Settings" ? "active" : "")">
 
                     <i class="bi bi-gear"></i>
 

@@ -1,0 +1,168 @@
+@model ContentCartel.Models.UserPreferences
+
+@{
+    var isAdmin = (ViewData["IsAdmin"] as bool?) ?? false;
+}
+
+<form asp-controller="Settings" asp-action="SavePreferences" method="post" id="prefsForm">
+
+    @Html.AntiForgeryToken()
+
+    <!-- LANGUAGE & REGION -->
+    <div class="card border-0 shadow-sm p-4 mb-4" id="language">
+        <h2 class="h5 fw-bold mb-1">Language &amp; region</h2>
+        <p class="text-muted small mb-3">
+            Your choice is saved to your account. Translations are not available yet,
+            so the platform is still shown in English.
+        </p>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Language</label>
+                <select name="Language" class="form-select">
+                    @foreach (var o in new[] {
+                        ("en-ZA", "English (South Africa)"),
+                        ("af-ZA", "Afrikaans"),
+                        ("zu-ZA", "isiZulu"),
+                        ("xh-ZA", "isiXhosa"),
+                        ("st-ZA", "Sesotho") })
+                    {
+                        <option value="@o.Item1" selected="@(Model.Language == o.Item1)">@o.Item2</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Time zone</label>
+                <select name="TimeZone" class="form-select">
+                    @foreach (var o in new[] {
+                        ("Africa/Johannesburg", "South Africa (SAST)"),
+                        ("UTC", "UTC"),
+                        ("Europe/London", "London"),
+                        ("America/New_York", "New York"),
+                        ("Asia/Dubai", "Dubai") })
+                    {
+                        <option value="@o.Item1" selected="@(Model.TimeZone == o.Item1)">@o.Item2</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold small">Date format</label>
+                <select name="DateFormat" class="form-select">
+                    @foreach (var o in new[] { "dd MMM yyyy", "yyyy-MM-dd", "dd/MM/yyyy", "MM/dd/yyyy" })
+                    {
+                        <option value="@o" selected="@(Model.DateFormat == o)">@DateTime.Today.ToString(o, System.Globalization.CultureInfo.InvariantCulture)</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="card border-0 shadow-sm p-4 mb-4" id="notifications">
+        <h2 class="h5 fw-bold mb-1">Notifications</h2>
+        <p class="text-muted small mb-3">
+            Choose what you want to be told about. These choices are saved now;
+            email delivery is not switched on yet.
+        </p>
+
+        @{
+            var items = isAdmin
+                ? new[] {
+                    ("NotifyBookings", "New bookings", Model.NotifyBookings),
+                    ("NotifyQuotes", "New quotation requests", Model.NotifyQuotes),
+                    ("NotifyPayments", "Payments received", Model.NotifyPayments),
+                    ("WeeklySummary", "Weekly activity summary", Model.WeeklySummary) }
+                : new[] {
+                    ("NotifyBookings", "Booking updates", Model.NotifyBookings),
+                    ("NotifyQuotes", "Quotation updates", Model.NotifyQuotes),
+                    ("NotifyPayments", "Invoice and payment reminders", Model.NotifyPayments),
+                    ("WeeklySummary", "Weekly activity summary", Model.WeeklySummary) };
+        }
+
+        @foreach (var item in items)
+        {
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" role="switch"
+                       id="@item.Item1" name="@item.Item1" value="true" checked="@item.Item3" />
+                <input type="hidden" name="@item.Item1" value="false" />
+                <label class="form-check-label" for="@item.Item1">@item.Item2</label>
+            </div>
+        }
+    </div>
+
+    <!-- ACCESSIBILITY -->
+    <div class="card border-0 shadow-sm p-4 mb-4" id="accessibility">
+        <h2 class="h5 fw-bold mb-1">Accessibility</h2>
+        <p class="text-muted small mb-3">
+            These apply straight away on this device and follow your account.
+        </p>
+
+        <div class="mb-3" style="max-width:320px;">
+            <label class="form-label fw-bold small">Text size</label>
+            <select name="TextSize" id="textSize" class="form-select">
+                @foreach (var o in new[] {
+                    ("small", "Small"),
+                    ("normal", "Normal"),
+                    ("large", "Large"),
+                    ("xlarge", "Extra large") })
+                {
+                    <option value="@o.Item1" selected="@(Model.TextSize == o.Item1)">@o.Item2</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" role="switch"
+                   id="HighContrast" name="HighContrast" value="true" checked="@Model.HighContrast" />
+            <input type="hidden" name="HighContrast" value="false" />
+            <label class="form-check-label" for="HighContrast">High contrast</label>
+        </div>
+
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch"
+                   id="ReduceMotion" name="ReduceMotion" value="true" checked="@Model.ReduceMotion" />
+            <input type="hidden" name="ReduceMotion" value="false" />
+            <label class="form-check-label" for="ReduceMotion">Reduce motion and animations</label>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-dark mb-4">
+        <i class="bi bi-check-lg me-1"></i> Save preferences
+    </button>
+</form>
+
+<script>
+    (function () {
+        var form = document.getElementById('prefsForm');
+        if (!form) return;
+
+        var size = document.getElementById('textSize');
+        var hc = document.getElementById('HighContrast');
+        var rm = document.getElementById('ReduceMotion');
+        var root = document.documentElement;
+
+        function apply() {
+            ['small', 'large', 'xlarge'].forEach(function (s) {
+                root.classList.remove('cc-text-' + s);
+            });
+            if (size.value !== 'normal') root.classList.add('cc-text-' + size.value);
+            root.classList.toggle('cc-hc', hc.checked);
+            root.classList.toggle('cc-reduce', rm.checked);
+
+            try {
+                localStorage.setItem('cc-a11y', JSON.stringify({
+                    size: size.value, hc: hc.checked, reduce: rm.checked
+                }));
+            } catch (e) { }
+        }
+
+        // Make this device match the saved account settings.
+        apply();
+
+        size.addEventListener('change', apply);
+        hc.addEventListener('change', apply);
+        rm.addEventListener('change', apply);
+    })();
+</script>

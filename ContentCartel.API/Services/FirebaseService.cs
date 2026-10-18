@@ -160,6 +160,42 @@ namespace ContentCartel.API.Services
 
 
         // ==========================================
+        // PATCH (merge: only the given fields change)
+        // ==========================================
+
+        public async Task PatchAsync<T>(
+            string path,
+            T data)
+        {
+            var token = await GetAccessTokenAsync();
+
+            using var client = new HttpClient();
+
+            var json = JsonSerializer.Serialize(data);
+
+            using var content =
+                new StringContent(
+                    json,
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+            var url =
+                $"{_databaseUrl}/{path}.json?access_token={Uri.EscapeDataString(token)}";
+
+            using var request =
+                new HttpRequestMessage(HttpMethod.Patch, url)
+                {
+                    Content = content
+                };
+
+            var response = await client.SendAsync(request);
+
+            response.EnsureSuccessStatusCode();
+        }
+
+
+        // ==========================================
         // DELETE
         // ==========================================
 

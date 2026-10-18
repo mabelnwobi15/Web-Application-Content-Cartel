@@ -1,0 +1,24 @@
+@* Applies the saved accessibility settings (text size, contrast, motion).
+   Include once inside <head> of each layout. *@
+<style>
+    html.cc-hc { filter: contrast(1.25); }
+    html.cc-reduce *, html.cc-reduce *::before, html.cc-reduce *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+    html.cc-text-small body { zoom: .92; }
+    html.cc-text-large body { zoom: 1.1; }
+    html.cc-text-xlarge body { zoom: 1.2; }
+</style>
+<script>
+    (function () {
+        try {
+            var p = JSON.parse(localStorage.getItem('cc-a11y') || '{}');
+            var h = document.documentElement;
+            if (p.hc) h.classList.add('cc-hc');
+            if (p.reduce) h.classList.add('cc-reduce');
+            if (p.size && p.size !== 'normal') h.classList.add('cc-text-' + p.size);
+        } catch (e) { }
+    })();
+</script>
