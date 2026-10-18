@@ -74,6 +74,10 @@ namespace ContentCartel.API.Controllers
 
                 booking.Id = id;
 
+                // Every booking gets an invoice so the admin can see it
+                // under Invoicing & Payments and the client can pay it.
+                await CreateInvoiceForBookingAsync(booking);
+
                 return Ok(booking);
             }
             catch (Exception ex)
@@ -88,6 +92,106 @@ namespace ContentCartel.API.Controllers
                 );
             }
         }
+
+        // ============================================================
+        // GET ALL BOOKINGS (admin)
+        // GET: /api/bookings
+        // ============================================================
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllBookings()
+        {
+            try
+            {
+                var bookings =
+                    await _firebaseService
+                        .GetAsync<Dictionary<string, Booking>>("bookings");
+
+                if (bookings == null || bookings.Count == 0)
+                {
+                    return Ok(new List<Booking>());
+                }
+
+                var result = bookings
+                    .Where(x => x.Value != null)
+                    .Select(x =>
+                    {
+                        var booking = x.Value;
+                        booking.Id = x.Key;
+                        return booking;
+                    })
+                    .OrderByDescending(x => x.CreatedAt)
+                    .ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Unable to retrieve bookings.",
+                    error = ex.Message
+                });
+            }
+        }
+
+        // ============================================================
+// GET CLIENT BOOKINGS
+// GET: /api/bookings/client/{userId}
+// ============================================================
+
+[HttpGet("client/{userId}")]
+public async Task<IActionResult> GetClientBookings(string userId)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Client ID is required."
+            });
+        }
+
+        var bookings =
+            await _firebaseService
+                .GetAsync<Dictionary<string, Booking>>("bookings");
+
+        if (bookings == null || bookings.Count == 0)
+        {
+            return Ok(new List<Booking>());
+        }
+
+        var result = bookings
+            .Where(x =>
+                x.Value != null &&
+                string.Equals(
+                    x.Value.UserId,
+                    userId,
+                    StringComparison.OrdinalIgnoreCase))
+            .Select(x =>
+            {
+                var booking = x.Value;
+                booking.Id = x.Key;
+                return booking;
+            })
+            .OrderByDescending(x => x.CreatedAt)
+            .ToList();
+
+        return Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new
+        {
+            success = false,
+            message = "Unable to retrieve client bookings.",
+            error = ex.Message
+        });
+    }
+}
 
         // ============================================================
         // GET BOOKING
@@ -300,6 +404,68 @@ namespace ContentCartel.API.Controllers
                         error = ex.Message
                     }
                 );
+            }
+        }
+
+        // ============================================================
+        // INVOICE FOR A NEW BOOKING
+        // ============================================================
+
+        private async Task CreateInvoiceForBookingAsync(Booking booking)
+        {
+            try
+            {
+                if (booking.TotalAmount <= 0)
+                {
+                    return;
+                }
+
+                // Never create a second invoice for the same booking.
+                var existing =
+                    await _firebaseService
+                        .GetAsync<Dictionary<string, Invoice>>("invoices");
+
+                if (existing != null &&
+                    existing.Values.Any(i =>
+                        i != null &&
+                        string.Equals(
+                            i.BookingId,
+                            booking.Id,
+                            StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+
+                var now = DateTime.UtcNow;
+
+                var invoice = new Invoice
+                {
+                    InvoiceNumber =
+                        $"CC-{now:yyyy}-{now:MMddHHmmssfff}",
+                    BookingId = booking.Id ?? string.Empty,
+                    ClientId = booking.UserId ?? string.Empty,
+                    ClientName = booking.CustomerName,
+                    ClientEmail = booking.Email,
+                    ClientPhone = booking.Phone,
+                    ServiceId = booking.ServiceId,
+                    ServiceName = booking.ServiceName ?? string.Empty,
+                    TotalAmount = booking.TotalAmount,
+                    DepositAmount = booking.DepositAmount,
+                    AmountPaid = 0,
+                    BalanceDue = booking.TotalAmount,
+                    PaymentStatus = "Pending",
+                    Status = "Issued",
+                    IssueDate = now,
+                    DueDate = booking.BookingDate,
+                    CreatedAt = now
+                };
+
+                await _firebaseService.CreateAsync("invoices", invoice);
+            }
+            catch
+            {
+                // The booking is already saved; never fail it because
+                // the invoice could not be written.
             }
         }
 

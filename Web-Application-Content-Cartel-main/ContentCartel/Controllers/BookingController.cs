@@ -329,7 +329,7 @@ namespace ContentCartel.Controllers
                 }
 
                 TempData["Success"] = "Booking deleted.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Dashboard", "Client");
             }
             catch (HttpRequestException)
             {

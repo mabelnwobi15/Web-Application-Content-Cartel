@@ -103,6 +103,36 @@ namespace ContentCartel.API.Controllers
 
             try
             {
+                // One invoice per booking: return the existing one
+                // instead of creating a duplicate.
+                if (!string.IsNullOrWhiteSpace(invoice.BookingId))
+                {
+                    var existing =
+                        await _firebaseService
+                            .GetAsync<Dictionary<string, Invoice>>("invoices");
+
+                    var match = existing?
+                        .FirstOrDefault(x =>
+                            x.Value != null &&
+                            string.Equals(
+                                x.Value.BookingId,
+                                invoice.BookingId,
+                                StringComparison.OrdinalIgnoreCase));
+
+                    if (match != null && match.Value.Value != null)
+                    {
+                        var found = match.Value.Value;
+                        found.InvoiceId = match.Value.Key;
+
+                        return Ok(new
+                        {
+                            success = true,
+                            message = "Invoice already exists for this booking.",
+                            invoice = found
+                        });
+                    }
+                }
+
                 invoice.InvoiceNumber =
                     $"CC-{DateTime.UtcNow:yyyy}-" +
                     $"{DateTime.UtcNow:MMddHHmmss}";
@@ -143,6 +173,63 @@ namespace ContentCartel.API.Controllers
                 });
             }
         }
+
+        // ============================================================
+// GET CLIENT INVOICES
+// GET: api/invoices/client/{clientId}
+// ============================================================
+
+[HttpGet("client/{clientId}")]
+public async Task<IActionResult> GetClientInvoices(string clientId)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(clientId))
+        {
+            return BadRequest(new
+            {
+                success = false,
+                message = "Client ID is required."
+            });
+        }
+
+        var invoices =
+            await _firebaseService
+                .GetAsync<Dictionary<string, Invoice>>("invoices");
+
+        if (invoices == null || invoices.Count == 0)
+        {
+            return Ok(new List<Invoice>());
+        }
+
+        var result = invoices
+            .Where(x =>
+                x.Value != null &&
+                string.Equals(
+                    x.Value.ClientId,
+                    clientId,
+                    StringComparison.OrdinalIgnoreCase))
+            .Select(x =>
+            {
+                var invoice = x.Value;
+                invoice.InvoiceId = x.Key;
+                return invoice;
+            })
+            .OrderByDescending(x => x.CreatedAt)
+            .ToList();
+
+        return Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new
+        {
+            success = false,
+            message = "Unable to retrieve client invoices.",
+            error = ex.Message
+        });
+    }
+}
 
         // PUT: api/invoices/{id}/payment
         [HttpPut("{id}/payment")]

@@ -298,6 +298,39 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
+        // Stop double-clicks creating two bookings (and two invoices).
+        (function () {
+            var form = document.getElementById('bookingForm');
+            if (!form) return;
+
+            form.addEventListener('submit', function (e) {
+                if (form.dataset.sent === '1') {
+                    e.preventDefault();
+                    return;
+                }
+
+                if (window.jQuery && jQuery.validator && !jQuery(form).valid()) {
+                    return;
+                }
+
+                form.dataset.sent = '1';
+
+                var btn = form.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = 'Processing...';
+                }
+            });
+
+            window.addEventListener('pageshow', function () {
+                form.dataset.sent = '';
+                var btn = form.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Proceed to Pay 30% Deposit';
+                }
+            });
+        })();
 
         function calculateDeposit() {
 

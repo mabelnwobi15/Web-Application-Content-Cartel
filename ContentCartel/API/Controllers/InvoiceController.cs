@@ -103,6 +103,36 @@ namespace ContentCartel.API.Controllers
 
             try
             {
+                // One invoice per booking: return the existing one
+                // instead of creating a duplicate.
+                if (!string.IsNullOrWhiteSpace(invoice.BookingId))
+                {
+                    var existing =
+                        await _firebaseService
+                            .GetAsync<Dictionary<string, Invoice>>("invoices");
+
+                    var match = existing?
+                        .FirstOrDefault(x =>
+                            x.Value != null &&
+                            string.Equals(
+                                x.Value.BookingId,
+                                invoice.BookingId,
+                                StringComparison.OrdinalIgnoreCase));
+
+                    if (match != null && match.Value.Value != null)
+                    {
+                        var found = match.Value.Value;
+                        found.InvoiceId = match.Value.Key;
+
+                        return Ok(new
+                        {
+                            success = true,
+                            message = "Invoice already exists for this booking.",
+                            invoice = found
+                        });
+                    }
+                }
+
                 invoice.InvoiceNumber =
                     $"CC-{DateTime.UtcNow:yyyy}-" +
                     $"{DateTime.UtcNow:MMddHHmmss}";
