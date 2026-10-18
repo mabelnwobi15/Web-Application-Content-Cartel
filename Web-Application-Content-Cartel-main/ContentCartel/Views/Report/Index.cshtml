@@ -1,0 +1,120 @@
+@model List<ContentCartel.Controllers.ReportMonthRow>
+
+@{
+    ViewData["Title"] = "Business Intelligence Reports";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+}
+
+<div class="container-fluid py-3 px-4">
+
+    <div class="mb-4">
+        <h1 class="fw-bold mb-1" style="font-size:30px;">Reports &amp; Analytics</h1>
+        <p class="text-muted mb-0">
+            Bookings, quotations, invoices and payments, straight from the live system.
+        </p>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <!-- ALL-TIME SUMMARY -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm p-3">
+                <div class="small text-muted text-uppercase fw-bold">Total bookings</div>
+                <div class="fs-3 fw-bold">@ViewBag.AllBookings</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm p-3">
+                <div class="small text-muted text-uppercase fw-bold">Total quotations</div>
+                <div class="fs-3 fw-bold">@ViewBag.AllQuotes</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm p-3">
+                <div class="small text-muted text-uppercase fw-bold">Total invoiced</div>
+                <div class="fs-3 fw-bold">R @(Convert.ToDecimal(ViewBag.AllInvoiced ?? 0m).ToString("N0", inv))</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card border-0 shadow-sm p-3">
+                <div class="small text-muted text-uppercase fw-bold">Payments received</div>
+                <div class="fs-3 fw-bold">R @(Convert.ToDecimal(ViewBag.AllCollected ?? 0m).ToString("N0", inv))</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm p-3 bg-white mb-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Monthly Business Reports</h5>
+
+            <a href="@Url.Action("DownloadPdf", "Report", new { month = "all" })"
+               class="btn btn-sm btn-dark">
+                <i class="bi bi-file-earmark-pdf me-1"></i> All activity (PDF)
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Report Month</th>
+                        <th>Bookings</th>
+                        <th>Quotations</th>
+                        <th>Invoiced</th>
+                        <th>Collected</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model)
+                    {
+                        <tr>
+                            <td class="fw-bold">@row.Label</td>
+                            <td>@row.Bookings</td>
+                            <td>@row.Quotes</td>
+                            <td>R @row.Invoiced.ToString("N2", inv)</td>
+                            <td>R @row.Collected.ToString("N2", inv)</td>
+                            <td>
+                                @if (row.IsCurrent)
+                                {
+                                    <span class="badge bg-warning text-dark">In progress</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Complete</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a href="@Url.Action("DownloadPdf", "Report", new { month = row.Key })"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                                </a>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                No activity to report yet.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <p class="small text-muted mt-3 mb-0">
+            Each month counts items created in that month. "Collected" is the amount
+            paid so far on invoices issued in that month.
+        </p>
+    </div>
+</div>

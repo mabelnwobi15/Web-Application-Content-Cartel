@@ -27,6 +27,27 @@ namespace ContentCartel.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            // Defaults so the view never sees a null (e.g. when the API is down).
+            ViewBag.AllBookings = 0;
+            ViewBag.AllQuotes = 0;
+            ViewBag.AllInvoiced = 0m;
+            ViewBag.AllCollected = 0m;
+
+            try
+            {
+                return await BuildIndexAsync();
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] =
+                    "Unable to build the report list: " + ex.Message;
+
+                return View(new List<ReportMonthRow>());
+            }
+        }
+
+        private async Task<IActionResult> BuildIndexAsync()
+        {
             var data = await LoadAsync();
 
             if (data == null)

@@ -1,4 +1,4 @@
-﻿@model List<ContentCartel.Controllers.ReportMonthRow>
+@model List<ContentCartel.Controllers.ReportMonthRow>
 
 @{
     ViewData["Title"] = "Business Intelligence Reports";
@@ -37,13 +37,13 @@
         <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm p-3">
                 <div class="small text-muted text-uppercase fw-bold">Total invoiced</div>
-                <div class="fs-3 fw-bold">R @(((decimal)ViewBag.AllInvoiced).ToString("N0", inv))</div>
+                <div class="fs-3 fw-bold">R @(Convert.ToDecimal(ViewBag.AllInvoiced ?? 0m).ToString("N0", inv))</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm p-3">
                 <div class="small text-muted text-uppercase fw-bold">Payments received</div>
-                <div class="fs-3 fw-bold">R @(((decimal)ViewBag.AllCollected).ToString("N0", inv))</div>
+                <div class="fs-3 fw-bold">R @(Convert.ToDecimal(ViewBag.AllCollected ?? 0m).ToString("N0", inv))</div>
             </div>
         </div>
     </div>
