@@ -1,8 +1,13 @@
-@model ContentCartel.Models.SettingsViewModel
-
 @{
     ViewData["Title"] = "Settings";
-    ViewData["IsAdmin"] = false;
+
+    var fullName =
+        User.Identity?.Name
+        ?? "Client";
+
+    var email =
+        User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+        ?? "-";
 }
 
 <link rel="stylesheet"
@@ -16,112 +21,97 @@
         <div class="row g-4">
 
             <aside class="col-12 col-lg-3">
-                @await Html.PartialAsync("~/Views/Client/_ClientPortalNav.cshtml")
+                @await Html.PartialAsync("_ClientPortalNav")
             </aside>
 
             <main class="col-12 col-lg-9">
 
                 <div class="client-portal-hero mb-4">
-                    <span class="client-portal-label">ACCOUNT</span>
-                    <h1 class="h2 fw-bold mt-2 mb-2">Settings</h1>
-                    <p class="mb-0">Your details, preferences and quick links.</p>
+
+                    <span class="client-portal-label">
+                        ACCOUNT
+                    </span>
+
+                    <h1 class="h2 fw-bold mt-2 mb-2">
+                        Settings
+                    </h1>
+
+                    <p class="mb-0">
+                        Your account details and security.
+                    </p>
+
                 </div>
 
-                @if (TempData["SuccessMessage"] != null)
-                {
-                    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-                }
-                @if (TempData["ErrorMessage"] != null)
-                {
-                    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-                }
-
-                <!-- QUICK LINKS -->
                 <div class="client-portal-card mb-4">
-                    <h2 class="h5 fw-bold mb-3">Quick links</h2>
 
-                    <div class="row g-2">
-                        <div class="col-6 col-md-4">
-                            <a asp-controller="Client" asp-action="Bookings" class="btn btn-outline-dark w-100">
-                                <i class="bi bi-calendar-check me-1"></i> Bookings
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <a asp-controller="Client" asp-action="Quotations" class="btn btn-outline-dark w-100">
-                                <i class="bi bi-file-earmark-text me-1"></i> Quotations
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <a asp-controller="Client" asp-action="Invoices" class="btn btn-outline-dark w-100">
-                                <i class="bi bi-receipt me-1"></i> Invoices
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <a asp-controller="Client" asp-action="Galleries" class="btn btn-outline-dark w-100">
-                                <i class="bi bi-images me-1"></i> Galleries
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <a asp-controller="Client" asp-action="Profile" class="btn btn-outline-dark w-100">
-                                <i class="bi bi-person-circle me-1"></i> Profile
-                            </a>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <a asp-controller="Booking" asp-action="Index" class="btn btn-dark w-100">
-                                <i class="bi bi-plus-lg me-1"></i> New booking
-                            </a>
-                        </div>
+                    <h2 class="h5 fw-bold mb-4">
+                        Account
+                    </h2>
+
+                    <div class="d-flex justify-content-between border-bottom py-3">
+                        <span class="text-muted">Name</span>
+                        <strong>@fullName</strong>
                     </div>
+
+                    <div class="d-flex justify-content-between border-bottom py-3">
+                        <span class="text-muted">Email</span>
+                        <strong>@email</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between py-3">
+                        <span class="text-muted">Account type</span>
+                        <strong>Client</strong>
+                    </div>
+
+                    <div class="mt-3">
+                        <a asp-controller="Client"
+                           asp-action="Profile"
+                           class="btn btn-outline-dark">
+                            <i class="bi bi-person-circle me-1"></i>
+                            View full profile
+                        </a>
+                    </div>
+
                 </div>
 
-                <!-- EDIT PROFILE -->
-                <div class="client-portal-card mb-4" id="profile">
-                    <h2 class="h5 fw-bold mb-1">Edit profile</h2>
-                    <p class="text-muted small mb-3">Keep your contact details up to date.</p>
+                <div class="client-portal-card mb-4">
 
-                    <form asp-controller="Settings" asp-action="SaveProfile" method="post">
-                        @Html.AntiForgeryToken()
+                    <h2 class="h5 fw-bold mb-3">
+                        Need to change your details or password?
+                    </h2>
 
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small">Full name</label>
-                                <input type="text" name="fullName" class="form-control"
-                                       value="@Model.Profile.FullName" required maxlength="100" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small">Phone / WhatsApp</label>
-                                <input type="tel" name="phone" class="form-control"
-                                       value="@Model.Profile.Phone" maxlength="30" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small">Email</label>
-                                <input type="email" class="form-control" value="@Model.Profile.Email" disabled />
-                                <div class="form-text">Your sign-in email can't be changed here.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold small">Account type</label>
-                                <input type="text" class="form-control" value="Client" disabled />
-                            </div>
-                        </div>
+                    <p class="text-muted mb-3">
+                        Get in touch with Content Cartel and we will update your
+                        account for you.
+                    </p>
 
-                        <button type="submit" class="btn btn-dark mt-3">
-                            <i class="bi bi-check-lg me-1"></i> Save profile
-                        </button>
-                    </form>
+                    <a asp-controller="Contact"
+                       asp-action="Index"
+                       class="btn btn-dark">
+                        <i class="bi bi-chat-dots me-1"></i>
+                        Contact us
+                    </a>
+
                 </div>
 
-                <!-- LANGUAGE / NOTIFICATIONS / ACCESSIBILITY -->
-                <partial name="_PreferencesForm" model="Model.Preferences" view-data="ViewData" />
-
-                <!-- SIGN OUT -->
                 <div class="client-portal-card">
-                    <h2 class="h5 fw-bold mb-3">Sign out</h2>
 
-                    <form asp-controller="Client" asp-action="Logout" method="post">
-                        <button type="submit" class="btn btn-outline-dark">
-                            <i class="bi bi-box-arrow-right me-1"></i> Log out
+                    <h2 class="h5 fw-bold mb-3">
+                        Sign out
+                    </h2>
+
+                    <form asp-controller="Client"
+                          asp-action="Logout"
+                          method="post">
+
+                        <button type="submit"
+                                class="btn btn-outline-dark">
+                            <i class="bi bi-box-arrow-right me-1"></i>
+                            Log out
                         </button>
+
                     </form>
+
                 </div>
 
             </main>

@@ -1,215 +1,162 @@
-﻿@model ContentCartel.Models.SettingsViewModel
-
-@{
+﻿@{
     ViewData["Title"] = "System Settings";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["IsAdmin"] = true;
 }
 
 <style>
-    .st-page { padding: 28px 30px 45px; width: 100%; max-width: 100%; box-sizing: border-box; }
-    .st-page h1 { font-size: 30px; font-weight: 800; margin: 0; }
-    .st-nav { position: sticky; top: 20px; }
-    .st-nav a { display: block; padding: 9px 14px; border-radius: 8px; color: #333; text-decoration: none; font-size: 14px; font-weight: 600; }
-    .st-nav a:hover { background: #f3efe5; }
-    .st-link { display: flex; align-items: center; gap: 12px; padding: 16px; background: #fff; border-radius: 12px; border: 1px solid #e5e1d8; color: #111; text-decoration: none; height: 100%; transition: box-shadow .2s, transform .2s; }
-    .st-link:hover { box-shadow: 0 8px 25px rgba(0,0,0,.06); transform: translateY(-2px); color: #111; }
-    .st-link i { font-size: 20px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f3efe5; border-radius: 10px; flex-shrink: 0; }
-    .st-link strong { display: block; font-size: 14px; }
-    .st-link span { font-size: 12px; color: #77736c; }
-    @@media (max-width: 991px) { .st-page { padding: 22px 16px 35px; } .st-nav { display: none; } }
+    .admin-page {
+        padding: 28px 30px 45px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .page-header {
+        margin-bottom: 28px;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+    }
+
+    .page-header p {
+        margin: 8px 0 0;
+        color: #666;
+    }
+
+    .settings-card {
+        max-width: 900px;
+        background: white;
+        border-radius: 14px;
+        padding: 30px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.08);
+    }
+
+    .setting-section {
+        margin-bottom: 30px;
+    }
+
+        .setting-section h2 {
+            margin: 0 0 6px;
+            font-size: 19px;
+        }
+
+        .setting-section p {
+            margin: 0 0 20px;
+            color: #777;
+            font-size: 14px;
+        }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 7px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    input {
+        width: 100%;
+        padding: 13px;
+        border: 1px solid #d0d0d0;
+        border-radius: 8px;
+    }
+
+    .checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .checkbox input {
+            width: 18px;
+        }
+
+    .save-btn {
+        border: none;
+        background: #1473ea;
+        color: white;
+        padding: 13px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+    }
 </style>
 
-<div class="st-page">
+<div class="admin-page">
 
-    <div class="mb-4">
+    <div class="page-header">
         <h1>System Settings</h1>
-        <p class="text-muted mb-0">Your account, platform details and preferences.</p>
+        <p>Manage platform configuration and administrator preferences.</p>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-    }
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-    }
+    <div class="settings-card">
 
-    <!-- MANAGE PLATFORM -->
-    <div class="mb-4">
-        <div class="small text-muted text-uppercase fw-bold mb-2">Manage the platform</div>
+        <form asp-controller="Admin"
+              asp-action="SaveSettings"
+              method="post">
 
-        <div class="row g-3">
-            <div class="col-6 col-md-4 col-xl-3">
-                <a class="st-link" asp-controller="Admin" asp-action="Bookings">
-                    <i class="bi bi-calendar-check"></i>
-                    <div><strong>Bookings</strong><span>All client bookings</span></div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl-3">
-                <a class="st-link" asp-controller="Admin" asp-action="Quotations">
-                    <i class="bi bi-file-earmark-text"></i>
-                    <div><strong>Quotations</strong><span>Quote requests</span></div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl-3">
-                <a class="st-link" asp-controller="Admin" asp-action="Invoices">
-                    <i class="bi bi-receipt"></i>
-                    <div><strong>Invoices</strong><span>Billing and payments</span></div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl-3">
-                <a class="st-link" asp-controller="Admin" asp-action="ServicesPricing">
-                    <i class="bi bi-tags"></i>
-                    <div><strong>Services &amp; Pricing</strong><span>What you offer</span></div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl-3">
-                <a class="st-link" asp-controller="Admin" asp-action="Staff">
-                    <i class="bi bi-people"></i>
-                    <div><strong>Staff</strong><span>Team accounts</span></div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl-3">
-                <a class="st-link" asp-controller="Admin" asp-action="Gallery">
-                    <i class="bi bi-images"></i>
-                    <div><strong>Gallery</strong><span>Client media</span></div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl-3">
-                <a class="st-link" asp-controller="Report" asp-action="Index">
-                    <i class="bi bi-bar-chart"></i>
-                    <div><strong>Reports</strong><span>Monthly PDFs</span></div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-xl-3">
-                <a class="st-link" asp-controller="Admin" asp-action="DiscountLoyalty">
-                    <i class="bi bi-stars"></i>
-                    <div><strong>Discounts &amp; Loyalty</strong><span>Rewards</span></div>
-                </a>
-            </div>
-        </div>
-    </div>
+            @Html.AntiForgeryToken()
 
-    <div class="row g-4">
+            <div class="setting-section">
 
-        <aside class="col-lg-3">
-            <nav class="st-nav">
-                <a href="#profile">Edit profile</a>
-                <a href="#business">Business details</a>
-                <a href="#language">Language &amp; region</a>
-                <a href="#notifications">Notifications</a>
-                <a href="#accessibility">Accessibility</a>
-                <a href="#security">Security &amp; sign out</a>
-            </nav>
-        </aside>
+                <h2>Business Information</h2>
 
-        <div class="col-lg-9">
-
-            <!-- PROFILE -->
-            <div class="card border-0 shadow-sm p-4 mb-4" id="profile">
-                <h2 class="h5 fw-bold mb-1">Edit profile</h2>
-                <p class="text-muted small mb-3">Your administrator account details.</p>
-
-                <form asp-controller="Settings" asp-action="SaveProfile" method="post">
-                    @Html.AntiForgeryToken()
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Full name</label>
-                            <input type="text" name="fullName" class="form-control"
-                                   value="@Model.Profile.FullName" required maxlength="100" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Phone</label>
-                            <input type="tel" name="phone" class="form-control"
-                                   value="@Model.Profile.Phone" maxlength="30" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Email</label>
-                            <input type="email" class="form-control" value="@Model.Profile.Email" disabled />
-                            <div class="form-text">Your sign-in email can't be changed here.</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Role</label>
-                            <input type="text" class="form-control" value="@Model.Profile.Role" disabled />
-                        </div>
-                    </div>
-
-                    <div class="form-check form-switch mt-3">
-                        <input class="form-check-input" type="checkbox" role="switch"
-                               id="biometricEnabled" name="biometricEnabled" value="true"
-                               checked="@Model.Profile.BiometricEnabled" />
-                        <input type="hidden" name="biometricEnabled" value="false" />
-                        <label class="form-check-label" for="biometricEnabled">
-                            Enable biometric authentication
-                        </label>
-                    </div>
-
-                    <button type="submit" class="btn btn-dark mt-3">
-                        <i class="bi bi-check-lg me-1"></i> Save profile
-                    </button>
-                </form>
-            </div>
-
-            <!-- BUSINESS -->
-            <div class="card border-0 shadow-sm p-4 mb-4" id="business">
-                <h2 class="h5 fw-bold mb-1">Business details</h2>
-                <p class="text-muted small mb-3">Contact information for Content Cartel.</p>
-
-                <form asp-controller="Settings" asp-action="SaveBusiness" method="post">
-                    @Html.AntiForgeryToken()
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Business name</label>
-                            <input type="text" name="BusinessName" class="form-control"
-                                   value="@Model.Business.BusinessName" required />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Support email</label>
-                            <input type="email" name="SupportEmail" class="form-control"
-                                   value="@Model.Business.SupportEmail" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Support phone</label>
-                            <input type="tel" name="SupportPhone" class="form-control"
-                                   value="@Model.Business.SupportPhone" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold small">Website</label>
-                            <input type="url" name="WebsiteUrl" class="form-control"
-                                   value="@Model.Business.WebsiteUrl" placeholder="https://" />
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-bold small">Address</label>
-                            <input type="text" name="Address" class="form-control"
-                                   value="@Model.Business.Address" />
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-dark mt-3">
-                        <i class="bi bi-check-lg me-1"></i> Save business details
-                    </button>
-                </form>
-            </div>
-
-            <!-- LANGUAGE / NOTIFICATIONS / ACCESSIBILITY -->
-            <partial name="_PreferencesForm" model="Model.Preferences" view-data="ViewData" />
-
-            <!-- SECURITY -->
-            <div class="card border-0 shadow-sm p-4 mb-4" id="security">
-                <h2 class="h5 fw-bold mb-1">Security &amp; sign out</h2>
-                <p class="text-muted small mb-3">
-                    Signed in as <strong>@Model.Profile.Email</strong>.
+                <p>
+                    Configure the basic information displayed throughout
+                    the platform.
                 </p>
 
-                <a asp-controller="Account" asp-action="Logout" class="btn btn-outline-dark">
-                    <i class="bi bi-box-arrow-right me-1"></i> Log out
-                </a>
+                <div class="form-group">
+                    <label>Business Name</label>
+
+                    <input type="text"
+                           name="businessName"
+                           value="Content Cartel" />
+                </div>
+
+                <div class="form-group">
+                    <label>Support Email</label>
+
+                    <input type="email"
+                           name="supportEmail"
+                           value="mabelnwobi15@gmail.com" />
+                </div>
+
             </div>
 
-        </div>
+            <div class="setting-section">
+
+                <h2>Security</h2>
+
+                <p>
+                    Manage administrator security settings.
+                </p>
+
+                <div class="checkbox">
+                    <input type="checkbox"
+                           name="biometricEnabled"
+                           value="true" />
+
+                    <label style="margin:0;">
+                        Enable biometric authentication
+                    </label>
+                </div>
+
+            </div>
+
+            <button type="submit"
+                    class="save-btn">
+                <i class="bi bi-check-lg"></i>
+                Save Settings
+            </button>
+
+        </form>
+
     </div>
+
 </div>

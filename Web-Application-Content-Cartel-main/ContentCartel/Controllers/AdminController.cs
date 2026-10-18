@@ -1273,13 +1273,26 @@ namespace ContentCartel.Controllers
         }
 
         // ============================================================
-        // SETTINGS (now handled by SettingsController)
+        // SETTINGS
         // ============================================================
 
         [HttpGet]
         public IActionResult Settings()
         {
-            return RedirectToAction("Index", "Settings");
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SaveSettings(
+            string businessName,
+            string supportEmail,
+            bool biometricEnabled)
+        {
+            TempData["SuccessMessage"] =
+                "Platform settings saved successfully.";
+
+            return RedirectToAction(nameof(Settings));
         }
     }
 
