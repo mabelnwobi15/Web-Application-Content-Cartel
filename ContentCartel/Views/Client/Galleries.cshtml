@@ -107,9 +107,33 @@
                                 <div class="col-12 col-md-6">
                                     <div class="border rounded-3 p-4 h-100">
 
-                                        <div class="d-flex justify-content-between">
-                                            <i class="bi bi-images fs-2"></i>
-                                        </div>
+                                        @{
+                                            var isPhoto =
+                                                string.Equals(
+                                                    gallery.MediaType,
+                                                    "Photo",
+                                                    StringComparison.OrdinalIgnoreCase);
+                                        }
+
+                                        @if (isPhoto &&
+                                             !string.IsNullOrWhiteSpace(gallery.FileUrl))
+                                        {
+                                            <a href="@gallery.FileUrl"
+                                               target="_blank"
+                                               rel="noopener">
+                                                <img src="@gallery.FileUrl"
+                                                     alt="@gallery.Title"
+                                                     loading="lazy"
+                                                     class="w-100 rounded-3"
+                                                     style="height:200px;object-fit:cover;" />
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <div class="d-flex justify-content-between">
+                                                <i class="bi bi-camera-video fs-2"></i>
+                                            </div>
+                                        }
 
                                         <h5 class="fw-bold mt-3">
                                             @gallery.Title
@@ -130,6 +154,25 @@
                                                 @gallery.MediaType
                                             </span>
                                         }
+
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+
+                                            <small class="text-muted">
+                                                @gallery.UploadedAt.ToLocalTime().ToString("dd MMM yyyy")
+                                            </small>
+
+                                            @if (!string.IsNullOrWhiteSpace(gallery.FileUrl))
+                                            {
+                                                <a href="@gallery.FileUrl"
+                                                   target="_blank"
+                                                   rel="noopener"
+                                                   class="btn btn-sm btn-dark">
+                                                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                                                    Open
+                                                </a>
+                                            }
+
+                                        </div>
 
                                     </div>
                                 </div>

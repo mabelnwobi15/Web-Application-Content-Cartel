@@ -648,6 +648,21 @@ namespace ContentCartel.Controllers
         }
 
         // ============================================================
+        // SETTINGS
+        // ============================================================
+
+        [HttpGet]
+        public IActionResult Settings()
+        {
+            if (string.IsNullOrWhiteSpace(GetClientId()))
+            {
+                return Forbid();
+            }
+
+            return View();
+        }
+
+        // ============================================================
         // GALLERIES
         // ============================================================
 

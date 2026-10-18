@@ -196,7 +196,7 @@
 
 
                 <!-- =================================================
-                     QUICK ACTIONS
+                     QUICK ACCESS
                      ================================================= -->
 
                 <div class="client-portal-card mb-4">
@@ -215,7 +215,7 @@
 
                     <div class="row g-3">
 
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-6 col-xl-4">
 
                             <a asp-controller="Booking"
                                asp-action="Index"
@@ -225,13 +225,12 @@
 
                                     <i class="bi bi-calendar-plus fs-3 text-dark"></i>
 
-                                    <h5 class="fw-bold mt-3">
+                                    <h5 class="fw-bold mt-3 text-dark">
                                         Book an Appointment
                                     </h5>
 
                                     <p class="text-muted small mb-0">
-                                        Schedule a creative service with
-                                        Content Cartel.
+                                        Schedule a creative service with Content Cartel.
                                     </p>
 
                                 </div>
@@ -240,8 +239,7 @@
 
                         </div>
 
-
-                        <div class="col-12 col-md-6">
+                        <div class="col-12 col-md-6 col-xl-4">
 
                             <a asp-controller="Quote"
                                asp-action="Index"
@@ -251,13 +249,84 @@
 
                                     <i class="bi bi-file-earmark-text fs-3 text-dark"></i>
 
-                                    <h5 class="fw-bold mt-3">
+                                    <h5 class="fw-bold mt-3 text-dark">
                                         Request a Quote
                                     </h5>
 
                                     <p class="text-muted small mb-0">
-                                        Submit a quotation request for
-                                        your next project.
+                                        Submit a quotation request for your next project.
+                                    </p>
+
+                                </div>
+
+                            </a>
+
+                        </div>
+
+                        <div class="col-12 col-md-6 col-xl-4">
+
+                            <a asp-controller="Client"
+                               asp-action="Galleries"
+                               class="text-decoration-none">
+
+                                <div class="border rounded-3 p-4 h-100">
+
+                                    <i class="bi bi-images fs-3 text-dark"></i>
+
+                                    <h5 class="fw-bold mt-3 text-dark">
+                                        My Galleries
+                                    </h5>
+
+                                    <p class="text-muted small mb-0">
+                                        View the photos and videos shared with you.
+                                    </p>
+
+                                </div>
+
+                            </a>
+
+                        </div>
+
+                        <div class="col-12 col-md-6 col-xl-4">
+
+                            <a asp-controller="Client"
+                               asp-action="Profile"
+                               class="text-decoration-none">
+
+                                <div class="border rounded-3 p-4 h-100">
+
+                                    <i class="bi bi-person-circle fs-3 text-dark"></i>
+
+                                    <h5 class="fw-bold mt-3 text-dark">
+                                        My Profile
+                                    </h5>
+
+                                    <p class="text-muted small mb-0">
+                                        View and manage your account information.
+                                    </p>
+
+                                </div>
+
+                            </a>
+
+                        </div>
+
+                        <div class="col-12 col-md-6 col-xl-4">
+
+                            <a asp-controller="Client"
+                               asp-action="Settings"
+                               class="text-decoration-none">
+
+                                <div class="border rounded-3 p-4 h-100">
+
+                                    <i class="bi bi-gear fs-3 text-dark"></i>
+
+                                    <h5 class="fw-bold mt-3 text-dark">
+                                        Settings
+                                    </h5>
+
+                                    <p class="text-muted small mb-0">
+                                        Account details, security and sign out.
                                     </p>
 
                                 </div>
