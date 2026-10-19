@@ -11,14 +11,13 @@ namespace ContentCartel.Controllers
     [Authorize(Roles = "Client")]
     public class ClientController : Controller
     {
-        // Must match the API's GalleryController limits (10 MB file, 12 MB request).
-        // Clients are capped lower on purpose: base64 in Realtime Database inflates size by ~33%.
-        private const long MaxClientFileBytes = 5_242_880;      // 5 MB
-        private const long MaxRequestBytes = 12_582_912;        // 12 MB
+        // Per-file limit matches the API (10 MB). The request limit covers several files at once.
+        private const long MaxClientFileBytes = 10_485_760;     // 10 MB per file
+        private const long MaxRequestBytes = 52_428_800;        // 50 MB per request
 
         private static readonly HashSet<string> AllowedImageTypes = new(StringComparer.OrdinalIgnoreCase)
         {
-            "image/jpeg", "image/png", "image/webp", "image/gif"
+            "image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"
         };
 
         private readonly HttpClient _httpClient;
@@ -403,6 +402,20 @@ namespace ContentCartel.Controllers
                 }
 
                 var galleries = await response.Content.ReadFromJsonAsync<List<GalleryItem>>() ?? new List<GalleryItem>();
+
+                // The upload form's booking dropdown reads ViewBag.Bookings.
+                try
+                {
+                    var bookingsResponse = await _httpClient.GetAsync($"api/bookings/client/{Uri.EscapeDataString(clientId)}");
+                    ViewBag.Bookings = bookingsResponse.IsSuccessStatusCode
+                        ? await bookingsResponse.Content.ReadFromJsonAsync<List<Booking>>() ?? new List<Booking>()
+                        : new List<Booking>();
+                }
+                catch
+                {
+                    ViewBag.Bookings = new List<Booking>();
+                }
+
                 return View(galleries);
             }
             catch (HttpRequestException)
@@ -419,72 +432,89 @@ namespace ContentCartel.Controllers
         }
 
         // ============================================================
-        // GALLERIES (upload)
-        // Form fields: file, title, description, bookingId (optional)
-        // Posts to the API's GalleryController: POST api/galleries/upload
+        // GALLERIES (upload, one or many pictures)
+        // Form fields: files (multiple), title, description, bookingId (optional)
+        // Posts each file to the API: POST api/galleries/upload
         // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(MaxRequestBytes)]
         [RequestFormLimits(MultipartBodyLengthLimit = MaxRequestBytes)]
         public async Task<IActionResult> UploadGallery(
-            IFormFile? file, string? title, string? description, string? bookingId)
+            List<IFormFile>? files, string? title, string? description, string? bookingId)
         {
             var clientId = GetClientId();
             if (string.IsNullOrWhiteSpace(clientId)) return Forbid();
 
-            if (file == null || file.Length == 0)
+            if (files == null || files.Count == 0 || files.All(f => f.Length == 0))
             {
-                TempData["ErrorMessage"] = "Please choose a picture to upload.";
+                TempData["ErrorMessage"] = "Please choose at least one picture to upload.";
                 return RedirectToAction(nameof(Galleries));
             }
 
-            if (file.Length > MaxClientFileBytes)
+            int uploaded = 0;
+            var problems = new List<string>();
+
+            foreach (var file in files.Where(f => f.Length > 0))
             {
-                TempData["ErrorMessage"] = "Pictures can be up to 5 MB.";
-                return RedirectToAction(nameof(Galleries));
-            }
+                var name = Path.GetFileName(file.FileName);
 
-            if (!AllowedImageTypes.Contains(file.ContentType ?? string.Empty))
-            {
-                TempData["ErrorMessage"] = "Only JPG, PNG, WEBP or GIF pictures are allowed.";
-                return RedirectToAction(nameof(Galleries));
-            }
-
-            try
-            {
-                using var content = new MultipartFormDataContent();
-                await using var stream = file.OpenReadStream();
-
-                var fileContent = new StreamContent(stream);
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType!);
-
-                // Field names must match the API's GalleryUploadRequest.
-                content.Add(fileContent, "File", Path.GetFileName(file.FileName));
-                content.Add(new StringContent(clientId), "UserId");
-                content.Add(new StringContent("Client"), "UploadedByRole");
-                content.Add(new StringContent(title ?? string.Empty), "Title");
-                content.Add(new StringContent(description ?? string.Empty), "Description");
-                content.Add(new StringContent(bookingId ?? string.Empty), "BookingId");
-
-                var response = await _httpClient.PostAsync("api/galleries/upload", content);
-
-                if (!response.IsSuccessStatusCode)
+                if (file.Length > MaxClientFileBytes)
                 {
-                    var error = await response.Content.ReadAsStringAsync();
-                    _logger.LogWarning("Gallery upload API returned {Status}: {Error}",
-                        (int)response.StatusCode, error);
-                    TempData["ErrorMessage"] = "Upload failed. Please try again.";
-                    return RedirectToAction(nameof(Galleries));
+                    problems.Add($"{name} is larger than 10 MB.");
+                    continue;
                 }
 
-                TempData["SuccessMessage"] = "Upload completed successfully.";
+                if (!AllowedImageTypes.Contains(file.ContentType ?? string.Empty))
+                {
+                    problems.Add($"{name} is not a supported picture type.");
+                    continue;
+                }
+
+                try
+                {
+                    using var content = new MultipartFormDataContent();
+                    await using var stream = file.OpenReadStream();
+
+                    var fileContent = new StreamContent(stream);
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType!);
+
+                    // Field names must match the API's GalleryUploadRequest.
+                    content.Add(fileContent, "File", name);
+                    content.Add(new StringContent(clientId), "UserId");
+                    content.Add(new StringContent("Client"), "UploadedByRole");
+                    content.Add(new StringContent(title ?? string.Empty), "Title");
+                    content.Add(new StringContent(description ?? string.Empty), "Description");
+                    content.Add(new StringContent(bookingId ?? string.Empty), "BookingId");
+
+                    var response = await _httpClient.PostAsync("api/galleries/upload", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        uploaded++;
+                    }
+                    else
+                    {
+                        var error = await response.Content.ReadAsStringAsync();
+                        _logger.LogWarning("Gallery upload API returned {Status} for {File}: {Error}",
+                            (int)response.StatusCode, name, error);
+                        problems.Add($"{name} could not be saved.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Gallery upload failed for client {ClientId}, file {File}", clientId, name);
+                    problems.Add($"{name} could not be uploaded.");
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Gallery upload failed for client {ClientId}", clientId);
-                TempData["ErrorMessage"] = "Upload failed. Please try again.";
-            }
+
+            if (uploaded > 0)
+                TempData["SuccessMessage"] = uploaded == 1
+                    ? "1 picture uploaded successfully."
+                    : $"{uploaded} pictures uploaded successfully.";
+
+            if (problems.Count > 0)
+                TempData["ErrorMessage"] = string.Join(" ", problems);
 
             return RedirectToAction(nameof(Galleries));
         }
