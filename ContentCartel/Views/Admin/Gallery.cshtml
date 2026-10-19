@@ -269,8 +269,8 @@
         <h3 style="margin:0 0 4px;font-size:17px;font-weight:700;">Add media for a client</h3>
 
         <p style="margin:0 0 16px;color:#666;font-size:13px;">
-            Upload any file (photo, video, PDF, zip, document ... up to 100 MB), or paste a link instead.
-            It stays hidden from the client until you approve it.
+            Upload one or more files from your computer (photos, videos, PDFs, any type, up to 100 MB in total).
+            Uploads stay hidden from the client until you approve them.
         </p>
 
         <form asp-controller="Admin" asp-action="AddGalleryItem" method="post" enctype="multipart/form-data">
@@ -294,31 +294,15 @@
                 </div>
 
                 <div>
-                    <label style="font-size:12px;font-weight:700;">Media type (auto-detected for uploads)</label>
-                    <select name="mediaType"
-                            style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;">
-                        <option value="Photo">Photo</option>
-                        <option value="Video">Video</option>
-                        <option value="Reel">Reel</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label style="font-size:12px;font-weight:700;">Title</label>
-                    <input type="text" name="title" required
+                    <label style="font-size:12px;font-weight:700;">Title (optional)</label>
+                    <input type="text" name="title" placeholder="Defaults to the file name"
                            style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;" />
-                </div>
-
-                <div>
-                    <label style="font-size:12px;font-weight:700;">File (any type)</label>
-                    <input type="file" name="file"
-                           style="width:100%;padding:9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;" />
                 </div>
 
                 <div style="grid-column:1 / -1;">
-                    <label style="font-size:12px;font-weight:700;">...or a link instead (Google Drive, Dropbox, YouTube)</label>
-                    <input type="url" name="fileUrl" placeholder="https://..."
-                           style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;" />
+                    <label style="font-size:12px;font-weight:700;">Files</label>
+                    <input type="file" name="files" multiple required
+                           style="width:100%;padding:9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;" />
                 </div>
 
                 <div style="grid-column:1 / -1;">
@@ -331,7 +315,7 @@
 
             <button type="submit" class="primary-btn" style="margin-top:16px;border:none;cursor:pointer;">
                 <i class="bi bi-plus-lg"></i>
-                Add to gallery
+                Upload
             </button>
 
         </form>
@@ -426,8 +410,8 @@
                                 </div>
 
                                 <div>
-                                    <strong>Staff:</strong>
-                                    @item.UploadedByStaffId
+                                    <strong>Uploaded by:</strong>
+                                    @(string.IsNullOrWhiteSpace(item.UploadedByRole) ? "Admin" : item.UploadedByRole)
                                 </div>
 
                             </div>

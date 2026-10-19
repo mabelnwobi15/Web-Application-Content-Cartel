@@ -49,6 +49,13 @@
 
             <main class="col-12 col-lg-9">
 
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success mb-4">
+                        @TempData["SuccessMessage"]
+                    </div>
+                }
+
                 @if (TempData["ErrorMessage"] != null)
                 {
                     <div class="alert alert-danger mb-4">
@@ -69,6 +76,75 @@
                     <p class="mb-0">
                         Access your private photos, videos and creative content.
                     </p>
+
+                </div>
+
+                @{
+                    var myBookings =
+                        ViewBag.Bookings as List<ContentCartel.Models.Booking>
+                        ?? new List<ContentCartel.Models.Booking>();
+                }
+
+                <div class="client-portal-card mb-4" id="upload">
+
+                    <h2 class="h5 fw-bold mb-1">Upload pictures</h2>
+
+                    <p class="text-muted small mb-3">
+                        Add your own pictures (JPG, PNG, WEBP, HEIC ...), up to 25 MB each.
+                        You can pick several at once.
+                    </p>
+
+                    <form asp-controller="Gallery"
+                          asp-action="Upload"
+                          method="post"
+                          enctype="multipart/form-data">
+
+                        @Html.AntiForgeryToken()
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Pictures</label>
+                                <input type="file" name="files" class="form-control"
+                                       accept="image/*" multiple required />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Title (optional)</label>
+                                <input type="text" name="title" class="form-control"
+                                       maxlength="100" placeholder="Defaults to the file name" />
+                            </div>
+
+                            @if (myBookings.Any())
+                            {
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Booking (optional)</label>
+                                    <select name="bookingId" class="form-select">
+                                        <option value="">Not linked to a booking</option>
+                                        @foreach (var b in myBookings)
+                                        {
+                                            <option value="@b.Id">
+                                                @(string.IsNullOrWhiteSpace(b.ServiceName) ? b.ServiceId : b.ServiceName)
+                                                (@b.BookingDate.ToString("dd MMM yyyy"))
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Description (optional)</label>
+                                <input type="text" name="description" class="form-control" maxlength="200" />
+                            </div>
+
+                        </div>
+
+                        <button type="submit" class="btn btn-dark mt-3">
+                            <i class="bi bi-cloud-upload me-1"></i>
+                            Upload pictures
+                        </button>
+
+                    </form>
 
                 </div>
 
@@ -231,8 +307,8 @@
                             </h4>
 
                             <p class="text-muted">
-                                Your private galleries will appear here
-                                once Content Cartel uploads your media.
+                                Upload your pictures above, or they will appear here
+                                once Content Cartel adds your media.
                             </p>
 
                             <a asp-controller="Booking"

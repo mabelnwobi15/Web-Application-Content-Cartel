@@ -546,28 +546,26 @@ namespace ContentCartel.Controllers
             return View(galleryItems);
         }
 
-        // Upload a file (any type) or add an external link.
+        // Upload one or more files (any type) for a client's booking.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequestSizeLimit(104_857_600)]
         [RequestFormLimits(MultipartBodyLengthLimit = 104_857_600)]
         public async Task<IActionResult> AddGalleryItem(
             string bookingId,
-            string title,
-            string? mediaType,
-            string? fileUrl,
+            string? title,
             string? description,
-            IFormFile? file)
+            List<IFormFile> files)
         {
-            var hasFile = file != null && file.Length > 0;
-
-            if (string.IsNullOrWhiteSpace(bookingId) ||
-                string.IsNullOrWhiteSpace(title) ||
-                (!hasFile && string.IsNullOrWhiteSpace(fileUrl)))
+            if (string.IsNullOrWhiteSpace(bookingId))
             {
-                TempData["ErrorMessage"] =
-                    "Choose a booking, enter a title, and either pick a file or paste a link.";
+                TempData["ErrorMessage"] = "Choose a booking first.";
+                return RedirectToAction(nameof(Gallery));
+            }
 
+            if (files == null || !files.Any(f => f.Length > 0))
+            {
+                TempData["ErrorMessage"] = "Choose at least one file to upload.";
                 return RedirectToAction(nameof(Gallery));
             }
 
@@ -576,76 +574,21 @@ namespace ContentCartel.Controllers
                     System.Security.Claims.ClaimTypes.NameIdentifier
                 )?.Value ?? string.Empty;
 
-            try
+            var (uploaded, errors) =
+                await ContentCartel.Helpers.GalleryUploader.UploadAsync(
+                    _httpClient, files, bookingId, null,
+                    title, description, "Admin", staffId);
+
+            if (uploaded > 0)
             {
-                HttpResponseMessage response;
-
-                if (hasFile)
-                {
-                    // Long timeout: large files take a while to pass through.
-                    using var uploadClient = new HttpClient
-                    {
-                        BaseAddress = _httpClient.BaseAddress,
-                        Timeout = TimeSpan.FromMinutes(10)
-                    };
-
-                    using var form = new MultipartFormDataContent();
-
-                    form.Add(new StringContent(bookingId), "BookingId");
-                    form.Add(new StringContent(title), "Title");
-                    form.Add(new StringContent(mediaType ?? string.Empty), "MediaType");
-                    form.Add(new StringContent(description ?? string.Empty), "Description");
-                    form.Add(new StringContent(staffId), "UploadedByStaffId");
-
-                    await using var stream = file!.OpenReadStream();
-
-                    var fileContent = new StreamContent(stream);
-
-                    fileContent.Headers.ContentType =
-                        System.Net.Http.Headers.MediaTypeHeaderValue
-                            .TryParse(file.ContentType, out var parsed)
-                            ? parsed
-                            : new System.Net.Http.Headers.MediaTypeHeaderValue(
-                                "application/octet-stream");
-
-                    form.Add(fileContent, "File", file.FileName);
-
-                    response = await uploadClient.PostAsync("api/galleries/upload", form);
-                }
-                else
-                {
-                    response = await _httpClient.PostAsJsonAsync(
-                        "api/galleries",
-                        new
-                        {
-                            BookingId = bookingId,
-                            Title = title,
-                            MediaType = string.IsNullOrWhiteSpace(mediaType)
-                                ? "Photo"
-                                : mediaType,
-                            FileUrl = fileUrl,
-                            Description = description ?? string.Empty,
-                            UploadedByStaffId = staffId
-                        });
-                }
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-
-                    TempData["ErrorMessage"] =
-                        "Unable to add gallery item. " + error;
-
-                    return RedirectToAction(nameof(Gallery));
-                }
-
                 TempData["SuccessMessage"] =
-                    "Gallery item added. Approve it so the client can see it.";
+                    $"{uploaded} file(s) uploaded. Approve them so the client can see them.";
             }
-            catch (Exception ex)
+
+            if (errors.Any())
             {
                 TempData["ErrorMessage"] =
-                    "Unable to add gallery item: " + ex.Message;
+                    "Some files could not be uploaded: " + string.Join(" | ", errors);
             }
 
             return RedirectToAction(nameof(Gallery));

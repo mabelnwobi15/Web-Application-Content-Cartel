@@ -158,82 +158,7 @@ namespace ContentCartel.API.Controllers
         }
 
         // ============================================================
-        // CREATE (admin / staff)
-        // POST: api/galleries
-        // The owner is taken from the booking, so the admin only
-        // has to pick the booking.
-        // ============================================================
-
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] GalleryItem item)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(item.BookingId))
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "Please choose a booking."
-                    });
-                }
-
-                if (string.IsNullOrWhiteSpace(item.Title))
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "A title is required."
-                    });
-                }
-
-                if (string.IsNullOrWhiteSpace(item.FileUrl))
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "A file link is required."
-                    });
-                }
-
-                var booking =
-                    await _firebaseService
-                        .GetAsync<Booking>($"bookings/{item.BookingId}");
-
-                if (booking == null || string.IsNullOrWhiteSpace(booking.UserId))
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "Booking not found."
-                    });
-                }
-
-                item.UserId = booking.UserId!;
-                item.IsApprovedByAdmin = false;
-                item.UploadedAt = DateTime.UtcNow;
-
-                var id =
-                    await _firebaseService
-                        .CreateAsync("galleries", item);
-
-                item.Id = id;
-
-                return Ok(item);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    success = false,
-                    message = "Unable to save gallery item.",
-                    error = ex.Message
-                });
-            }
-        }
-
-        // ============================================================
-        // UPLOAD A FILE (any type: photo, video, PDF, zip, doc ...)
+        // UPLOAD A FILE (admin: any type, client: pictures)
         // POST: api/galleries/upload   (multipart/form-data)
         // ============================================================
 
@@ -244,28 +169,45 @@ namespace ContentCartel.API.Controllers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(request.BookingId))
-                {
-                    return BadRequest(new { success = false, message = "Please choose a booking." });
-                }
-
-                if (string.IsNullOrWhiteSpace(request.Title))
-                {
-                    return BadRequest(new { success = false, message = "A title is required." });
-                }
-
                 if (request.File == null || request.File.Length == 0)
                 {
                     return BadRequest(new { success = false, message = "Choose a file to upload." });
                 }
 
-                var booking =
-                    await _firebaseService
-                        .GetAsync<Booking>($"bookings/{request.BookingId}");
+                // Work out who owns the file.
+                string userId;
 
-                if (booking == null || string.IsNullOrWhiteSpace(booking.UserId))
+                if (!string.IsNullOrWhiteSpace(request.BookingId))
                 {
-                    return BadRequest(new { success = false, message = "Booking not found." });
+                    var booking =
+                        await _firebaseService
+                            .GetAsync<Booking>($"bookings/{request.BookingId}");
+
+                    if (booking == null || string.IsNullOrWhiteSpace(booking.UserId))
+                    {
+                        return BadRequest(new { success = false, message = "Booking not found." });
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.UserId) &&
+                        !string.Equals(booking.UserId, request.UserId,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        return BadRequest(new
+                        {
+                            success = false,
+                            message = "That booking does not belong to this client."
+                        });
+                    }
+
+                    userId = booking.UserId!;
+                }
+                else if (!string.IsNullOrWhiteSpace(request.UserId))
+                {
+                    userId = request.UserId;
+                }
+                else
+                {
+                    return BadRequest(new { success = false, message = "Please choose a booking." });
                 }
 
                 var originalName = Path.GetFileName(request.File.FileName);
@@ -281,7 +223,7 @@ namespace ContentCartel.API.Controllers
                 }
 
                 var contentType = request.File.ContentType ?? string.Empty;
-                var objectName = $"galleries/{booking.UserId}/{Guid.NewGuid():N}_{safeName}";
+                var objectName = $"galleries/{userId}/{Guid.NewGuid():N}_{safeName}";
 
                 string url;
 
@@ -300,19 +242,28 @@ namespace ContentCartel.API.Controllers
                 }
                 else if (contentType.StartsWith("video/", StringComparison.OrdinalIgnoreCase))
                 {
-                    mediaType = string.Equals(request.MediaType, "Reel",
-                        StringComparison.OrdinalIgnoreCase) ? "Reel" : "Video";
+                    mediaType = "Video";
                 }
                 else if (contentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase))
                 {
                     mediaType = "Audio";
                 }
 
+                var role =
+                    string.Equals(request.UploadedByRole, "Client",
+                        StringComparison.OrdinalIgnoreCase)
+                        ? "Client"
+                        : "Admin";
+
+                var title = string.IsNullOrWhiteSpace(request.Title)
+                    ? Path.GetFileNameWithoutExtension(originalName)
+                    : request.Title.Trim();
+
                 var item = new GalleryItem
                 {
-                    UserId = booking.UserId!,
-                    BookingId = request.BookingId,
-                    Title = request.Title.Trim(),
+                    UserId = userId,
+                    BookingId = request.BookingId ?? string.Empty,
+                    Title = title,
                     Description = request.Description ?? string.Empty,
                     FileUrl = url,
                     MediaType = mediaType,
@@ -321,7 +272,10 @@ namespace ContentCartel.API.Controllers
                     SizeBytes = request.File.Length,
                     StoragePath = objectName,
                     UploadedByStaffId = request.UploadedByStaffId ?? string.Empty,
-                    IsApprovedByAdmin = false,
+                    UploadedByRole = role,
+                    // A client's own pictures are visible to them straight away;
+                    // admin uploads wait for approval.
+                    IsApprovedByAdmin = role == "Client",
                     UploadedAt = DateTime.UtcNow
                 };
 
@@ -385,10 +339,11 @@ namespace ContentCartel.API.Controllers
     public class GalleryUploadRequest
     {
         public string? BookingId { get; set; }
+        public string? UserId { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
-        public string? MediaType { get; set; }
         public string? UploadedByStaffId { get; set; }
+        public string? UploadedByRole { get; set; }
         public IFormFile? File { get; set; }
     }
 }

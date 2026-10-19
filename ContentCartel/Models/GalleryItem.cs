@@ -30,6 +30,9 @@
 
         public string UploadedByStaffId { get; set; } = string.Empty;
 
+        // Admin or Client (empty on older items = Admin).
+        public string UploadedByRole { get; set; } = string.Empty;
+
         public bool IsApprovedByAdmin { get; set; } = false;
 
         public string Description { get; set; } = string.Empty;

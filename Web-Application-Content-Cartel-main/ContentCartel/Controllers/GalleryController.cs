@@ -1,4 +1,5 @@
-﻿using ContentCartel.Models;
+﻿using ContentCartel.Helpers;
+using ContentCartel.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http.Json;
@@ -9,6 +10,13 @@ namespace ContentCartel.Controllers
     [Authorize(Roles = "Client")]
     public class GalleryController : Controller
     {
+        // Clients upload pictures: 25 MB each, up to 100 MB per upload.
+        private const long MaxPictureBytes = 26_214_400;
+        private const long MaxRequestBytes = 104_857_600;
+
+        private static readonly string[] PictureExtensions =
+            { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".avif", ".bmp" };
+
         private readonly HttpClient _httpClient;
 
         public GalleryController(IHttpClientFactory httpClientFactory)
@@ -35,6 +43,9 @@ namespace ContentCartel.Controllers
             {
                 return Forbid();
             }
+
+            // Bookings for the upload form.
+            ViewBag.Bookings = await LoadBookingsAsync(clientId);
 
             try
             {
@@ -75,6 +86,94 @@ namespace ContentCartel.Controllers
                 return View("~/Views/Client/Galleries.cshtml",
                     new List<GalleryItem>());
             }
+        }
+
+        // ============================================================
+        // UPLOAD PICTURES
+        // POST: /Gallery/Upload
+        // ============================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequestSizeLimit(MaxRequestBytes)]
+        [RequestFormLimits(MultipartBodyLengthLimit = MaxRequestBytes)]
+        public async Task<IActionResult> Upload(
+            string? bookingId,
+            string? title,
+            string? description,
+            List<IFormFile> files)
+        {
+            var clientId = GetClientId();
+
+            if (string.IsNullOrWhiteSpace(clientId))
+            {
+                return Forbid();
+            }
+
+            if (files == null || !files.Any(f => f.Length > 0))
+            {
+                TempData["ErrorMessage"] = "Choose at least one picture to upload.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Pictures only, and not too big.
+            foreach (var file in files.Where(f => f.Length > 0))
+            {
+                var extension =
+                    Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                var looksLikePicture =
+                    (file.ContentType ?? string.Empty)
+                        .StartsWith("image/", StringComparison.OrdinalIgnoreCase)
+                    || PictureExtensions.Contains(extension);
+
+                if (!looksLikePicture)
+                {
+                    TempData["ErrorMessage"] =
+                        $"\"{file.FileName}\" is not a picture. Please upload image files (JPG, PNG, WEBP, HEIC ...).";
+
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (file.Length > MaxPictureBytes)
+                {
+                    TempData["ErrorMessage"] =
+                        $"\"{file.FileName}\" is larger than 25 MB.";
+
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            // A client can only attach pictures to their own bookings.
+            if (!string.IsNullOrWhiteSpace(bookingId))
+            {
+                var owned = await LoadBookingsAsync(clientId);
+
+                if (!owned.Any(b => string.Equals(
+                        b.Id, bookingId, StringComparison.OrdinalIgnoreCase)))
+                {
+                    TempData["ErrorMessage"] = "That booking was not found.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            var (uploaded, errors) =
+                await GalleryUploader.UploadAsync(
+                    _httpClient, files, bookingId, clientId,
+                    title, description, "Client", clientId);
+
+            if (uploaded > 0)
+            {
+                TempData["SuccessMessage"] = $"{uploaded} picture(s) uploaded.";
+            }
+
+            if (errors.Any())
+            {
+                TempData["ErrorMessage"] =
+                    "Some pictures could not be uploaded: " + string.Join(" | ", errors);
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // ============================================================
@@ -119,7 +218,7 @@ namespace ContentCartel.Controllers
                 }
 
                 // SECURITY: a client can only open their own item,
-                // and only once the admin has approved it.
+                // and only once it is approved.
                 if (!string.Equals(
                         gallery.UserId,
                         clientId,
@@ -141,6 +240,24 @@ namespace ContentCartel.Controllers
             catch
             {
                 return NotFound();
+            }
+        }
+
+        // ============================================================
+        // HELPER
+        // ============================================================
+
+        private async Task<List<Booking>> LoadBookingsAsync(string clientId)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<List<Booking>>(
+                           $"api/bookings/client/{Uri.EscapeDataString(clientId)}")
+                       ?? new List<Booking>();
+            }
+            catch
+            {
+                return new List<Booking>();
             }
         }
     }
