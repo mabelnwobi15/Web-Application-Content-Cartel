@@ -666,6 +666,83 @@ namespace ContentCartel.Controllers
         // GALLERIES
         // ============================================================
 
+        // ============================================================  
+    // UPLOAD GALLERY (GET) - Optional if you use a separate view/modal  
+    // ============================================================  
+
+    [HttpGet]  
+    public IActionResult UploadGallery()  
+    {  
+        var clientId = GetClientId();  
+        if (string.IsNullOrWhiteSpace(clientId))  
+        {  
+            return Forbid();  
+        }  
+
+        return View();  
+    }  
+
+    // ============================================================  
+    // UPLOAD GALLERY (POST)  
+    // ============================================================  
+
+    [HttpPost]  
+    [ValidateAntiForgeryToken]  
+    public async Task<IActionResult> UploadGallery(IFormFile file, string title, string description)  
+    {  
+        var clientId = GetClientId();  
+
+        if (string.IsNullOrWhiteSpace(clientId))  
+        {  
+            return Forbid();  
+        }  
+
+        if (file == null || file.Length == 0)  
+        {  
+            TempData["ErrorMessage"] = "Please select a valid file to upload.";  
+            return RedirectToAction(nameof(Galleries));  
+        }  
+
+        try  
+        {  
+            // Use MultipartFormDataContent to send files and form fields to your API  
+            using var content = new MultipartFormDataContent();  
+              
+            var fileStreamContent = new StreamContent(file.OpenReadStream());  
+            content.Add(fileStreamContent, "file", file.FileName);  
+              
+            content.Add(new StringContent(clientId), "clientId");  
+              
+            if (!string.IsNullOrWhiteSpace(title))  
+            {  
+                content.Add(new StringContent(title), "title");  
+            }  
+              
+            if (!string.IsNullOrWhiteSpace(description))  
+            {  
+                content.Add(new StringContent(description), "description");  
+            }  
+
+            // Adjust the API endpoint route below to match your Web API controller  
+            var response = await _httpClient.PostAsync("api/galleries/upload", content);  
+
+            if (!response.IsSuccessStatusCode)  
+            {  
+                var errorContent = await response.Content.ReadAsStringAsync();  
+                TempData["ErrorMessage"] = "Failed to upload image. " + errorContent;  
+                return RedirectToAction(nameof(Galleries));  
+            }  
+
+            TempData["SuccessMessage"] = "Gallery image uploaded successfully!";  
+            return RedirectToAction(nameof(Galleries));  
+        }  
+        catch (Exception ex)  
+        {  
+            TempData["ErrorMessage"] = "Upload failed: " + ex.Message;  
+            return RedirectToAction(nameof(Galleries));  
+        }  
+    }
+
         [HttpGet]
         public async Task<IActionResult> Galleries()
         {
