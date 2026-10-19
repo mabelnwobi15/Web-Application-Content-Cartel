@@ -12,9 +12,20 @@ namespace ContentCartel.API.Models
 
         public string Title { get; set; } = string.Empty;
 
+        // Link to the file (uploaded file or an external link).
         public string FileUrl { get; set; } = string.Empty;
 
-        public string MediaType { get; set; } = "Photo"; // Photo, Video, Reel
+        // Photo, Video, Reel, Audio or File (any other type).
+        public string MediaType { get; set; } = "Photo";
+
+        public string FileName { get; set; } = string.Empty;
+
+        public string ContentType { get; set; } = string.Empty;
+
+        public long SizeBytes { get; set; }
+
+        // Path inside Firebase Storage (empty for external links).
+        public string StoragePath { get; set; } = string.Empty;
 
         public string UploadedByStaffId { get; set; } = string.Empty;
 

@@ -23,6 +23,7 @@ namespace ContentCartel.Controllers
 
         // ============================================================
         // MY GALLERIES
+        // Uses the same page as Client > Galleries.
         // ============================================================
 
         [HttpGet]
@@ -39,7 +40,7 @@ namespace ContentCartel.Controllers
             {
                 var response =
                     await _httpClient.GetAsync(
-                        $"api/galleries/client/{clientId}"
+                        $"api/galleries/client/{Uri.EscapeDataString(clientId)}"
                     );
 
                 if (!response.IsSuccessStatusCode)
@@ -47,7 +48,8 @@ namespace ContentCartel.Controllers
                     TempData["ErrorMessage"] =
                         "Unable to load your galleries.";
 
-                    return View(new List<GalleryItem>());
+                    return View("~/Views/Client/Galleries.cshtml",
+                        new List<GalleryItem>());
                 }
 
                 var galleries =
@@ -55,26 +57,29 @@ namespace ContentCartel.Controllers
                         .ReadFromJsonAsync<List<GalleryItem>>()
                     ?? new List<GalleryItem>();
 
-                return View(galleries);
+                return View("~/Views/Client/Galleries.cshtml", galleries);
             }
             catch (HttpRequestException)
             {
                 TempData["ErrorMessage"] =
                     "The gallery service is currently unavailable.";
 
-                return View(new List<GalleryItem>());
+                return View("~/Views/Client/Galleries.cshtml",
+                    new List<GalleryItem>());
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] =
                     "Unable to load galleries: " + ex.Message;
 
-                return View(new List<GalleryItem>());
+                return View("~/Views/Client/Galleries.cshtml",
+                    new List<GalleryItem>());
             }
         }
 
         // ============================================================
-        // GALLERY DETAILS
+        // OPEN ONE ITEM
+        // There is no separate details page: this opens the file itself.
         // ============================================================
 
         [HttpGet]
@@ -96,7 +101,7 @@ namespace ContentCartel.Controllers
             {
                 var response =
                     await _httpClient.GetAsync(
-                        $"api/galleries/{id}"
+                        $"api/galleries/{Uri.EscapeDataString(id)}"
                     );
 
                 if (!response.IsSuccessStatusCode)
@@ -113,19 +118,25 @@ namespace ContentCartel.Controllers
                     return NotFound();
                 }
 
-                // SECURITY:
-                // A client can only view their own gallery item.
+                // SECURITY: a client can only open their own item,
+                // and only once the admin has approved it.
                 if (!string.Equals(
                         gallery.UserId,
                         clientId,
-                        StringComparison.OrdinalIgnoreCase))
+                        StringComparison.OrdinalIgnoreCase) ||
+                    !gallery.IsApprovedByAdmin)
                 {
-                    return Forbid();
+                    return NotFound();
                 }
 
-                gallery.Id = id;
+                if (Uri.TryCreate(gallery.FileUrl, UriKind.Absolute, out var uri) &&
+                    (uri.Scheme == Uri.UriSchemeHttps ||
+                     uri.Scheme == Uri.UriSchemeHttp))
+                {
+                    return Redirect(uri.ToString());
+                }
 
-                return View(gallery);
+                return NotFound();
             }
             catch
             {
