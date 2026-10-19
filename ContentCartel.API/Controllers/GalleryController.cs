@@ -8,8 +8,10 @@ namespace ContentCartel.API.Controllers
     [Route("api/galleries")]
     public class GalleryController : ControllerBase
     {
-        // 100 MB per file.
-        private const long MaxUploadBytes = 104_857_600;
+        // Files are stored in the database (no paid storage needed):
+        // 10 MB per file, with some room for the form fields.
+        private const long MaxFileBytes = 10_485_760;
+        private const long MaxRequestBytes = 12_582_912;
 
         private readonly FirebaseService _firebaseService;
 
@@ -160,18 +162,30 @@ namespace ContentCartel.API.Controllers
         // ============================================================
         // UPLOAD A FILE (admin: any type, client: pictures)
         // POST: api/galleries/upload   (multipart/form-data)
+        // The file itself is kept in the Realtime Database.
         // ============================================================
 
         [HttpPost("upload")]
-        [RequestSizeLimit(MaxUploadBytes)]
-        [RequestFormLimits(MultipartBodyLengthLimit = MaxUploadBytes)]
+        [RequestSizeLimit(MaxRequestBytes)]
+        [RequestFormLimits(MultipartBodyLengthLimit = MaxRequestBytes)]
         public async Task<IActionResult> Upload([FromForm] GalleryUploadRequest request)
         {
+            string? createdId = null;
+
             try
             {
                 if (request.File == null || request.File.Length == 0)
                 {
                     return BadRequest(new { success = false, message = "Choose a file to upload." });
+                }
+
+                if (request.File.Length > MaxFileBytes)
+                {
+                    return BadRequest(new
+                    {
+                        success = false,
+                        message = "Files can be up to 10 MB."
+                    });
                 }
 
                 // Work out who owns the file.
@@ -211,27 +225,7 @@ namespace ContentCartel.API.Controllers
                 }
 
                 var originalName = Path.GetFileName(request.File.FileName);
-
-                var safeName = new string(
-                    originalName
-                        .Select(c => char.IsLetterOrDigit(c) || c is '.' or '-' or '_' ? c : '_')
-                        .ToArray());
-
-                if (string.IsNullOrWhiteSpace(safeName))
-                {
-                    safeName = "file";
-                }
-
                 var contentType = request.File.ContentType ?? string.Empty;
-                var objectName = $"galleries/{userId}/{Guid.NewGuid():N}_{safeName}";
-
-                string url;
-
-                await using (var stream = request.File.OpenReadStream())
-                {
-                    url = await _firebaseService.UploadFileAsync(
-                        objectName, contentType, stream);
-                }
 
                 // Work out the media type from the file itself.
                 var mediaType = "File";
@@ -259,18 +253,25 @@ namespace ContentCartel.API.Controllers
                     ? Path.GetFileNameWithoutExtension(originalName)
                     : request.Title.Trim();
 
+                byte[] bytes;
+
+                using (var memory = new MemoryStream())
+                {
+                    await request.File.CopyToAsync(memory);
+                    bytes = memory.ToArray();
+                }
+
                 var item = new GalleryItem
                 {
                     UserId = userId,
                     BookingId = request.BookingId ?? string.Empty,
                     Title = title,
                     Description = request.Description ?? string.Empty,
-                    FileUrl = url,
+                    FileUrl = string.Empty,
                     MediaType = mediaType,
                     FileName = originalName,
                     ContentType = contentType,
                     SizeBytes = request.File.Length,
-                    StoragePath = objectName,
                     UploadedByStaffId = request.UploadedByStaffId ?? string.Empty,
                     UploadedByRole = role,
                     // A client's own pictures are visible to them straight away;
@@ -279,16 +280,82 @@ namespace ContentCartel.API.Controllers
                     UploadedAt = DateTime.UtcNow
                 };
 
-                item.Id = await _firebaseService.CreateAsync("galleries", item);
+                // 1. the gallery record (gives us the id)
+                createdId = await _firebaseService.CreateAsync("galleries", item);
+
+                // 2. the file itself
+                await _firebaseService.UpdateAsync(
+                    $"galleryFiles/{createdId}",
+                    new StoredFile
+                    {
+                        ContentType = contentType,
+                        Data = Convert.ToBase64String(bytes)
+                    });
+
+                // 3. point the record at the file (served by the website at /media/{id})
+                item.Id = createdId;
+                item.StoragePath = $"galleryFiles/{createdId}";
+                item.FileUrl = $"/media/{createdId}";
+
+                await _firebaseService.UpdateAsync($"galleries/{createdId}", item);
 
                 return Ok(item);
+            }
+            catch (Exception ex)
+            {
+                // Don't leave a half-saved record behind.
+                if (!string.IsNullOrWhiteSpace(createdId))
+                {
+                    try { await _firebaseService.DeleteAsync($"galleries/{createdId}"); } catch { }
+                    try { await _firebaseService.DeleteAsync($"galleryFiles/{createdId}"); } catch { }
+                }
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Unable to upload the file. " + ex.Message
+                });
+            }
+        }
+
+        // ============================================================
+        // GET THE FILE
+        // GET: api/galleries/{id}/file
+        // ============================================================
+
+        [HttpGet("{id}/file")]
+        public async Task<IActionResult> GetFile(string id)
+        {
+            try
+            {
+                var stored =
+                    await _firebaseService
+                        .GetAsync<StoredFile>($"galleryFiles/{id}");
+
+                if (stored == null || string.IsNullOrEmpty(stored.Data))
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = "File not found."
+                    });
+                }
+
+                var bytes = Convert.FromBase64String(stored.Data);
+
+                return File(
+                    bytes,
+                    string.IsNullOrWhiteSpace(stored.ContentType)
+                        ? "application/octet-stream"
+                        : stored.ContentType);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Unable to upload the file. " + ex.Message
+                    message = "Unable to read the file.",
+                    error = ex.Message
                 });
             }
         }
@@ -345,5 +412,12 @@ namespace ContentCartel.API.Controllers
         public string? UploadedByStaffId { get; set; }
         public string? UploadedByRole { get; set; }
         public IFormFile? File { get; set; }
+    }
+
+    // A file kept in the database (base64 text).
+    public class StoredFile
+    {
+        public string ContentType { get; set; } = string.Empty;
+        public string Data { get; set; } = string.Empty;
     }
 }

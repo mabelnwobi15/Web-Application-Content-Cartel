@@ -5,6 +5,9 @@ namespace ContentCartel.Helpers
     // Sends picked files to the API, one request per file.
     public static class GalleryUploader
     {
+        // Files are kept in the database: 10 MB each.
+        public const long MaxFileBytes = 10_485_760;
+
         public static async Task<(int Uploaded, List<string> Errors)> UploadAsync(
             HttpClient apiClient,
             IList<IFormFile> files,
@@ -31,6 +34,12 @@ namespace ContentCartel.Helpers
 
                 if (file == null || file.Length == 0)
                 {
+                    continue;
+                }
+
+                if (file.Length > MaxFileBytes)
+                {
+                    errors.Add($"{file.FileName}: files can be up to 10 MB.");
                     continue;
                 }
 

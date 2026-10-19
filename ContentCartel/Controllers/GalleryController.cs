@@ -10,8 +10,8 @@ namespace ContentCartel.Controllers
     [Authorize(Roles = "Client")]
     public class GalleryController : Controller
     {
-        // Clients upload pictures: 25 MB each, up to 100 MB per upload.
-        private const long MaxPictureBytes = 26_214_400;
+        // Clients upload pictures: 10 MB each, up to 100 MB per upload.
+        private const long MaxPictureBytes = 10_485_760;
         private const long MaxRequestBytes = 104_857_600;
 
         private static readonly string[] PictureExtensions =
@@ -122,10 +122,14 @@ namespace ContentCartel.Controllers
                 var extension =
                     Path.GetExtension(file.FileName).ToLowerInvariant();
 
+                // Must look like a picture by its type AND its extension
+                // (SVG is not allowed: it can carry scripts).
                 var looksLikePicture =
                     (file.ContentType ?? string.Empty)
                         .StartsWith("image/", StringComparison.OrdinalIgnoreCase)
-                    || PictureExtensions.Contains(extension);
+                    && !(file.ContentType ?? string.Empty)
+                        .Contains("svg", StringComparison.OrdinalIgnoreCase)
+                    && PictureExtensions.Contains(extension);
 
                 if (!looksLikePicture)
                 {
@@ -138,7 +142,7 @@ namespace ContentCartel.Controllers
                 if (file.Length > MaxPictureBytes)
                 {
                     TempData["ErrorMessage"] =
-                        $"\"{file.FileName}\" is larger than 25 MB.";
+                        $"\"{file.FileName}\" is larger than 10 MB.";
 
                     return RedirectToAction(nameof(Index));
                 }
@@ -226,6 +230,13 @@ namespace ContentCartel.Controllers
                     !gallery.IsApprovedByAdmin)
                 {
                     return NotFound();
+                }
+
+                // Uploaded files are served by this site at /media/{id}.
+                if (!string.IsNullOrWhiteSpace(gallery.FileUrl) &&
+                    gallery.FileUrl.StartsWith("/media/", StringComparison.Ordinal))
+                {
+                    return LocalRedirect(gallery.FileUrl);
                 }
 
                 if (Uri.TryCreate(gallery.FileUrl, UriKind.Absolute, out var uri) &&
