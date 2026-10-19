@@ -1,239 +1,497 @@
-﻿@model IEnumerable<ContentCartel.Models.GalleryItem>
+﻿@model List<ContentCartel.Models.GalleryItem>
 
 @{
-    ViewData["Title"] = "My Galleries";
-
-    var galleries = Model?.ToList()
-        ?? new List<ContentCartel.Models.GalleryItem>();
+    ViewData["Title"] = "File & Gallery";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<link rel="stylesheet"
-      href="~/css/client-portal.css"
-      asp-append-version="true" />
+<style>
+    .admin-page {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 28px 30px 45px;
+        overflow-x: hidden;
+    }
 
-<section class="client-portal">
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 28px;
+    }
 
-    <div class="container">
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 800;
+            color: #111;
+        }
 
-        <div class="row g-4">
+        .page-header p {
+            margin: 8px 0 0;
+            color: #666;
+            font-size: 15px;
+        }
 
-            <aside class="col-12 col-lg-3">
-                @await Html.PartialAsync("_ClientPortalNav")
-            </aside>
+    .primary-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        background: #1473ea;
+        color: white;
+        padding: 13px 19px;
+        border-radius: 9px;
+        text-decoration: none;
+        font-weight: 600;
+        white-space: nowrap;
+    }
 
-            <main class="col-12 col-lg-9">
+        .primary-btn:hover {
+            background: #0d5fc5;
+            color: white;
+        }
 
-                @if (TempData["ErrorMessage"] != null)
+    .gallery-card {
+        width: 100%;
+        min-width: 0;
+        background: white;
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    }
+
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .gallery-item {
+        min-width: 0;
+        border: 1px solid #e5e5e5;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .gallery-preview {
+        height: 190px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f2f2f2;
+        overflow: hidden;
+    }
+
+        .gallery-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-preview i {
+            font-size: 45px;
+            color: #999;
+        }
+
+    .gallery-info {
+        padding: 16px;
+    }
+
+        .gallery-info h3 {
+            margin: 0 0 8px;
+            font-size: 16px;
+            color: #111;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+    .gallery-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 12px;
+    }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 6px;
+        background: #eef1f4;
+        color: #444;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .badge-approved {
+        background: #159957;
+        color: white;
+    }
+
+    .badge-pending {
+        background: #e6a817;
+        color: white;
+    }
+
+    .gallery-details {
+        color: #777;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+        .gallery-details strong {
+            color: #444;
+        }
+
+    .gallery-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .action-btn {
+        flex: 1;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 11px;
+        border: 1px solid #aaa;
+        border-radius: 7px;
+        background: white;
+        color: #555;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+        .action-btn:hover {
+            background: #f5f5f5;
+            color: #111;
+        }
+
+    .empty-state {
+        grid-column: 1 / -1;
+        padding: 60px 20px;
+        text-align: center;
+        color: #777;
+    }
+
+        .empty-state i {
+            display: block;
+            margin-bottom: 15px;
+            font-size: 45px;
+        }
+
+        .empty-state h3 {
+            margin: 0 0 8px;
+            color: #333;
+        }
+
+        .empty-state p {
+            margin: 0;
+        }
+
+    @@media (max-width: 950px) {
+        .gallery-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 650px) {
+        .admin-page {
+            padding: 22px 16px 35px;
+        }
+
+        .page-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .primary-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .gallery-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="admin-page">
+
+    <div class="page-header">
+
+        <div>
+            <h1>File & Gallery</h1>
+
+            <p>
+                Manage portfolio files, media and gallery content.
+            </p>
+        </div>
+
+        <a href="#addMedia"
+           class="primary-btn">
+
+            <i class="bi bi-cloud-upload"></i>
+
+            Add Media
+
+        </a>
+
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div style="padding:12px 16px;border-radius:8px;margin-bottom:18px;background:#e9f2e9;color:#416044;font-size:13px;">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div style="padding:12px 16px;border-radius:8px;margin-bottom:18px;background:#f4e8e5;color:#76504a;font-size:13px;">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @{
+        var galleryBookings =
+            ViewBag.Bookings as List<ContentCartel.Models.Booking>
+            ?? new List<ContentCartel.Models.Booking>();
+    }
+
+    <div class="gallery-card" id="addMedia" style="margin-bottom:22px;padding:24px;">
+
+        <h3 style="margin:0 0 4px;font-size:17px;font-weight:700;">Add media for a client</h3>
+
+        <p style="margin:0 0 16px;color:#666;font-size:13px;">
+            Upload any file (photo, video, PDF, zip, document ... up to 100 MB), or paste a link instead.
+            It stays hidden from the client until you approve it.
+        </p>
+
+        <form asp-controller="Admin" asp-action="AddGalleryItem" method="post" enctype="multipart/form-data">
+
+            @Html.AntiForgeryToken()
+
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;">
+
+                <div>
+                    <label style="font-size:12px;font-weight:700;">Booking</label>
+                    <select name="bookingId" required
+                            style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;">
+                        <option value="">Select a booking</option>
+                        @foreach (var b in galleryBookings)
+                        {
+                            <option value="@b.Id">
+                                @b.CustomerName - @(string.IsNullOrWhiteSpace(b.ServiceName) ? b.ServiceId : b.ServiceName) (@b.BookingDate.ToString("dd MMM yyyy"))
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size:12px;font-weight:700;">Media type (auto-detected for uploads)</label>
+                    <select name="mediaType"
+                            style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;">
+                        <option value="Photo">Photo</option>
+                        <option value="Video">Video</option>
+                        <option value="Reel">Reel</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label style="font-size:12px;font-weight:700;">Title</label>
+                    <input type="text" name="title" required
+                           style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;" />
+                </div>
+
+                <div>
+                    <label style="font-size:12px;font-weight:700;">File (any type)</label>
+                    <input type="file" name="file"
+                           style="width:100%;padding:9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;" />
+                </div>
+
+                <div style="grid-column:1 / -1;">
+                    <label style="font-size:12px;font-weight:700;">...or a link instead (Google Drive, Dropbox, YouTube)</label>
+                    <input type="url" name="fileUrl" placeholder="https://..."
+                           style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;" />
+                </div>
+
+                <div style="grid-column:1 / -1;">
+                    <label style="font-size:12px;font-weight:700;">Description (optional)</label>
+                    <input type="text" name="description"
+                           style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;" />
+                </div>
+
+            </div>
+
+            <button type="submit" class="primary-btn" style="margin-top:16px;border:none;cursor:pointer;">
+                <i class="bi bi-plus-lg"></i>
+                Add to gallery
+            </button>
+
+        </form>
+
+    </div>
+
+    <div class="gallery-card">
+
+        <div class="gallery-grid">
+
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
                 {
-                    <div class="alert alert-danger mb-4">
-                        @TempData["ErrorMessage"]
-                    </div>
-                }
+                    <div class="gallery-item">
 
-                <div class="client-portal-hero mb-4">
+                        <div class="gallery-preview">
 
-                    <span class="client-portal-label">
-                        PRIVATE MEDIA
-                    </span>
+                            @{
+                                var isImage = item.MediaType.Equals("Photo", StringComparison.OrdinalIgnoreCase);
+                                var isVideo = item.MediaType.Equals("Video", StringComparison.OrdinalIgnoreCase)
+                                              || item.MediaType.Equals("Reel", StringComparison.OrdinalIgnoreCase);
+                            }
 
-                    <h1 class="h2 fw-bold mt-2 mb-2">
-                        My Galleries
-                    </h1>
-
-                    <p class="mb-0">
-                        Access your private photos, videos and creative content.
-                    </p>
-
-                </div>
-
-                <div class="row g-3 mb-4">
-
-                    <div class="col-12 col-md-4">
-                        <div class="client-portal-card">
-
-                            <small class="text-muted">
-                                GALLERIES
-                            </small>
-
-                            <h2 class="fw-bold mt-2">
-                                @galleries.Count
-                            </h2>
-
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-4">
-                        <div class="client-portal-card">
-
-                            <small class="text-muted">
-                                MEDIA
-                            </small>
-
-                            <h2 class="fw-bold mt-2">
-                                @galleries.Count
-                            </h2>
-
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-4">
-                        <div class="client-portal-card">
-
-                            <small class="text-muted">
-                                ACCESS
-                            </small>
-
-                            <h2 class="fw-bold mt-2">
-                                Private
-                            </h2>
-
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="client-portal-card">
-
-                    <h2 class="h4 fw-bold mb-4">
-                        Your Media
-                    </h2>
-
-                    @if (galleries.Any())
-                    {
-                        <div class="row g-4">
-
-                            @foreach (var gallery in galleries)
+                            @if (!string.IsNullOrWhiteSpace(item.FileUrl) && isImage)
                             {
-                                <div class="col-12 col-md-6">
-                                    <div class="border rounded-3 p-4 h-100">
+                                <img src="@item.FileUrl" alt="@item.Title"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
 
-                                        @{
-                                            var isPhoto =
-                                                string.Equals(
-                                                    gallery.MediaType,
-                                                    "Photo",
-                                                    StringComparison.OrdinalIgnoreCase);
-                                        }
-
-                                        @if (isPhoto &&
-                                             !string.IsNullOrWhiteSpace(gallery.FileUrl))
-                                        {
-                                            <a href="@gallery.FileUrl"
-                                               target="_blank"
-                                               rel="noopener">
-                                                <img src="@gallery.FileUrl"
-                                                     alt="@gallery.Title"
-                                                     loading="lazy"
-                                                     class="w-100 rounded-3"
-                                                     style="height:200px;object-fit:cover;" />
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <div class="d-flex justify-content-between">
-                                                <i class="bi bi-camera-video fs-2"></i>
-                                            </div>
-                                        }
-
-                                        <h5 class="fw-bold mt-3">
-                                            @gallery.Title
-                                        </h5>
-
-                                        @if (!string.IsNullOrWhiteSpace(
-                                            gallery.Description))
-                                        {
-                                            <p class="text-muted small">
-                                                @gallery.Description
-                                            </p>
-                                        }
-
-                                        @if (!string.IsNullOrWhiteSpace(
-                                            gallery.MediaType))
-                                        {
-                                            <span class="badge bg-dark">
-                                                @gallery.MediaType
-                                            </span>
-                                        }
-
-                                        <div class="d-flex justify-content-between align-items-center mt-3">
-
-                                            <small class="text-muted">
-                                                @gallery.UploadedAt.ToLocalTime().ToString("dd MMM yyyy")
-                                            </small>
-
-                                            @if (!string.IsNullOrWhiteSpace(gallery.FileUrl))
-                                            {
-                                                <a href="@gallery.FileUrl"
-                                                   target="_blank"
-                                                   rel="noopener"
-                                                   class="btn btn-sm btn-dark">
-                                                    <i class="bi bi-box-arrow-up-right me-1"></i>
-                                                    Open
-                                                </a>
-                                            }
-
-                                        </div>
-
+                                <div style="display:none;text-align:center;padding:10px;">
+                                    <i class="bi bi-image" style="font-size:34px;"></i>
+                                    <div style="font-size:11px;margin-top:6px;">
+                                        Preview unavailable. Use View to open the link.
                                     </div>
+                                </div>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(item.FileUrl) && isVideo)
+                            {
+                                <video src="@item.FileUrl" controls preload="metadata"
+                                       style="width:100%;height:100%;object-fit:cover;"></video>
+                            }
+                            else
+                            {
+                                <div style="text-align:center;padding:10px;">
+                                    <i class="bi bi-file-earmark" style="font-size:34px;"></i>
+                                    @if (!string.IsNullOrWhiteSpace(item.FileName))
+                                    {
+                                        <div style="font-size:11px;margin-top:6px;word-break:break-all;">@item.FileName</div>
+                                    }
                                 </div>
                             }
 
                         </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
 
-                            <i class="bi bi-images fs-1 text-muted"></i>
+                        <div class="gallery-info">
 
-                            <h4 class="fw-bold mt-3">
-                                No galleries yet
-                            </h4>
+                            <h3 title="@item.Title">
+                                @item.Title
+                            </h3>
 
-                            <p class="text-muted">
-                                Your private galleries will appear here
-                                once Content Cartel uploads your media.
-                            </p>
+                            <div class="gallery-meta">
 
-                            <a asp-controller="Booking"
-                               asp-action="Index"
-                               class="btn btn-dark">
-                                Book a Service
-                            </a>
+                                <span class="badge">
+                                    @item.MediaType
+                                </span>
 
-                        </div>
-                    }
+                                @if (item.IsApprovedByAdmin)
+                                {
+                                    <span class="badge badge-approved">
+                                        Approved
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-pending">
+                                        Pending Approval
+                                    </span>
+                                }
 
-                </div>
+                            </div>
 
-                <div class="alert alert-light border mt-4">
+                            <div class="gallery-details">
 
-                    <div class="d-flex gap-3">
+                                <div>
+                                    <strong>Booking:</strong>
+                                    #@item.BookingId
+                                </div>
 
-                        <i class="bi bi-lock fs-4"></i>
+                                <div>
+                                    <strong>Uploaded:</strong>
+                                    @item.UploadedAt.ToLocalTime().ToString("dd MMM yyyy")
+                                </div>
 
-                        <div>
+                                <div>
+                                    <strong>Staff:</strong>
+                                    @item.UploadedByStaffId
+                                </div>
 
-                            <strong>
-                                Private Media
-                            </strong>
+                            </div>
 
-                            <p class="small text-muted mb-0 mt-1">
-                                Your media is private and can only be
-                                accessed through your authenticated
-                                client account.
-                            </p>
+                            <div class="gallery-actions">
+
+                                <a href="@item.FileUrl"
+                                   target="_blank"
+                                   class="action-btn">
+
+                                    <i class="bi bi-eye"></i>
+                                    View
+
+                                </a>
+
+                                @if (!item.IsApprovedByAdmin)
+                                {
+                                    <form asp-controller="Admin"
+                                          asp-action="ApproveGalleryItem"
+                                          method="post"
+                                          style="flex:1;">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@item.Id" />
+
+                                        <button type="submit"
+                                                class="action-btn"
+                                                style="width:100%;">
+
+                                            <i class="bi bi-check-lg"></i>
+                                            Approve
+
+                                        </button>
+
+                                    </form>
+                                }
+
+                            </div>
 
                         </div>
 
                     </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+
+                    <i class="bi bi-images"></i>
+
+                    <h3>No gallery items yet</h3>
+
+                    <p>
+                        Uploaded portfolio media will appear here.
+                    </p>
 
                 </div>
-
-            </main>
+            }
 
         </div>
 
     </div>
 
-</section>
+</div>

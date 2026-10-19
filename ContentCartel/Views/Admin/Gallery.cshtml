@@ -269,11 +269,11 @@
         <h3 style="margin:0 0 4px;font-size:17px;font-weight:700;">Add media for a client</h3>
 
         <p style="margin:0 0 16px;color:#666;font-size:13px;">
-            Paste a link to the file (Google Drive, Dropbox, YouTube, etc.).
+            Upload any file (photo, video, PDF, zip, document ... up to 100 MB), or paste a link instead.
             It stays hidden from the client until you approve it.
         </p>
 
-        <form asp-controller="Admin" asp-action="AddGalleryItem" method="post">
+        <form asp-controller="Admin" asp-action="AddGalleryItem" method="post" enctype="multipart/form-data">
 
             @Html.AntiForgeryToken()
 
@@ -294,7 +294,7 @@
                 </div>
 
                 <div>
-                    <label style="font-size:12px;font-weight:700;">Media type</label>
+                    <label style="font-size:12px;font-weight:700;">Media type (auto-detected for uploads)</label>
                     <select name="mediaType"
                             style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;">
                         <option value="Photo">Photo</option>
@@ -310,8 +310,14 @@
                 </div>
 
                 <div>
-                    <label style="font-size:12px;font-weight:700;">File link</label>
-                    <input type="url" name="fileUrl" required placeholder="https://..."
+                    <label style="font-size:12px;font-weight:700;">File (any type)</label>
+                    <input type="file" name="file"
+                           style="width:100%;padding:9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;" />
+                </div>
+
+                <div style="grid-column:1 / -1;">
+                    <label style="font-size:12px;font-weight:700;">...or a link instead (Google Drive, Dropbox, YouTube)</label>
+                    <input type="url" name="fileUrl" placeholder="https://..."
                            style="width:100%;padding:11px;border:1px solid #d0d0d0;border-radius:8px;" />
                 </div>
 
@@ -344,38 +350,38 @@
 
                         <div class="gallery-preview">
 
-                            @if (!string.IsNullOrWhiteSpace(item.FileUrl))
+                            @{
+                                var isImage = item.MediaType.Equals("Photo", StringComparison.OrdinalIgnoreCase);
+                                var isVideo = item.MediaType.Equals("Video", StringComparison.OrdinalIgnoreCase)
+                                              || item.MediaType.Equals("Reel", StringComparison.OrdinalIgnoreCase);
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(item.FileUrl) && isImage)
                             {
-                                @if (item.MediaType.Equals(
-                                    "Video",
-                                    StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <i class="bi bi-play-circle"></i>
-                                }
-                                else
-                                {
-                                    <img src="@item.FileUrl"
-                                         alt="@item.Title" />
-                                }
+                                <img src="@item.FileUrl" alt="@item.Title"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+
+                                <div style="display:none;text-align:center;padding:10px;">
+                                    <i class="bi bi-image" style="font-size:34px;"></i>
+                                    <div style="font-size:11px;margin-top:6px;">
+                                        Preview unavailable. Use View to open the link.
+                                    </div>
+                                </div>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(item.FileUrl) && isVideo)
+                            {
+                                <video src="@item.FileUrl" controls preload="metadata"
+                                       style="width:100%;height:100%;object-fit:cover;"></video>
                             }
                             else
                             {
-                                @if (item.MediaType.Equals(
-                                    "Video",
-                                    StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <i class="bi bi-play-circle"></i>
-                                }
-                                else if (item.MediaType.Equals(
-                                    "Reel",
-                                    StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <i class="bi bi-film"></i>
-                                }
-                                else
-                                {
-                                    <i class="bi bi-image"></i>
-                                }
+                                <div style="text-align:center;padding:10px;">
+                                    <i class="bi bi-file-earmark" style="font-size:34px;"></i>
+                                    @if (!string.IsNullOrWhiteSpace(item.FileName))
+                                    {
+                                        <div style="font-size:11px;margin-top:6px;word-break:break-all;">@item.FileName</div>
+                                    }
+                                </div>
                             }
 
                         </div>
