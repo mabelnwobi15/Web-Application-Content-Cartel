@@ -34,7 +34,8 @@
 
                 @Html.AntiForgeryToken()
 
-                <div asp-validation-summary="ModelOnly"
+                @* "All" so errors keyed to any field (or to the model) are always visible *@
+                <div asp-validation-summary="All"
                      class="text-danger mb-4">
                 </div>
 
@@ -90,21 +91,21 @@
                     </div>
 
 
-                    <!-- Contact Person -->
+                    <!-- Contact Person (bound to CustomerName, which the controller reads) -->
                     <div class="col-md-6">
 
-                        <label asp-for="ContactPersonName"
+                        <label asp-for="CustomerName"
                                class="form-label fw-bold small">
                             Contact Person Name
                         </label>
 
-                        <input asp-for="ContactPersonName"
+                        <input asp-for="CustomerName"
                                type="text"
                                class="form-control"
                                required
                                placeholder="Eliza Smith" />
 
-                        <span asp-validation-for="ContactPersonName"
+                        <span asp-validation-for="CustomerName"
                               class="text-danger">
                         </span>
 
@@ -239,8 +240,7 @@
                         <textarea asp-for="CampaignGoals"
                                   class="form-control"
                                   rows="4"
-                                  placeholder="Briefly describe your deliverables, key dates, target audience, or specific influencer preferences...">
-                        </textarea>
+                                  placeholder="Briefly describe your deliverables, key dates, target audience, or specific influencer preferences..."></textarea>
 
                         <span asp-validation-for="CampaignGoals"
                               class="text-danger">
@@ -287,8 +287,8 @@
                 </div>
 
 
-                <!-- Hidden price sent to controller -->
-                <input asp-for="EstimatedPrice"
+                <!-- Hidden price sent to controller (bound to EstimatedAmount, which the controller reads) -->
+                <input asp-for="EstimatedAmount"
                        type="hidden"
                        id="estimatedPrice"
                        value="3500" />
@@ -337,7 +337,7 @@
                     minimumFractionDigits: 2
                 });
 
-            // Update hidden price
+            // Update hidden price (plain number, e.g. 3500, so it binds to decimal?)
             document.getElementById("estimatedPrice").value =
                 price;
         }

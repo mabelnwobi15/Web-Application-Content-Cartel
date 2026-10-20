@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="ContentCartel.API/ContentCartel.API.csproj" />
-  <Project Path="ContentCartel/ContentCartel.csproj" />
-</Solution>

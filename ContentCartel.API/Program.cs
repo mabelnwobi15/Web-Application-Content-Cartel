@@ -14,7 +14,12 @@ namespace ContentCartel.API
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddHttpClient();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                // Full type names as schema ids, so two classes with the same
+                // short name (e.g. PaymentRequest) can never break swagger.json.
+                options.CustomSchemaIds(type => type.FullName!.Replace("+", "."));
+            });
 
             builder.Services.AddCors(options =>
             {
@@ -37,26 +42,36 @@ namespace ContentCartel.API
             });
 
             // The credential file comes from a Render Secret File
-            // (copied to /app by docker-entrypoint.sh).
-            var firebaseCredentialPath = Path.Combine(
-                builder.Environment.ContentRootPath,
-                "firebase-service-account.json"
-            );
+            // (copied to /app by docker-entrypoint.sh). Locally, put it in the
+            // project folder; FirebaseService also looks next to the DLL.
+            var firebaseCredentialPath = new[]
+            {
+                Path.Combine(builder.Environment.ContentRootPath, "firebase-service-account.json"),
+                Path.Combine(AppContext.BaseDirectory, "firebase-service-account.json")
+            }.FirstOrDefault(File.Exists);
 
-            if (!File.Exists(firebaseCredentialPath))
+            if (firebaseCredentialPath != null)
+            {
+                FirebaseApp.Create(new AppOptions
+                {
+                    Credential = GoogleCredential.FromFile(firebaseCredentialPath),
+                    ProjectId = "contentcartel-62294"
+                });
+            }
+            else if (builder.Environment.IsDevelopment())
+            {
+                // Lets Swagger load without the secret file; endpoints that
+                // touch Firebase will fail until the file is added.
+                Console.WriteLine(
+                    "WARNING: firebase-service-account.json not found. " +
+                    "Swagger will load, but Firebase-backed endpoints will fail.");
+            }
+            else
             {
                 throw new FileNotFoundException(
-                    "Firebase credential not found at: " + firebaseCredentialPath +
-                    ". On Render, add a Secret File named " +
-                    "'firebase-service-account.json' to this service."
-                );
+                    "firebase-service-account.json not found. On Render, add a " +
+                    "Secret File named 'firebase-service-account.json' to this service.");
             }
-
-            FirebaseApp.Create(new AppOptions
-            {
-                Credential = GoogleCredential.FromFile(firebaseCredentialPath),
-                ProjectId = "contentcartel-62294"
-            });
 
             builder.Services.AddScoped<FirebaseService>();
             builder.Services.AddScoped<RecaptchaService>();
@@ -68,7 +83,10 @@ namespace ContentCartel.API
 
             // Swagger on in every environment so the deployed URL shows something.
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "ContentCartel API v1");
+            });
 
             // Only redirect locally; on Render the proxy already handles HTTPS
             // and the container only listens on HTTP.

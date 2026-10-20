@@ -98,6 +98,7 @@ namespace ContentCartel.Controllers
                 nameof(QuoteRequest.ServiceName),
                 nameof(QuoteRequest.Description),
                 nameof(QuoteRequest.ContactPersonName),
+                nameof(QuoteRequest.EstimatedPrice),
                 nameof(QuoteRequest.Status),
                 nameof(QuoteRequest.CreatedAt)
             })
@@ -107,6 +108,14 @@ namespace ContentCartel.Controllers
 
             if (!ModelState.IsValid)
             {
+                // DIAGNOSTIC: shows exactly which field failed validation
+                foreach (var entry in ModelState.Where(x => x.Value!.Errors.Count > 0))
+                {
+                    Console.WriteLine(
+                        $"[Quote] Invalid '{entry.Key}': " +
+                        string.Join(" | ", entry.Value!.Errors.Select(e => e.ErrorMessage)));
+                }
+
                 return View("Index", quote);
             }
 
@@ -133,6 +142,9 @@ namespace ContentCartel.Controllers
 
             try
             {
+                Console.WriteLine(
+                    $"[Quote] POST {_httpClient.BaseAddress}api/quotes");
+
                 var response =
                     await _httpClient.PostAsJsonAsync(
                         "api/quotes",
@@ -142,12 +154,18 @@ namespace ContentCartel.Controllers
                     await response.Content
                         .ReadAsStringAsync();
 
+                // DIAGNOSTIC: what the API actually answered
+                Console.WriteLine(
+                    $"[Quote] API responded {(int)response.StatusCode}: {body}");
+
                 if (!response.IsSuccessStatusCode)
                 {
+                    var apiMessage = ExtractMessage(body);
+
                     ModelState.AddModelError(
                         "",
-                        ExtractMessage(body)
-                        ?? "Unable to submit quote.");
+                        (apiMessage ?? "Unable to submit quote.")
+                        + $" (API returned {(int)response.StatusCode})");
 
                     return View("Index", quote);
                 }
@@ -178,17 +196,33 @@ namespace ContentCartel.Controllers
                     nameof(QuoteSubmitted),
                     new { id = newId });
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
+                Console.WriteLine($"[Quote] HttpRequestException: {ex.Message}");
+
                 ModelState.AddModelError(
                     "",
                     "The quote service is currently unavailable. " +
-                    "Please make sure the ContentCartel API is running.");
+                    "Please make sure the ContentCartel API is running " +
+                    $"and Api:BaseUrl is correct ({_httpClient.BaseAddress}).");
+
+                return View("Index", quote);
+            }
+            catch (TaskCanceledException)
+            {
+                Console.WriteLine("[Quote] Request timed out.");
+
+                ModelState.AddModelError(
+                    "",
+                    "The quote service took too long to respond. " +
+                    "It may be waking up - please try again in a minute.");
 
                 return View("Index", quote);
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[Quote] Exception: {ex}");
+
                 ModelState.AddModelError(
                     "",
                     "An error occurred while submitting your quote: "

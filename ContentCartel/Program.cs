@@ -12,15 +12,31 @@ namespace ContentCartel
 
             builder.Services.AddControllersWithViews();
 
-            // API base URL comes from config so it can differ per environment.
-            // On Render set the env var:  Api__BaseUrl = https://<your-api>.onrender.com/
+            // ------------------------------------------------------------
+            // API BASE URL (THE FIX)
+            // Previously this silently fell back to http://localhost:{PORT}/,
+            // which on Render is the MVC site itself, so "api/quotes" 404'd.
+            // Now a missing setting fails loudly with a clear message.
+            //
+            //   Render (MVC service) env var:
+            //       Api__BaseUrl = https://<your-api-service>.onrender.com/
+            //
+            //   Local (appsettings.Development.json in the MVC project):
+            //       { "Api": { "BaseUrl": "https://localhost:<api-https-port>/" } }
+            // ------------------------------------------------------------
             var apiBaseUrl =
                 builder.Configuration["Api:BaseUrl"]
-                ?? $"http://localhost:{Environment.GetEnvironmentVariable("PORT") ?? "10000"}/";
+                ?? throw new InvalidOperationException(
+                    "Api:BaseUrl is not configured. Set the Api__BaseUrl " +
+                    "environment variable (Render) or Api:BaseUrl in " +
+                    "appsettings.Development.json (local).");
+
             if (!apiBaseUrl.EndsWith('/'))
             {
                 apiBaseUrl += "/";
             }
+
+            Console.WriteLine($"[Startup] ContentCartelAPI base address: {apiBaseUrl}");
 
             builder.Services.AddHttpClient("ContentCartelAPI", client =>
             {
