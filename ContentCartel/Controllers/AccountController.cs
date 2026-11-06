@@ -1,4 +1,4 @@
-﻿using ContentCartel.Models;
+using ContentCartel.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +11,14 @@ namespace ContentCartel.Controllers
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AccountController> _logger;
 
         public AccountController(
             IHttpClientFactory httpClientFactory,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ILogger<AccountController> logger)
         {
+            _logger = logger;
             _httpClient =
                 httpClientFactory.CreateClient(
                     "ContentCartelAPI"
@@ -64,15 +67,7 @@ namespace ContentCartel.Controllers
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var error =
-                        await response.Content
-                            .ReadFromJsonAsync<ApiResponse>();
-
-                    ModelState.AddModelError(
-                        "",
-                        error?.Message ??
-                        "Registration failed."
-                    );
+                    ModelState.AddModelError("", await ReadApiErrorAsync(response, "Registration failed."));
 
                     return View(model);
                 }
@@ -85,13 +80,21 @@ namespace ContentCartel.Controllers
                     }
                 );
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                ModelState.AddModelError(
-                    "",
-                    "The Content Cartel API is not running."
-                );
-
+                _logger.LogError(ex, "API not reachable");
+                ModelState.AddModelError("", "The Content Cartel API is not reachable right now. Please try again in a minute.");
+                return View(model);
+            }
+            catch (TaskCanceledException)
+            {
+                ModelState.AddModelError("", "The server took too long to respond (it may be waking up). Please try again.");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Account request failed");
+                ModelState.AddModelError("", "Something went wrong. Please try again.");
                 return View(model);
             }
         }
@@ -138,22 +141,21 @@ namespace ContentCartel.Controllers
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var error =
-                        await response.Content
-                            .ReadFromJsonAsync<ApiResponse>();
-
-                    ModelState.AddModelError(
-                        "",
-                        error?.Message ??
-                        "Invalid email or password."
-                    );
+                    ModelState.AddModelError("", await ReadApiErrorAsync(response, "Invalid email or password."));
 
                     return View(model);
                 }
 
-                var result =
-                    await response.Content
+                LoginResponse? result = null;
+                try
+                {
+                    result = await response.Content
                         .ReadFromJsonAsync<LoginResponse>();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Login response from API could not be read");
+                }
 
                 if (result == null ||
                     string.IsNullOrWhiteSpace(result.Uid))
@@ -240,13 +242,21 @@ namespace ContentCartel.Controllers
                     "Home"
                 );
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
-                ModelState.AddModelError(
-                    "",
-                    "The Content Cartel API is not running."
-                );
-
+                _logger.LogError(ex, "API not reachable");
+                ModelState.AddModelError("", "The Content Cartel API is not reachable right now. Please try again in a minute.");
+                return View(model);
+            }
+            catch (TaskCanceledException)
+            {
+                ModelState.AddModelError("", "The server took too long to respond (it may be waking up). Please try again.");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Account request failed");
+                ModelState.AddModelError("", "Something went wrong. Please try again.");
                 return View(model);
             }
         }
@@ -263,6 +273,17 @@ namespace ContentCartel.Controllers
                 "Index",
                 "Home"
             );
+        }
+
+        private static async Task<string> ReadApiErrorAsync(HttpResponseMessage response, string fallback)
+        {
+            try
+            {
+                var error = await response.Content.ReadFromJsonAsync<ApiResponse>();
+                if (!string.IsNullOrWhiteSpace(error?.Message)) return error.Message!;
+            }
+            catch { /* API returned a non-JSON error body */ }
+            return fallback;
         }
 
         private class ApiResponse
